@@ -19,6 +19,20 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "EverGo - The Global Network for Sports",
   description: "Social network for athletes and active people with real-time rankings.",
+  manifest: "/manifest.json",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover",
+  },
+  themeColor: "#0078D4",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "EverGo",
+  },
 };
 
 export default function RootLayout({

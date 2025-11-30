@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, Trophy, Users, PlusSquare, User } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { MobileMenu } from "@/components/mobile-menu"
 
 export function MobileNav() {
     const pathname = usePathname()
@@ -12,7 +13,6 @@ export function MobileNav() {
         { href: "/home", label: "Home", icon: Home },
         { href: "/rankings", label: "Rankings", icon: Trophy },
         { href: "/activity/new", label: "Record", icon: PlusSquare },
-        { href: "/teams", label: "Teams", icon: Users },
         { href: "/profile", label: "Profile", icon: User },
     ]
 
@@ -32,6 +32,9 @@ export function MobileNav() {
                         {item.label}
                     </Link>
                 ))}
+                <div className="flex flex-col items-center justify-center gap-1 text-xs font-medium text-muted-foreground">
+                    <MobileMenu />
+                </div>
             </div>
         </div>
     )
