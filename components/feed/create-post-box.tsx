@@ -10,9 +10,10 @@ import { PenSquare, Activity } from "lucide-react"
 
 interface CreatePostBoxProps {
     onPostCreated?: () => void
+    userImage?: string
 }
 
-export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
+export function CreatePostBox({ onPostCreated, userImage }: CreatePostBoxProps) {
     const { data: session } = useSession()
     const [isExpanded, setIsExpanded] = useState(false)
     const [mode, setMode] = useState<"status" | "activity">("status")
@@ -32,7 +33,7 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
                     onClick={() => setIsExpanded(true)}
                 >
                     <Avatar className="h-10 w-10 border border-border-light">
-                        <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
+                        <AvatarImage src={userImage || session.user.image || undefined} alt={session.user.name || "User"} />
                         <AvatarFallback>{session.user.name?.[0] || "U"}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 bg-bg-page rounded-full px-4 py-2.5 text-text-muted text-sm font-medium">
