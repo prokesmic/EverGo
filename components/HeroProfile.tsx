@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { MapPin, Trophy, Flame, Activity } from "lucide-react"
+import Link from "next/link"
 
 interface HeroProfileProps {
     name: string
@@ -111,8 +112,10 @@ export function HeroProfile({
 
                 {/* Right Zone: Actions */}
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                    <Button size="lg" className="bg-brand-blue hover:bg-brand-blue-dark text-white shadow-lg shadow-brand-blue/20 border-0 font-semibold">
-                        Log Activity
+                    <Button asChild size="lg" className="bg-brand-blue hover:bg-brand-blue-dark text-white shadow-lg shadow-brand-blue/20 border-0 font-semibold">
+                        <Link href="/activity/create">
+                            Log Activity
+                        </Link>
                     </Button>
                     <Button size="lg" variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md font-medium">
                         Join Event

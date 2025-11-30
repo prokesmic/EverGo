@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db"
 import { RankingFilters } from "@/components/rankings/ranking-filters"
 import { Leaderboard, RankingEntry } from "@/components/rankings/leaderboard"
 import { startOfWeek, startOfMonth, startOfYear, subYears } from "date-fns"
+import { PageGrid } from "@/components/layout/page-grid"
 import { Suspense } from "react"
 
 interface RankingsPageProps {
@@ -125,20 +126,49 @@ export default async function RankingsPage({ searchParams }: RankingsPageProps) 
 
     const metricLabel = (!sportId || sportId === "all") ? "Duration" : "Distance/Duration"
 
-    return (
-        <div className="container max-w-4xl py-10">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">Rankings</h1>
-                <p className="text-muted-foreground">
-                    See who's topping the leaderboards this {period}.
+    const leftSidebar = (
+        <>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Your Rank</h3>
+                <div className="text-center">
+                    <div className="text-4xl font-bold text-brand-blue mb-1">#12</div>
+                    <div className="text-sm text-gray-500">Club Ranking</div>
+                </div>
+            </div>
+        </>
+    )
+
+    const rightSidebar = (
+        <>
+            <div className="bg-gradient-to-br from-brand-blue to-brand-blue-dark rounded-xl shadow-lg p-6 text-white">
+                <h3 className="font-semibold mb-2">Pro Tip</h3>
+                <p className="text-sm text-white/90">
+                    Consistency is key! Log activities at least 3 times a week to boost your ranking score multiplier.
                 </p>
             </div>
+        </>
+    )
 
-            <Suspense fallback={<div>Loading filters...</div>}>
-                <RankingFilters sports={sports} />
-            </Suspense>
+    return (
+        <div className="min-h-screen bg-background pb-20 md:pb-0">
+            <div className="max-w-[1400px] mx-auto px-4 pt-6 mb-6">
+                <h1 className="text-3xl font-bold text-gray-900">Rankings</h1>
+                <p className="text-gray-500">See who's topping the leaderboards.</p>
+            </div>
 
-            <Leaderboard entries={rankings} metricLabel={metricLabel} />
+            <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
+                <div className="space-y-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <Suspense fallback={<div>Loading filters...</div>}>
+                            <RankingFilters sports={sports} />
+                        </Suspense>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <Leaderboard entries={rankings} metricLabel={metricLabel} />
+                    </div>
+                </div>
+            </PageGrid>
         </div>
     )
 }
