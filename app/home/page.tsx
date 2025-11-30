@@ -201,7 +201,7 @@ export default async function HomePage() {
                     location={user.city || "Prague, Czech Republic"}
                     primarySport={activityBreakdown.length > 0 ? activityBreakdown[0].sport : "running"}
                     avatarUrl={user.avatarUrl || "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Chris_Hemsworth_by_Gage_Skidmore_2_%28cropped%29.jpg/800px-Chris_Hemsworth_by_Gage_Skidmore_2_%28cropped%29.jpg"}
-                    coverUrl={user.coverPhotoUrl || "https://images.unsplash.com/photo-1534234828569-1f3553dadd3d?q=80&w=2000&auto=format&fit=crop"}
+                    coverUrl={user.coverPhotoUrl || "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=2070&auto=format&fit=crop"}
                     weeklyDistanceKm={parseFloat(weeklyDistance.toFixed(1))}
                     weeklyTimeMinutes={Math.round(weeklyTime)}
                     weeklyCalories={weeklyCalories}
