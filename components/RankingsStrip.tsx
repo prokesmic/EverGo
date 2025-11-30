@@ -42,36 +42,36 @@ export function RankingsStrip({ rankings }: RankingsStripProps) {
     }
 
     return (
-        <div className="w-full bg-white/80 backdrop-blur-md border border-white/20 shadow-sm rounded-xl py-3 px-6 mb-6 flex items-center justify-between overflow-x-auto no-scrollbar gap-8">
+        <div className="w-full bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 text-white shadow-lg rounded-xl py-3 px-6 mb-4 flex items-center justify-between overflow-x-auto no-scrollbar gap-8 border border-white/10">
             {rankings.map((stat, index) => (
                 <div key={stat.scope} className="flex items-center gap-3 min-w-fit group">
                     <div className={cn(
-                        "p-2 rounded-full bg-gray-50 text-gray-500 transition-colors group-hover:bg-brand-blue/10 group-hover:text-brand-blue",
-                        stat.rank <= 3 && "bg-yellow-50 text-yellow-600 group-hover:bg-yellow-100 group-hover:text-yellow-700"
+                        "p-2 rounded-full bg-white/10 text-white/80 transition-colors group-hover:bg-brand-blue group-hover:text-white",
+                        stat.rank <= 3 && "bg-yellow-500/20 text-yellow-400 group-hover:bg-yellow-500 group-hover:text-white"
                     )}>
                         {getIcon(stat.scope)}
                     </div>
 
                     <div>
-                        <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-0.5">
+                        <div className="text-[10px] uppercase tracking-wider text-white/60 font-semibold mb-0.5">
                             {getLabel(stat.scope)}
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-lg font-bold text-gray-900">#{stat.rank}</span>
-                            <span className="text-xs text-gray-400 font-medium">/ {stat.totalParticipants}</span>
+                            <span className="text-lg font-bold text-white">#{stat.rank}</span>
+                            <span className="text-xs text-white/40 font-medium">/ {stat.totalParticipants}</span>
                             {getTrendIcon(stat.trend)}
                         </div>
                     </div>
 
                     {/* Divider */}
                     {index < rankings.length - 1 && (
-                        <div className="h-8 w-px bg-gray-200 ml-4 hidden md:block"></div>
+                        <div className="h-8 w-px bg-white/10 ml-4 hidden md:block"></div>
                     )}
                 </div>
             ))}
 
             {rankings.length === 0 && (
-                <div className="text-sm text-gray-500 w-full text-center">
+                <div className="text-sm text-white/60 w-full text-center">
                     Complete your first activity to see your rankings!
                 </div>
             )}
