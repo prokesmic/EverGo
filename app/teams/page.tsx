@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db"
 import { PageGrid } from "@/components/layout/page-grid"
 import { RankingsWidget } from "@/components/widgets/rankings-widget"
-import { ActivitiesSummaryWidget } from "@/components/widgets/activities-summary-widget"
+
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
 import { TeamCard } from "@/components/teams/team-card"
@@ -22,10 +22,31 @@ export default async function TeamsPage() {
         }
     })
 
+    const topRankings = await prisma.ranking.findMany({
+        where: {
+            scope: "GLOBAL",
+            period: "WEEKLY"
+        },
+        orderBy: {
+            position: "asc"
+        },
+        take: 5,
+        include: {
+            user: true
+        }
+    })
+
+    const formattedRankings = topRankings.map((r: any) => ({
+        rank: r.position,
+        name: r.user.displayName,
+        value: `${Math.round(r.score)} pts`,
+        avatarUrl: r.user.avatarUrl || "",
+        isCurrentUser: false
+    }))
+
     const leftSidebar = (
         <>
-            <ActivitiesSummaryWidget />
-            <RankingsWidget />
+            <RankingsWidget rankings={formattedRankings} />
         </>
     )
 
@@ -49,7 +70,7 @@ export default async function TeamsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {teams.map((team) => (
+                {teams.map((team: any) => (
                     <TeamCard key={team.id} team={team} />
                 ))}
             </div>

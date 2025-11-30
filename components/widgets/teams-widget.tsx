@@ -4,12 +4,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export function TeamsWidget() {
-    const teams = [
-        { id: 1, name: "Prague Runners", sport: "Running", members: 24, nextTraining: "Tue 18:00", image: "", initials: "PR", color: "bg-blue-100 text-blue-600" },
-        { id: 2, name: "FC Turbo", sport: "Football", members: 18, nextTraining: "Thu 19:30", image: "", initials: "FC", color: "bg-green-100 text-green-600" },
-    ]
+export interface TeamItem {
+    id: string
+    name: string
+    sport: string
+    members: number
+    nextTraining: string
+    image: string
+    initials: string
+    color: string
+}
 
+interface TeamsWidgetProps {
+    teams: TeamItem[]
+}
+
+export function TeamsWidget({ teams }: TeamsWidgetProps) {
     return (
         <CardShell
             title="My Teams"
@@ -51,6 +61,11 @@ export function TeamsWidget() {
                         </div>
                     </div>
                 ))}
+                {teams.length === 0 && (
+                    <div className="text-center py-8 text-gray-500 text-sm">
+                        You are not a member of any team yet.
+                    </div>
+                )}
             </div>
         </CardShell>
     )

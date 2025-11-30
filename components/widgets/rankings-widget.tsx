@@ -4,35 +4,33 @@ import { useState } from "react"
 import { Trophy, ChevronRight, Medal } from "lucide-react"
 import { CardShell } from "@/components/ui/CardShell"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 type Period = "Weekly" | "Monthly" | "All-time"
 type Scope = "Club" | "City" | "Country" | "Global"
 
-export function RankingsWidget() {
+export interface RankingItem {
+    rank: number
+    name: string
+    value: string
+    avatarUrl: string
+    isCurrentUser: boolean
+}
+
+interface RankingsWidgetProps {
+    rankings: RankingItem[]
+    userRank?: number
+}
+
+export function RankingsWidget({ rankings: initialRankings, userRank }: RankingsWidgetProps) {
     const [period, setPeriod] = useState<Period>("Weekly")
     const [scope, setScope] = useState<Scope>("Club")
 
-    // Mock data generator based on scope
-    const getRankings = () => {
-        const base = [
-            { rank: 1, name: "Michal Prokes", value: "125 km", color: "bg-yellow-400" },
-            { rank: 2, name: "Sarah Smith", value: "98 km", color: "bg-gray-300" },
-            { rank: 3, name: "John Doe", value: "85 km", color: "bg-amber-600" },
-            { rank: 4, name: "Emma Wilson", value: "72 km", color: "bg-gray-100 text-gray-600" },
-            { rank: 5, name: "Tom Brown", value: "65 km", color: "bg-gray-100 text-gray-600" },
-        ]
-
-        if (scope === "Global") {
-            return base.map(u => ({ ...u, rank: u.rank + 1000, value: (parseInt(u.value) * 10) + " km" }))
-        }
-        return base
-    }
-
-    const rankings = getRankings()
-    const userRank = rankings.find(r => r.name === "Michal Prokes")
+    // In a real app, we would fetch data based on period/scope here.
+    // For now, we use the passed initialRankings as a base and mock the rest if needed,
+    // or just display the passed rankings regardless of tabs for MVP.
+    const displayRankings = initialRankings.length > 0 ? initialRankings : []
 
     return (
         <CardShell
@@ -75,37 +73,41 @@ export function RankingsWidget() {
             </div>
 
             {/* Summary */}
-            <div className="text-sm text-gray-600 mb-4 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-                You are <span className="font-bold text-brand-blue">#{userRank?.rank}</span> in your {scope.toLowerCase()} this {period.toLowerCase()} 🎉
-            </div>
+            {userRank && (
+                <div className="text-sm text-gray-600 mb-4 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                    You are <span className="font-bold text-brand-blue">#{userRank}</span> in your {scope.toLowerCase()} this {period.toLowerCase()} 🎉
+                </div>
+            )}
 
             {/* List */}
             <div className="space-y-1">
-                {rankings.map((user) => (
+                {displayRankings.map((user) => (
                     <div
                         key={user.rank}
                         className={cn(
                             "flex items-center gap-3 p-2 rounded-lg transition-colors",
-                            user.name === "Michal Prokes" ? "bg-brand-blue/5 border border-brand-blue/10" : "hover:bg-gray-50"
+                            user.isCurrentUser ? "bg-brand-blue/5 border border-brand-blue/10" : "hover:bg-gray-50"
                         )}
                     >
                         <div className={cn(
                             "w-6 h-6 rounded flex items-center justify-center text-xs font-bold",
-                            user.color,
-                            user.rank <= 3 ? "text-white shadow-sm" : ""
+                            user.rank === 1 ? "bg-yellow-400 text-white shadow-sm" :
+                                user.rank === 2 ? "bg-gray-300 text-white shadow-sm" :
+                                    user.rank === 3 ? "bg-amber-600 text-white shadow-sm" :
+                                        "bg-gray-100 text-gray-600"
                         )}>
                             {user.rank}
                         </div>
 
                         <Avatar className="h-8 w-8 border border-gray-100">
-                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} />
+                            <AvatarImage src={user.avatarUrl} />
                             <AvatarFallback>{user.name[0]}</AvatarFallback>
                         </Avatar>
 
                         <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium truncate text-gray-900 flex items-center gap-1">
                                 {user.name}
-                                {user.name === "Michal Prokes" && <span className="text-[10px] bg-brand-blue text-white px-1 rounded">YOU</span>}
+                                {user.isCurrentUser && <span className="text-[10px] bg-brand-blue text-white px-1 rounded">YOU</span>}
                             </div>
                             <div className="text-xs text-gray-500">Running</div>
                         </div>
@@ -113,6 +115,11 @@ export function RankingsWidget() {
                         <div className="text-sm font-bold text-gray-900">{user.value}</div>
                     </div>
                 ))}
+                {displayRankings.length === 0 && (
+                    <div className="text-center py-8 text-gray-500 text-sm">
+                        No rankings available yet.
+                    </div>
+                )}
             </div>
         </CardShell>
     )
