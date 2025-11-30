@@ -158,6 +158,11 @@ async function main() {
     })
     console.log(`Created sport: ${createdSport.name}`)
   }
+
+  // Seed User
+  const { seedUser } = require('./seed-user')
+  await seedUser(prisma)
+
   console.log('Seeding finished.')
 }
 
