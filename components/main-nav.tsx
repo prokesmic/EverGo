@@ -106,7 +106,7 @@ export function MainNav() {
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
-                                        <Link href={`/profile/${session.user?.name?.toLowerCase().replace(/\s+/g, '') || 'me'}`}>Profile</Link>
+                                        <Link href={`/profile/${session.user?.username || session.user?.name?.toLowerCase().replace(/\s+/g, '') || 'me'}`}>Profile</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                         <Link href="/settings">Settings</Link>

@@ -93,9 +93,19 @@ export const authOptions: NextAuthOptions = {
         signIn: "/login",
     },
     callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id
+                token.username = user.username
+                token.picture = user.avatarUrl
+            }
+            return token
+        },
         async session({ session, token }) {
-            if (session.user && token.sub) {
-                // session.user.id = token.sub // Typescript error, need to extend Session type
+            if (session.user && token) {
+                session.user.id = token.id
+                session.user.username = token.username
+                session.user.image = token.picture
             }
             return session
         }
