@@ -12,7 +12,7 @@ import { HeroProfile } from "@/components/HeroProfile"
 import { RankingsStrip } from "@/components/RankingsStrip"
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
-import { Feed } from "@/components/feed/feed"
+
 
 /**
  * Home Dashboard Page
