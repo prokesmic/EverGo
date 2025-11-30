@@ -12,7 +12,7 @@ import { HeroProfile } from "@/components/HeroProfile"
 import { RankingsStrip } from "@/components/RankingsStrip"
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
-import { Activity, User, Discipline, Sport } from "@prisma/client"
+import { Feed } from "@/components/feed/feed"
 
 /**
  * Home Dashboard Page
@@ -194,6 +194,8 @@ export default async function HomePage() {
             trend: "same" as "up" | "down" | "same" // Mock trend
         }
     })
+
+    const rankingStats = (await Promise.all(rankingStatsPromises)).filter(r => r.rank > 0)
 
     // Mock rankings if empty for visualization
     const displayRankings = rankingStats.length > 0 ? rankingStats : [
