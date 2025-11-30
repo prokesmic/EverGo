@@ -12,14 +12,14 @@ import { TeamsWidget } from "@/components/widgets/teams-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
 
 interface ProfilePageProps {
-    params: {
+    params: Promise<{
         username: string
-    }
+    }>
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
     const session = await getServerSession(authOptions)
-    const username = params.username
+    const { username } = await params
 
     // Fetch user data with all necessary relations
     const user = await prisma.user.findUnique({
