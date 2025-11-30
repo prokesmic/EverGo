@@ -8,13 +8,29 @@ import { ActivitiesSummaryWidget } from "@/components/widgets/activities-summary
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { TeamsWidget } from "@/components/widgets/teams-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
+import { HeroProfile } from "@/components/HeroProfile"
 import { ActivityCard } from "@/components/feed/activity-card"
-import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Image, MapPin } from "lucide-react"
+import { Fragment } from "react"
+import { FeedComposer } from "@/components/feed/feed-composer"
+import { InsightCard } from "@/components/feed/insight-card"
+import { Activity, User, Discipline, Sport } from "@prisma/client"
 
+type ActivityWithRelations = Activity & {
+    user: User
+    discipline: Discipline & {
+        sport: Sport
+    }
+}
+
+/**
+ * Home Dashboard Page
+ * 
+ * Layout System:
+ * - Uses `PageGrid` component which implements a responsive 3-column grid (3-6-3 cols).
+ * - Left Sidebar: ActivitiesSummaryWidget, RankingsWidget
+ * - Center: Post Composer, Activity Feed (ActivityCard list)
+ * - Right Sidebar: CalendarWidget, TeamsWidget, BrandsWidget
+ */
 export default async function HomePage() {
     const session = await getServerSession(authOptions)
 
@@ -53,46 +69,58 @@ export default async function HomePage() {
     )
 
     return (
-        <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
-            {/* Create Post Input */}
-            <Card className="mb-6 border-gray-100 shadow-sm">
-                <CardContent className="p-4">
-                    <div className="flex gap-4">
-                        <Avatar>
-                            <AvatarImage src={session.user?.image || ""} />
-                            <AvatarFallback className="bg-brand-blue text-white">{session.user?.name?.[0] || "U"}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 space-y-4">
-                            <Input placeholder="What's new with your training?" className="bg-gray-50 border-gray-200 focus-visible:ring-brand-blue" />
-                            <div className="flex justify-between">
-                                <div className="flex gap-2">
-                                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-brand-blue hover:bg-blue-50">
-                                        <Image className="mr-2 h-4 w-4" />
-                                        Photo
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-brand-blue hover:bg-blue-50">
-                                        <MapPin className="mr-2 h-4 w-4" />
-                                        Location
-                                    </Button>
-                                </div>
-                                <Button size="sm" className="bg-brand-blue hover:bg-brand-blue-dark text-white font-medium px-6">Post</Button>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Activity Feed */}
-            <div className="space-y-6">
-                {activities.map((activity) => (
-                    <ActivityCard key={activity.id} activity={activity} />
-                ))}
-                {activities.length === 0 && (
-                    <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-gray-100">
-                        <p>No activities yet. Go log one!</p>
-                    </div>
-                )}
+        <div className="min-h-screen bg-background pb-20 md:pb-0">
+            <div className="max-w-[1400px] mx-auto px-4 pt-6">
+                <HeroProfile
+                    name={session.user?.name || "Athlete"}
+                    location="Prague, Czech Republic"
+                    primarySport="Running"
+                    avatarUrl={session.user?.image || ""}
+                    coverUrl="https://images.unsplash.com/photo-1552674605-46d536d2f6d1?q=80&w=2073&auto=format&fit=crop"
+                    weeklyDistanceKm={42.5}
+                    weeklyTimeMinutes={235}
+                    weeklyCalories={3450}
+                    rankClub={1}
+                    rankCity={12}
+                    streakDays={14}
+                />
             </div>
-        </PageGrid>
+
+            <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
+                {/* Create Post Input */}
+                <div className="mb-8">
+                    <FeedComposer userImage={session.user?.image} userName={session.user?.name} />
+                </div>
+
+                {/* Activity Feed */}
+                <div className="space-y-6">
+                    {activities.map((activity: ActivityWithRelations, index: number) => (
+                        <Fragment key={activity.id}>
+                            <ActivityCard activity={activity} />
+
+                            {/* Interleaved Insights */}
+                            {index === 0 && (
+                                <InsightCard
+                                    type="advice"
+                                    text="Run another 5 km this week to overtake Sarah and move to #3 in club rankings."
+                                    actionText="View rankings"
+                                />
+                            )}
+                            {index === 2 && (
+                                <InsightCard
+                                    type="trend"
+                                    text="This is your 2nd best week this year. Keep it up!"
+                                />
+                            )}
+                        </Fragment>
+                    ))}
+                    {activities.length === 0 && (
+                        <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-gray-100">
+                            <p>No activities yet. Go log one!</p>
+                        </div>
+                    )}
+                </div>
+            </PageGrid>
+        </div>
     )
 }
