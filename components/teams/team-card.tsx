@@ -1,9 +1,13 @@
-import { Team, Sport, TeamMember } from "@prisma/client"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+"use client"
+
+import { Team, Sport } from "@prisma/client"
+import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Users, MapPin, Trophy } from "lucide-react"
-import Link from "next/link"
+import { Users, MapPin } from "lucide-react"
+import { joinTeam } from "@/app/actions/team"
+import { useState } from "react"
+import { toast } from "sonner"
 
 type TeamWithRelations = Team & {
     sport: Sport
@@ -14,9 +18,30 @@ type TeamWithRelations = Team & {
 
 interface TeamCardProps {
     team: TeamWithRelations
+    isMember: boolean
 }
 
-export function TeamCard({ team }: TeamCardProps) {
+export function TeamCard({ team, isMember }: TeamCardProps) {
+    const [isLoading, setIsLoading] = useState(false)
+    const [hasJoined, setHasJoined] = useState(isMember)
+
+    const handleJoin = async () => {
+        setIsLoading(true)
+        try {
+            const result = await joinTeam(team.id)
+            if (result.success) {
+                toast.success("Joined team successfully!")
+                setHasJoined(true)
+            } else {
+                toast.error(result.error || "Failed to join team")
+            }
+        } catch (error) {
+            toast.error("Something went wrong")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
         <Card className="overflow-hidden hover:shadow-md transition-shadow">
             <div className="h-24 bg-gradient-to-r from-brand-blue to-brand-blue-dark relative">
@@ -39,9 +64,20 @@ export function TeamCard({ team }: TeamCardProps) {
                         </Avatar>
                     </div>
                     <div className="mt-4">
-                        <Button size="sm" variant="outline" className="text-brand-blue border-brand-blue hover:bg-blue-50">
-                            View Team
-                        </Button>
+                        {hasJoined ? (
+                            <Button size="sm" variant="outline" className="text-green-600 border-green-200 bg-green-50 hover:bg-green-100 cursor-default">
+                                Joined
+                            </Button>
+                        ) : (
+                            <Button
+                                size="sm"
+                                className="bg-brand-blue hover:bg-brand-blue-dark text-white"
+                                onClick={handleJoin}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? "Joining..." : "Join Team"}
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -58,7 +94,7 @@ export function TeamCard({ team }: TeamCardProps) {
                     <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2">
                         <div className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
-                            {team._count.members} Members
+                            {team._count.members + (hasJoined && !isMember ? 1 : 0)} Members
                         </div>
                         {team.location && (
                             <div className="flex items-center gap-1">

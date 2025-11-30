@@ -8,6 +8,8 @@ import { TeamCard } from "@/components/teams/team-card"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 export default async function TeamsPage() {
     const teams = await prisma.team.findMany({
@@ -57,6 +59,23 @@ export default async function TeamsPage() {
         </>
     )
 
+    const session = await getServerSession(authOptions)
+    let userTeamIds: string[] = []
+
+    if (session?.user?.email) {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            include: {
+                teamMemberships: {
+                    select: { teamId: true }
+                }
+            }
+        })
+        if (user) {
+            userTeamIds = user.teamMemberships.map((tm: any) => tm.teamId)
+        }
+    }
+
     return (
         <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
             <div className="flex items-center justify-between mb-6">
@@ -71,7 +90,11 @@ export default async function TeamsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {teams.map((team: any) => (
-                    <TeamCard key={team.id} team={team} />
+                    <TeamCard
+                        key={team.id}
+                        team={team}
+                        isMember={userTeamIds.includes(team.id)}
+                    />
                 ))}
             </div>
 

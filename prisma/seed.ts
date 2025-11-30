@@ -163,6 +163,10 @@ async function main() {
   const { seedUser } = require('./seed-user')
   await seedUser(prisma)
 
+  // Seed Competitors
+  const { seedCompetitors } = require('./seed-competitors')
+  await seedCompetitors(prisma)
+
   console.log('Seeding finished.')
 }
 
