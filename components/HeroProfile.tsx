@@ -117,8 +117,10 @@ export function HeroProfile({
                             Log Activity
                         </Link>
                     </Button>
-                    <Button size="lg" variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md font-medium">
-                        Join Event
+                    <Button asChild size="lg" variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md font-medium">
+                        <Link href="/challenges">
+                            Join Event
+                        </Link>
                     </Button>
                 </div>
             </div>
