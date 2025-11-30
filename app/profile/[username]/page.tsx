@@ -10,6 +10,7 @@ import { ActivitiesSummaryWidget } from "@/components/widgets/activities-summary
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { TeamsWidget } from "@/components/widgets/teams-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
+import { PersonalRecordsList } from "@/components/profile/personal-records-list"
 
 interface ProfilePageProps {
     params: Promise<{
@@ -165,6 +166,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 rankings={formattedRankings}
                 userRank={currentUserRanking?.position}
             />
+            <PersonalRecordsList userId={user.id} />
         </>
     )
 

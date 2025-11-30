@@ -8,6 +8,7 @@ import { ActivitiesSummaryWidget } from "@/components/widgets/activities-summary
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { TeamsWidget } from "@/components/widgets/teams-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
+import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
 import { HeroProfile } from "@/components/HeroProfile"
 import { RankingsStrip } from "@/components/RankingsStrip"
 import { CreatePostBox } from "@/components/feed/create-post-box"
@@ -166,6 +167,7 @@ export default async function HomePage() {
 
     const rightSidebar = (
         <>
+            <PartnerFinderWidget />
             <CalendarWidget />
             <TeamsWidget teams={formattedTeams} />
             <BrandsWidget />

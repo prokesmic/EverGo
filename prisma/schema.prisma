@@ -61,6 +61,10 @@ model User {
   productOfferViews   ProductOfferView[]
   stripeCustomerId    String?
 
+  // Social
+  createdPartnerRequests PartnerRequest[] @relation("createdRequests")
+  partnerRequestParticipations PartnerRequestParticipant[]
+
 }
 
 model UserStats {
@@ -161,6 +165,7 @@ model Sport {
   activities      Activity[]
   communities     Community[]
   challenges      Challenge[]
+  partnerRequests PartnerRequest[]
 }
 
 model Discipline {
@@ -798,6 +803,55 @@ model PushToken {
   createdAt   DateTime  @default(now())
   lastUsedAt  DateTime  @default(now())
   
+  @@index([token])
+}
+
+// --- Social Features Models ---
+
+model PartnerRequest {
+  id              String    @id @default(cuid())
+  creatorId       String
+  creator         User      @relation("createdRequests", fields: [creatorId], references: [id], onDelete: Cascade)
+  
+  sportId         String
+  sport           Sport     @relation(fields: [sportId], references: [id])
+  
+  title           String
+  description     String?
+  
+  // Logistics
+  date            DateTime
+  durationMinutes Int?
+  distanceKm      Float?
+  location        String    // e.g., "Central Park"
+  city            String?
+  
+  // Requirements
+  minParticipants Int       @default(2)
+  maxParticipants Int?
+  
+  status          String    @default("OPEN") // Enum: RequestStatus (OPEN, FULL, CANCELLED, COMPLETED)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  participants    PartnerRequestParticipant[]
+  
+  @@index([city, sportId, date])
+  @@index([creatorId])
+}
+
+model PartnerRequestParticipant {
+  id              String          @id @default(cuid())
+  requestId       String
+  request         PartnerRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status          String          @default("ACCEPTED") // Enum: ParticipantStatus (PENDING, ACCEPTED, REJECTED)
+  joinedAt        DateTime        @default(now())
+  
+  @@unique([requestId, userId])
   @@index([userId])
 }
 
