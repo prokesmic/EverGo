@@ -11,10 +11,6 @@ interface HeroProfileProps {
     weeklyDistanceKm: number
     weeklyTimeMinutes: number
     weeklyCalories: number
-    rankClub?: number
-    rankCity?: number
-    rankCountry?: number
-    rankWorld?: number
     streakDays?: number
 }
 
@@ -35,10 +31,6 @@ export function HeroProfile({
     weeklyDistanceKm,
     weeklyTimeMinutes,
     weeklyCalories,
-    rankClub,
-    rankCity,
-    rankCountry,
-    rankWorld,
     streakDays
 }: HeroProfileProps) {
     const sportColor = sportColors[primarySport.toLowerCase()] || sportColors.default
@@ -104,22 +96,14 @@ export function HeroProfile({
                         </div>
                     </div>
 
-                    {(rankClub || rankCity || streakDays) && (
+                    {streakDays && (
                         <div className="hidden md:block border-l border-white/20 pl-8">
                             <div className="text-xs uppercase tracking-widest text-white/60 font-semibold mb-1">Status</div>
                             <div className="space-y-1">
-                                {rankClub && (
-                                    <div className="flex items-center gap-2 text-sm font-medium">
-                                        <Trophy className="h-4 w-4 text-yellow-400" />
-                                        <span>#{rankClub} Club Ranking</span>
-                                    </div>
-                                )}
-                                {streakDays && (
-                                    <div className="flex items-center gap-2 text-sm font-medium">
-                                        <Flame className="h-4 w-4 text-orange-500" />
-                                        <span>{streakDays} Day Streak</span>
-                                    </div>
-                                )}
+                                <div className="flex items-center gap-2 text-sm font-medium">
+                                    <Flame className="h-4 w-4 text-orange-500" />
+                                    <span>{streakDays} Day Streak</span>
+                                </div>
                             </div>
                         </div>
                     )}

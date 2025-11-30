@@ -9,6 +9,7 @@ import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { TeamsWidget } from "@/components/widgets/teams-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
 import { HeroProfile } from "@/components/HeroProfile"
+import { RankingsStrip } from "@/components/RankingsStrip"
 import { ActivityCard } from "@/components/feed/activity-card"
 import { Fragment } from "react"
 import { FeedComposer } from "@/components/feed/feed-composer"
@@ -193,6 +194,31 @@ export default async function HomePage() {
         </>
     )
 
+    // Fetch Multi-Scope Rankings for Strip
+    const scopes = ["CLUB", "CITY", "GLOBAL"]
+    const rankingStatsPromises = scopes.map(async (scope) => {
+        const rank = await prisma.ranking.findFirst({
+            where: {
+                userId: user.id,
+                scope: scope,
+                period: "WEEKLY"
+            }
+        })
+
+        // Mock total participants for now as we don't have easy count in this query
+        // In real app, we would query count of rankings in that scope
+        const totalParticipants = scope === "CLUB" ? 24 : scope === "CITY" ? 150 : 5000
+
+        return {
+            scope: scope as "CLUB" | "CITY" | "COUNTRY" | "GLOBAL",
+            rank: rank?.position || 0,
+            totalParticipants,
+            trend: "same" as "up" | "down" | "same" // Mock trend
+        }
+    })
+
+    const rankingStats = (await Promise.all(rankingStatsPromises)).filter(r => r.rank > 0)
+
     return (
         <div className="min-h-screen bg-background pb-20 md:pb-0">
             <div className="max-w-[1400px] mx-auto px-4 pt-6">
@@ -205,10 +231,10 @@ export default async function HomePage() {
                     weeklyDistanceKm={parseFloat(weeklyDistance.toFixed(1))}
                     weeklyTimeMinutes={Math.round(weeklyTime)}
                     weeklyCalories={weeklyCalories}
-                    rankClub={1}
-                    rankCity={12}
                     streakDays={14}
                 />
+
+                <RankingsStrip rankings={rankingStats} />
             </div>
 
             <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
