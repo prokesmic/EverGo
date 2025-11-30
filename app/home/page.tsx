@@ -75,8 +75,8 @@ export default async function HomePage() {
                     name={session.user?.name || "Athlete"}
                     location="Prague, Czech Republic"
                     primarySport="Running"
-                    avatarUrl={session.user?.image || "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Chris_Hemsworth_by_Gage_Skidmore.jpg/800px-Chris_Hemsworth_by_Gage_Skidmore.jpg"}
-                    coverUrl="https://images.unsplash.com/photo-1496692052106-d37cb66ab80c?q=80&w=2000&auto=format&fit=crop"
+                    avatarUrl="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Chris_Hemsworth_by_Gage_Skidmore_2_%28cropped%29.jpg/800px-Chris_Hemsworth_by_Gage_Skidmore_2_%28cropped%29.jpg"
+                    coverUrl="https://images.unsplash.com/photo-1534234828569-1f3553dadd3d?q=80&w=2000&auto=format&fit=crop"
                     weeklyDistanceKm={42.5}
                     weeklyTimeMinutes={235}
                     weeklyCalories={3450}
