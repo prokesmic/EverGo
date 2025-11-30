@@ -42,7 +42,7 @@ export function RankingsStrip({ rankings }: RankingsStripProps) {
     }
 
     return (
-        <div className="w-full bg-white/80 backdrop-blur-md border border-white/20 shadow-sm rounded-xl py-3 px-6 mb-8 flex items-center justify-between overflow-x-auto no-scrollbar gap-8">
+        <div className="w-full bg-white/80 backdrop-blur-md border border-white/20 shadow-sm rounded-xl py-3 px-6 mb-6 flex items-center justify-between overflow-x-auto no-scrollbar gap-8">
             {rankings.map((stat, index) => (
                 <div key={stat.scope} className="flex items-center gap-3 min-w-fit group">
                     <div className={cn(

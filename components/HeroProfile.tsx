@@ -42,7 +42,7 @@ export function HeroProfile({
     }
 
     return (
-        <div className="relative w-full h-64 md:h-72 rounded-2xl overflow-hidden shadow-lg mb-8 group">
+        <div className="relative w-full h-64 md:h-72 rounded-2xl overflow-hidden shadow-lg mb-4 group">
             {/* Background Image & Gradient */}
             <div className="absolute inset-0">
                 <img
@@ -59,7 +59,7 @@ export function HeroProfile({
                 <div className="flex items-center gap-6 w-full md:w-auto">
                     <div className="relative">
                         <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-white/20 shadow-xl ring-2 ring-brand-blue/50">
-                            <AvatarImage src={avatarUrl} alt={name} />
+                            <AvatarImage src={avatarUrl} alt={name} className="object-cover object-center h-full w-full" />
                             <AvatarFallback className="text-3xl bg-brand-blue text-white font-bold">
                                 {name.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
