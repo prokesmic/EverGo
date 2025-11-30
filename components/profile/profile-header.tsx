@@ -1,7 +1,9 @@
+import { User } from "@prisma/client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { MapPin, Calendar, Link as LinkIcon, Edit, UserPlus, MoreHorizontal } from "lucide-react"
-import { User } from "@prisma/client"
+import { MapPin, Calendar, Settings, MessageSquare } from "lucide-react"
+import { format } from "date-fns"
+import Link from "next/link"
 
 interface ProfileHeaderProps {
     user: User & {
@@ -17,88 +19,86 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ user, isCurrentUser, isFollowing }: ProfileHeaderProps) {
     return (
-        <div className="relative mb-6">
+        <div className="bg-white shadow-sm mb-6 rounded-lg overflow-hidden border border-gray-100">
             {/* Cover Photo */}
-            <div className="h-48 md:h-64 w-full bg-gradient-to-r from-brand-blue to-brand-green overflow-hidden rounded-b-lg">
-                {user.coverPhotoUrl && (
-                    <img
-                        src={user.coverPhotoUrl}
-                        alt="Cover"
-                        className="w-full h-full object-cover"
-                    />
-                )}
-            </div>
+            <div className="relative h-64 bg-gray-200 w-full">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+                {/* Placeholder for cover photo */}
+                <div className="w-full h-full bg-gradient-to-r from-blue-400 to-blue-600"></div>
 
-            <div className="px-4 md:px-8">
-                <div className="flex flex-col md:flex-row items-start md:items-end -mt-12 md:-mt-16 mb-4">
-                    {/* Avatar */}
-                    <div className="relative">
-                        <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-background">
-                            <AvatarImage src={user.avatarUrl || ""} alt={user.displayName} />
-                            <AvatarFallback className="text-2xl md:text-4xl bg-brand-blue text-white">
-                                {user.displayName[0].toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
+                <div className="absolute bottom-0 left-0 w-full p-6 z-20 flex items-end gap-6 container max-w-[1400px] mx-auto">
+                    <Avatar className="h-32 w-32 border-4 border-white shadow-lg -mb-12">
+                        <AvatarImage src={user.avatarUrl || ""} alt={user.displayName} />
+                        <AvatarFallback className="text-4xl bg-brand-blue text-white">
+                            {user.displayName[0]}
+                        </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1 text-white pb-2">
+                        <h1 className="text-3xl font-bold">{user.displayName}</h1>
+                        <p className="text-white/80">@{user.username}</p>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex-1 w-full md:w-auto flex justify-end mt-4 md:mt-0 md:mb-4 gap-2">
+                    <div className="flex gap-3 pb-2">
                         {isCurrentUser ? (
-                            <Button variant="outline" size="sm">
-                                <Edit className="w-4 h-4 mr-2" />
-                                Edit Profile
+                            <Button variant="secondary" size="sm" asChild className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm">
+                                <Link href="/settings">
+                                    <Settings className="h-4 w-4 mr-2" />
+                                    Edit Profile
+                                </Link>
                             </Button>
                         ) : (
                             <>
-                                <Button variant={isFollowing ? "outline" : "default"} size="sm">
+                                <Button size="sm" className={isFollowing ? "bg-white/20 hover:bg-white/30 text-white" : "bg-brand-green hover:bg-brand-green-dark text-white border-none"}>
                                     {isFollowing ? "Following" : "Follow"}
                                 </Button>
-                                <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="w-5 h-5" />
+                                <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm">
+                                    <MessageSquare className="h-4 w-4 mr-2" />
+                                    Message
                                 </Button>
                             </>
                         )}
                     </div>
                 </div>
+            </div>
 
-                {/* User Info */}
-                <div className="space-y-4">
-                    <div>
-                        <h1 className="text-2xl font-bold">{user.displayName}</h1>
-                        <p className="text-muted-foreground">@{user.username}</p>
+            {/* Stats Bar */}
+            <div className="pt-16 pb-6 container max-w-[1400px] mx-auto px-6">
+                <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
+                    <div className="flex gap-8">
+                        <div className="text-center">
+                            <div className="text-xl font-bold text-gray-900">{user._count.activities}</div>
+                            <div className="text-xs text-gray-500 uppercase tracking-wide">Activities</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-xl font-bold text-gray-900">{user._count.followers}</div>
+                            <div className="text-xs text-gray-500 uppercase tracking-wide">Followers</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-xl font-bold text-gray-900">{user._count.following}</div>
+                            <div className="text-xs text-gray-500 uppercase tracking-wide">Following</div>
+                        </div>
                     </div>
 
-                    {user.bio && <p className="max-w-2xl">{user.bio}</p>}
-
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                    <div className="flex gap-6 text-sm text-gray-600">
                         {user.city && (
                             <div className="flex items-center gap-1">
-                                <MapPin className="w-4 h-4" />
-                                <span>{user.city}, {user.country}</span>
+                                <MapPin className="h-4 w-4 text-gray-400" />
+                                {user.city}{user.country ? `, ${user.country}` : ""}
                             </div>
                         )}
                         <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex gap-6 py-4 border-y">
-                        <div className="flex flex-col items-center">
-                            <span className="font-bold text-lg">{user._count.activities}</span>
-                            <span className="text-xs text-muted-foreground uppercase tracking-wider">Activities</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <span className="font-bold text-lg">{user._count.followers}</span>
-                            <span className="text-xs text-muted-foreground uppercase tracking-wider">Followers</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <span className="font-bold text-lg">{user._count.following}</span>
-                            <span className="text-xs text-muted-foreground uppercase tracking-wider">Following</span>
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            Joined {format(new Date(user.createdAt), "MMMM yyyy")}
                         </div>
                     </div>
                 </div>
+
+                {user.bio && (
+                    <div className="mt-6 max-w-2xl">
+                        <p className="text-gray-700">{user.bio}</p>
+                    </div>
+                )}
             </div>
         </div>
     )

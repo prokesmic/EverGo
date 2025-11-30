@@ -27,62 +27,71 @@ export function MainNav() {
     ]
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 items-center">
-                <div className="mr-4 hidden md:flex">
-                    <Link href="/" className="mr-6 flex items-center space-x-2">
-                        <span className="hidden font-bold sm:inline-block text-brand-blue text-xl">EverGo</span>
+        <header className="bg-gradient-to-r from-[#0078D4] to-[#005A9E] text-white shadow-md sticky top-0 z-50">
+            <div className="max-w-[1400px] mx-auto px-4 h-14 flex items-center justify-between">
+                {/* Logo */}
+                <div className="flex items-center gap-8">
+                    <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
+                        <span className="text-2xl">⚡</span>
+                        EverGo
                     </Link>
-                    <nav className="flex items-center space-x-6 text-sm font-medium">
-                        {navItems.map((item) => (
+                </div>
+
+                {/* Centered Navigation */}
+                <nav className="hidden md:flex items-center gap-1">
+                    {navItems.map((item) => {
+                        const isActive = pathname?.startsWith(item.href)
+                        return (
                             <Link
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "transition-colors hover:text-foreground/80 flex items-center gap-2",
-                                    pathname?.startsWith(item.href) ? "text-foreground" : "text-foreground/60"
+                                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                                    isActive
+                                        ? "bg-white/20 text-white"
+                                        : "text-white/80 hover:bg-white/10 hover:text-white"
                                 )}
                             >
                                 <item.icon className="h-4 w-4" />
                                 {item.label}
                             </Link>
-                        ))}
-                    </nav>
-                </div>
+                        )
+                    })}
+                </nav>
 
-                <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-                    <div className="w-full flex-1 md:w-auto md:flex-none">
-                        <Button variant="outline" className="w-full justify-start text-muted-foreground md:w-[200px] lg:w-[300px]" asChild>
-                            <Link href="/search">
-                                <Search className="mr-2 h-4 w-4" />
-                                Search...
-                            </Link>
-                        </Button>
+                {/* Right Side Actions */}
+                <div className="flex items-center gap-4">
+                    {/* Search Bar */}
+                    <div className="hidden md:flex relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/60" />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="bg-black/20 border-none rounded-full pl-9 pr-4 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 w-64 transition-all"
+                        />
                     </div>
 
                     {session ? (
-                        <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" asChild>
+                        <div className="flex items-center gap-3">
+                            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" asChild>
                                 <Link href="/activity/create">
                                     <PlusSquare className="h-5 w-5" />
                                     <span className="sr-only">New Activity</span>
                                 </Link>
                             </Button>
-                            <Button variant="ghost" size="icon">
+
+                            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full">
                                 <Bell className="h-5 w-5" />
-                                <span className="sr-only">Notifications</span>
-                            </Button>
-                            <Button variant="ghost" size="icon">
-                                <MessageSquare className="h-5 w-5" />
-                                <span className="sr-only">Messages</span>
                             </Button>
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                                        <Avatar className="h-8 w-8">
+                                    <Button variant="ghost" className="relative h-9 w-9 rounded-full border-2 border-white/20 p-0 overflow-hidden hover:border-white/50 transition-colors">
+                                        <Avatar className="h-full w-full">
                                             <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
-                                            <AvatarFallback>{session.user?.name?.[0] || "U"}</AvatarFallback>
+                                            <AvatarFallback className="bg-brand-blue-dark text-white">
+                                                {session.user?.name?.[0] || "U"}
+                                            </AvatarFallback>
                                         </Avatar>
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -97,7 +106,7 @@ export function MainNav() {
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
-                                        <Link href="/profile">Profile</Link>
+                                        <Link href={`/profile/${session.user?.name?.toLowerCase().replace(/\s+/g, '') || 'me'}`}>Profile</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                         <Link href="/settings">Settings</Link>
@@ -111,10 +120,10 @@ export function MainNav() {
                         </div>
                     ) : (
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" asChild>
+                            <Button variant="ghost" asChild className="text-white hover:bg-white/10 hover:text-white">
                                 <Link href="/login">Login</Link>
                             </Button>
-                            <Button asChild className="bg-brand-blue hover:bg-brand-blue-dark">
+                            <Button asChild className="bg-white text-brand-blue hover:bg-white/90 font-semibold">
                                 <Link href="/register">Sign Up</Link>
                             </Button>
                         </div>

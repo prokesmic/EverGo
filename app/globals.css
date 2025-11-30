@@ -41,7 +41,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  
+
   /* EverGo Custom Colors */
   --color-brand-blue: var(--brand-blue);
   --color-brand-blue-dark: var(--brand-blue-dark);
@@ -54,7 +54,7 @@
 
 :root {
   --radius: 0.5rem;
-  
+
   /* EverGo Colors (Light Mode) */
   --brand-blue: #0078D4;
   --brand-blue-dark: #005A9E;
@@ -64,46 +64,47 @@
   --ranking-silver: #C0C0C0;
   --ranking-bronze: #CD7F32;
 
-  --background: #F5F5F5;
-  --foreground: #1A1A1A;
-  
+  --background: #E8E8E8;
+  /* Updated background color */
+  --foreground: #333333;
+
   --card: #FFFFFF;
-  --card-foreground: #1A1A1A;
-  
+  --card-foreground: #333333;
+
   --popover: #FFFFFF;
-  --popover-foreground: #1A1A1A;
-  
+  --popover-foreground: #333333;
+
   --primary: #0078D4;
   --primary-foreground: #FFFFFF;
-  
+
   --secondary: #F0F0F0;
-  --secondary-foreground: #1A1A1A;
-  
+  --secondary-foreground: #333333;
+
   --muted: #F0F0F0;
   --muted-foreground: #666666;
-  
+
   --accent: #00A651;
   --accent-foreground: #FFFFFF;
-  
+
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: #FFFFFF;
 
   --border: #E0E0E0;
   --input: #E0E0E0;
   --ring: #0078D4;
-  
+
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  
+
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #1A1A1A;
+  --sidebar-foreground: #333333;
   --sidebar-primary: #0078D4;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #F0F0F0;
-  --sidebar-accent-foreground: #1A1A1A;
+  --sidebar-accent-foreground: #333333;
   --sidebar-border: #E0E0E0;
   --sidebar-ring: #0078D4;
 }
@@ -111,38 +112,38 @@
 .dark {
   --background: #121212;
   --foreground: #E0E0E0;
-  
+
   --card: #1E1E1E;
   --card-foreground: #E0E0E0;
-  
+
   --popover: #1E1E1E;
   --popover-foreground: #E0E0E0;
-  
+
   --primary: #0078D4;
   --primary-foreground: #FFFFFF;
-  
+
   --secondary: #2D2D2D;
   --secondary-foreground: #E0E0E0;
-  
+
   --muted: #2D2D2D;
   --muted-foreground: #A0A0A0;
-  
+
   --accent: #00A651;
   --accent-foreground: #FFFFFF;
-  
+
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: #FFFFFF;
 
   --border: #333333;
   --input: #333333;
   --ring: #0078D4;
-  
+
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  
+
   --sidebar: #1E1E1E;
   --sidebar-foreground: #E0E0E0;
   --sidebar-primary: #0078D4;
@@ -157,6 +158,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

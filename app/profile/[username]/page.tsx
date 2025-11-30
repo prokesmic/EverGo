@@ -4,6 +4,12 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { ProfileHeader } from "@/components/profile/profile-header"
 import { ProfileContent } from "@/components/profile/profile-content"
+import { PageGrid } from "@/components/layout/page-grid"
+import { RankingsWidget } from "@/components/widgets/rankings-widget"
+import { ActivitiesSummaryWidget } from "@/components/widgets/activities-summary-widget"
+import { CalendarWidget } from "@/components/widgets/calendar-widget"
+import { TeamsWidget } from "@/components/widgets/teams-widget"
+import { BrandsWidget } from "@/components/widgets/brands-widget"
 
 interface ProfilePageProps {
     params: {
@@ -73,6 +79,21 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     const isCurrentUser = session?.user?.email === user.email
     const isFollowing = user.followers.length > 0
 
+    const leftSidebar = (
+        <>
+            <ActivitiesSummaryWidget />
+            <RankingsWidget />
+        </>
+    )
+
+    const rightSidebar = (
+        <>
+            <CalendarWidget />
+            <TeamsWidget />
+            <BrandsWidget />
+        </>
+    )
+
     return (
         <div className="min-h-screen bg-background pb-20 md:pb-0">
             <ProfileHeader
@@ -80,7 +101,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 isCurrentUser={isCurrentUser}
                 isFollowing={isFollowing}
             />
-            <ProfileContent profile={user} />
+
+            <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
+                <ProfileContent profile={user} />
+            </PageGrid>
         </div>
     )
 }
