@@ -30,12 +30,120 @@ model User {
   rankings        Ranking[]
   posts           Post[]
   comments        Comment[]
-  reactions       Reaction[]
+  likes           Like[]
   followers       Follow[]  @relation("following")
   following       Follow[]  @relation("follower")
   teamMemberships TeamMember[]
   sentFriendRequests     FriendRequest[] @relation("requester")
   receivedFriendRequests FriendRequest[] @relation("addressee")
+  
+  teamPosts              TeamPost[]
+  teamJoinRequests       TeamJoinRequest[]
+  communityMemberships   CommunityMember[]
+  communityPosts         CommunityPost[]
+  
+  stats           UserStats?
+  sportStats      UserSportStats[]
+
+  // Gamification
+  streak          UserStreak?
+  badges          UserBadge[]
+  challengeParticipations ChallengeParticipant[]
+
+  // Notifications
+  notifications       Notification[]
+  notificationSettings NotificationSettings?
+  pushTokens          PushToken[]
+
+  // Monetization
+  subscription        Subscription?
+  gear                UserGear[]
+  productOfferViews   ProductOfferView[]
+  stripeCustomerId    String?
+
+}
+
+model UserStats {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Aggregate metrics (updated after each activity)
+  totalDistance   Float     @default(0)    // Total km across all sports
+  totalDuration   Int       @default(0)    // Total seconds
+  totalActivities Int       @default(0)
+  totalCalories   Int       @default(0)
+  
+  // Sport Index (composite score 0-1000)
+  sportIndex           Int       @default(0)
+  sportIndexBest       Int       @default(0)
+  sportIndexUpdatedAt  DateTime  @default(now())
+  
+  // Precomputed ranks (updated by background job)
+  globalRank      Int?
+  countryRank     Int?
+  cityRank        Int?
+  
+  // Location for regional rankings
+  country         String?
+  city            String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([sportIndex(sort: Desc)])
+  @@index([country, sportIndex(sort: Desc)])
+  @@index([city, sportIndex(sort: Desc)])
+}
+
+model UserSportStats {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sportId         String
+  sport           Sport     @relation(fields: [sportId], references: [id])
+  
+  // Sport-specific metrics
+  totalDistance   Float     @default(0)
+  totalDuration   Int       @default(0)
+  totalActivities Int       @default(0)
+  bestPace        Float?    // For running/cycling (min/km)
+  bestTime        Int?      // For timed events (seconds)
+  bestScore       Float?    // For scored sports (golf handicap, etc.)
+  
+  // Sport-specific score (0-1000)
+  performanceScore Int      @default(0)
+  
+  // Precomputed ranks for this sport
+  globalRank      Int?
+  countryRank     Int?
+  cityRank        Int?
+  friendsRank     Int?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@unique([userId, sportId])
+  @@index([sportId, performanceScore(sort: Desc)])
+  @@index([sportId, globalRank])
+}
+
+model RankingCache {
+  id              String        @id @default(cuid())
+  
+  // Scope definition
+  sportId         String?       // null = overall sport index
+  scope           String        // Enum: RankingScope (GLOBAL, COUNTRY, CITY, FRIENDS, TEAM)
+  scopeValue      String?       // "Prague", "Czech Republic", null for global
+  period          String        @default("ALL_TIME") // Enum: RankingPeriod
+  
+  // Cached leaderboard data (top 100)
+  leaderboard     String        // Json: [{userId, rank, score, name, avatar}, ...]
+  totalUsers      Int
+  
+  calculatedAt    DateTime      @default(now())
+  
+  @@unique([sportId, scope, scopeValue, period])
 }
 
 model Sport {
@@ -49,6 +157,10 @@ model Sport {
   disciplines     Discipline[]
   userSports      UserSport[]
   teams           Team[]
+  userSportStats  UserSportStats[]
+  activities      Activity[]
+  communities     Community[]
+  challenges      Challenge[]
 }
 
 model Discipline {
@@ -87,35 +199,62 @@ model Activity {
   id              String    @id @default(cuid())
   userId          String
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Sport & Discipline
   disciplineId    String
   discipline      Discipline @relation(fields: [disciplineId], references: [id])
+  // Note: We are keeping disciplineId as required for now based on existing schema, 
+  // but spec said optional. Keeping it required seems safer for existing logic unless we refactor.
+  // Spec added sportId directly to Activity. Existing schema relies on Discipline->Sport.
+  // Let's add sportId as well for easier querying, but make it optional or derived?
+  // Spec: sportId String, sport Sport.
+  // Let's add it.
+  sportId         String?   // Making optional to avoid breaking existing data immediately, or we can fill it.
+  sport           Sport?    @relation(fields: [sportId], references: [id])
   
   title           String
   description     String?
   activityDate    DateTime
+  
+  // Metrics
   durationSeconds Int?
   distanceMeters  Float?
   elevationGain   Float?
   caloriesBurned  Int?
   avgHeartRate    Int?
   maxHeartRate    Int?
+  avgPace         Float?      // seconds per km
+  avgSpeed        Float?      // km/h
   
-  primaryValue    Float       // The main result (time in seconds, score, etc.)
+  primaryValue    Float       // The main result (time in seconds, score, etc.) - Keeping for backward compat
+  score           Float?
   
-  gpsRoute        String?     // Json is not supported in SQLite in the same way, but Prisma maps it to String usually. Wait, Prisma supports Json in SQLite.
-  photos          String      // SQLite doesn't support String[], we need to serialize it or use a separate table. For simplicity, let's use a comma-separated string or JSON string.
+  // GPS Data
+  gpsRoute        String?     // Storing as String (JSON) for SQLite compatibility
+  startLocation   String?     // Storing as String (JSON) for SQLite compatibility
+  mapImageUrl     String?
   
+  // Media
+  photos          String      // JSON array of URLs
+  
+  // Source
   source          String      @default("MANUAL") // Enum: ActivitySource
   externalId      String?
-  visibility      String      @default("PUBLIC") // Enum: PrivacyLevel
+  
+  // Weather
+  weatherConditions String?   // JSON
+  
+  visibility      String      @default("PUBLIC") // Enum: Visibility
   
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
   post            Post?
+  gearItems       ActivityGear[]
   
-  @@index([userId, activityDate])
+  @@index([userId, activityDate(sort: Desc)])
   @@index([disciplineId])
+  @@index([sportId])
 }
 
 model Ranking {
@@ -183,74 +322,630 @@ model FriendRequest {
 }
 
 model Post {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  postType    String    // Enum: PostType
-  content     String?
-  photos      String    // SQLite doesn't support String[], using String (JSON/CSV)
+  postType      String      // Enum: PostType (ACTIVITY, STATUS, PHOTO, ACHIEVEMENT, MILESTONE)
+  content       String?
   
-  activityId  String?   @unique
-  activity    Activity? @relation(fields: [activityId], references: [id])
+  // Activity-specific fields
+  activityId    String?     @unique
+  activity      Activity?   @relation(fields: [activityId], references: [id])
   
-  visibility  String    @default("PUBLIC") // Enum: PrivacyLevel
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  // Media
+  photos        String      // JSON array of URLs
+  mapImageUrl   String?
   
-  comments    Comment[]
-  reactions   Reaction[]
+  // Visibility
+  visibility    String      @default("PUBLIC") // Enum: Visibility
+  
+  // Engagement counts
+  likesCount    Int         @default(0)
+  commentsCount Int         @default(0)
+  sharesCount   Int         @default(0)
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  likes         Like[]
+  comments      Comment[]
+  
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      String   @default("LIKE") // Enum: ReactionType
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([postId, userId])
+  @@index([postId])
 }
 
 model Comment {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   postId    String
-  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   String
-  createdAt DateTime  @default(now())
-}
-
-model Reaction {
-  id           String    @id @default(cuid())
-  postId       String
-  post         Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId       String
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reactionType String    // Enum: ReactionType
-  createdAt    DateTime  @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  @@unique([postId, userId])
+  content   String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt // Added updatedAt
+  
+  @@index([postId, createdAt])
 }
 
 model Team {
-  id            String    @id @default(cuid())
-  name          String
-  slug          String    @unique
-  description   String?
-  sportId       String
-  sport         Sport     @relation(fields: [sportId], references: [id])
-  logoUrl       String?
-  coverPhotoUrl String?
-  location      String?
-  teamType      String    // Enum: TeamType
-  isVerified    Boolean   @default(false)
-  createdAt     DateTime  @default(now())
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  description     String?
   
-  members       TeamMember[]
+  // Branding
+  logoUrl         String?
+  coverPhotoUrl   String?
+  
+  // Sport association
+  sportId         String
+  sport           Sport       @relation(fields: [sportId], references: [id])
+  
+  // Location
+  city            String?
+  country         String?
+  
+  // Settings
+  teamType        String      @default("CLUB") // Enum: TeamType
+  isPublic        Boolean     @default(true)
+  isVerified      Boolean     @default(false)
+  
+  // Stats (aggregated)
+  memberCount     Int         @default(0)
+  totalDistance   Float       @default(0)
+  totalActivities Int         @default(0)
+  avgSportIndex   Float       @default(0)
+  
+  // Rankings
+  globalRank      Int?
+  countryRank     Int?
+  cityRank        Int?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  members         TeamMember[]
+  posts           TeamPost[]
+  joinRequests    TeamJoinRequest[]
+  
+  @@index([sportId])
+  @@index([city, sportId])
 }
 
 model TeamMember {
+  id          String      @id @default(cuid())
+  teamId      String
+  team        Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  role        String      @default("MEMBER") // Enum: TeamRole
+  jerseyNumber String?
+  position    String?
+  
+  joinedAt    DateTime    @default(now())
+  
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+model TeamJoinRequest {
+  id          String              @id @default(cuid())
+  teamId      String
+  team        Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status      String              @default("PENDING") // Enum: JoinRequestStatus
+  message     String?
+  
+  createdAt   DateTime            @default(now())
+  reviewedAt  DateTime?
+  reviewedBy  String?
+  
+  @@unique([teamId, userId])
+}
+
+model TeamPost {
   id          String    @id @default(cuid())
   teamId      String
   team        Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role        String    // Enum: TeamRole
-  jerseyNumber String?
-  position    String?
-  joinedAt    DateTime  @default(now())
   
-  @@unique([teamId, userId])
+  postType    String    @default("UPDATE") // Enum: TeamPostType
+  content     String
+  photos      String    // JSON array
+  
+  isPinned    Boolean   @default(false)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([teamId, createdAt(sort: Desc)])
+}
+
+model Community {
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  description     String?
+  
+  // Branding
+  coverPhotoUrl   String?
+  
+  // Topic/Focus
+  sportId         String?     // Optional - can be multi-sport
+  sport           Sport?      @relation(fields: [sportId], references: [id])
+  topic           String?     // e.g., "Trail Running", "Beginner Cyclists"
+  
+  // Location (optional)
+  city            String?
+  country         String?
+  
+  // Settings
+  isPublic        Boolean     @default(true)
+  
+  // Stats
+  memberCount     Int         @default(0)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  members         CommunityMember[]
+  posts           CommunityPost[]
+  
+  @@index([sportId])
+  @@index([city])
+}
+
+model CommunityMember {
+  id            String          @id @default(cuid())
+  communityId   String
+  community     Community       @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  role          String          @default("MEMBER") // Enum: CommunityRole
+  
+  joinedAt      DateTime        @default(now())
+  
+  @@unique([communityId, userId])
+  @@index([userId])
+}
+
+model CommunityPost {
+  id            String    @id @default(cuid())
+  communityId   String
+  community     Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  content       String
+  photos        String    // JSON array
+  
+  likesCount    Int       @default(0)
+  commentsCount Int       @default(0)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([communityId, createdAt(sort: Desc)])
+}
+
+// --- Gamification Models ---
+
+model Challenge {
+  id              String          @id @default(cuid())
+  
+  // Basic info
+  title           String
+  description     String
+  imageUrl        String?
+  
+  // Duration
+  startDate       DateTime
+  endDate         DateTime
+  
+  // Target
+  targetType      ChallengeTarget
+  targetValue     Float           // e.g., 50 for "Run 50km"
+  targetUnit      String          // e.g., "km", "workouts", "minutes"
+  
+  // Sport filter (optional)
+  sportId         String?
+  sport           Sport?          @relation(fields: [sportId], references: [id])
+  
+  // Scope
+  scope           ChallengeScope  @default(GLOBAL)
+  teamId          String?         // If team-specific
+  communityId     String?         // If community-specific
+  
+  // Reward
+  badgeId         String?         // Badge awarded on completion
+  badge           Badge?          @relation(fields: [badgeId], references: [id])
+  
+  // Sponsorship
+  sponsorName     String?
+  sponsorLogoUrl  String?
+  sponsorReward   String?         // e.g., "10% off Nike shoes"
+  
+  // Status
+  isActive        Boolean         @default(true)
+  
+  createdAt       DateTime        @default(now())
+  
+  participants    ChallengeParticipant[]
+  
+  @@index([isActive, endDate])
+  @@index([sportId])
+}
+
+enum ChallengeTarget {
+  DISTANCE        // Total distance
+  DURATION        // Total time
+  ACTIVITIES      // Number of workouts
+  CALORIES        // Calories burned
+  ELEVATION       // Elevation gain
+  STREAK          // Consecutive days
+}
+
+enum ChallengeScope {
+  GLOBAL
+  TEAM
+  COMMUNITY
+  PERSONAL
+}
+
+model ChallengeParticipant {
+  id            String    @id @default(cuid())
+  challengeId   String
+  challenge     Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Progress
+  currentValue  Float     @default(0)
+  isCompleted   Boolean   @default(false)
+  completedAt   DateTime?
+  
+  // Ranking within challenge
+  rank          Int?
+  
+  joinedAt      DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@unique([challengeId, userId])
+  @@index([challengeId, currentValue(sort: Desc)])
+}
+
+model UserStreak {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Daily activity streak
+  currentStreak   Int       @default(0)
+  longestStreak   Int       @default(0)
+  lastActivityDate DateTime?
+  
+  // Weekly goal streak
+  weeklyStreak    Int       @default(0)
+  weeklyGoal      Int       @default(3)  // Activities per week
+  weeklyProgress  Int       @default(0)  // Current week's count
+  weekStartDate   DateTime?
+  
+  updatedAt       DateTime  @updatedAt
+}
+
+model Badge {
+  id              String      @id @default(cuid())
+  
+  // Display
+  name            String
+  description     String
+  iconUrl         String
+  color           String      // Hex color for badge background
+  
+  // Category
+  category        BadgeCategory
+  
+  // Criteria
+  criteriaType    BadgeCriteria
+  criteriaValue   Float       // e.g., 100 for "Run 100km total"
+  sportId         String?     // Sport-specific badge
+  
+  // Rarity
+  rarity          BadgeRarity @default(COMMON)
+  
+  // Ordering
+  displayOrder    Int         @default(0)
+  
+  isActive        Boolean     @default(true)
+  
+  earnedBy        UserBadge[]
+  challenges      Challenge[]
+}
+
+enum BadgeCategory {
+  DISTANCE        // Distance milestones
+  CONSISTENCY     // Streak-based
+  PERFORMANCE     // Personal records
+  SOCIAL          // Community engagement
+  CHALLENGE       // Challenge completion
+  SPECIAL         // Special events
+}
+
+enum BadgeCriteria {
+  TOTAL_DISTANCE
+  SINGLE_ACTIVITY_DISTANCE
+  TOTAL_ACTIVITIES
+  STREAK_DAYS
+  CHALLENGES_COMPLETED
+  FRIENDS_COUNT
+  TEAMS_JOINED
+  SPORT_INDEX
+}
+
+enum BadgeRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+model UserBadge {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId     String
+  badge       Badge     @relation(fields: [badgeId], references: [id])
+  
+  earnedAt    DateTime  @default(now())
+  
+  // For display - pin up to 3 badges on profile
+  isPinned    Boolean   @default(false)
+  
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+// --- Notification Models ---
+
+model Notification {
+  id            String              @id @default(cuid())
+  userId        String
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type          String              // Enum: NotificationType
+  title         String
+  message       String
+  
+  // Related entities
+  data          String?             // Json: { postId, challengeId, userId, badgeId, etc. }
+  
+  // Status
+  isRead        Boolean             @default(false)
+  readAt        DateTime?
+  
+  // For push notifications
+  isPushed      Boolean             @default(false)
+  pushedAt      DateTime?
+  
+  createdAt     DateTime            @default(now())
+  
+  @@index([userId, isRead, createdAt(sort: Desc)])
+}
+
+model NotificationSettings {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Push notification toggles
+  pushEnabled         Boolean   @default(true)
+  
+  // Category toggles
+  socialEnabled       Boolean   @default(true)    // Likes, comments, follows
+  rankingEnabled      Boolean   @default(true)    // Rank changes
+  streakEnabled       Boolean   @default(true)    // Streak reminders
+  challengeEnabled    Boolean   @default(true)    // Challenge updates
+  teamEnabled         Boolean   @default(true)    // Team activity
+  marketingEnabled    Boolean   @default(false)   // Product updates, offers
+  
+  // Digest preferences
+  weeklyDigestEnabled Boolean   @default(true)
+  weeklyDigestDay     Int       @default(0)       // 0 = Sunday
+  
+  // Quiet hours
+  quietHoursEnabled   Boolean   @default(false)
+  quietHoursStart     String?   // "22:00"
+  quietHoursEnd       String?   // "08:00"
+  
+  updatedAt           DateTime  @updatedAt
+}
+
+model PushToken {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  token       String    @unique
+  platform    String    // Enum: Platform (IOS, ANDROID, WEB)
+  deviceId    String?
+  
+  isActive    Boolean   @default(true)
+  
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime  @default(now())
+  
+  @@index([userId])
+}
+
+// --- Monetization Models ---
+
+model Subscription {
+  id              String            @id @default(cuid())
+  userId          String            @unique
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  plan            SubscriptionPlan
+  status          SubscriptionStatus
+  
+  // Billing
+  stripeCustomerId    String?
+  stripeSubscriptionId String?    @unique
+  
+  // Period
+  currentPeriodStart  DateTime
+  currentPeriodEnd    DateTime
+  
+  // Trial
+  trialEndsAt     DateTime?
+  
+  canceledAt      DateTime?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO           // Monthly premium
+  PRO_ANNUAL    // Annual premium (discounted)
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+model UserGear {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Gear details
+  gearType        GearType
+  brand           String
+  model           String
+  nickname        String?
+  
+  // Purchase info
+  purchaseDate    DateTime?
+  purchasePrice   Float?
+  
+  // Usage tracking
+  totalDistance   Float     @default(0)  // meters
+  totalDuration   Int       @default(0)  // seconds
+  activityCount   Int       @default(0)
+  
+  // Condition
+  isRetired       Boolean   @default(false)
+  retiredAt       DateTime?
+  retiredReason   String?
+  
+  // For shoes: recommended replacement at ~500-800km
+  maxRecommendedDistance Float?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  activities      ActivityGear[]
+  
+  @@index([userId, gearType])
+}
+
+enum GearType {
+  RUNNING_SHOES
+  CYCLING_SHOES
+  BIKE
+  HELMET
+  WATCH
+  HEART_RATE_MONITOR
+  GOLF_CLUBS
+  TENNIS_RACKET
+  SWIM_GOGGLES
+  OTHER
+}
+
+model ActivityGear {
+  id          String    @id @default(cuid())
+  activityId  String
+  activity    Activity  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  gearId      String
+  gear        UserGear  @relation(fields: [gearId], references: [id], onDelete: Cascade)
+  
+  @@unique([activityId, gearId])
+}
+
+model ProductOffer {
+  id              String    @id @default(cuid())
+  
+  // Product info
+  title           String
+  description     String
+  brand           String
+  productUrl      String
+  imageUrl        String
+  
+  // Pricing
+  originalPrice   Float
+  salePrice       Float?
+  discountCode    String?
+  
+  // Targeting
+  targetGearType  GearType?
+  targetSportId   String?
+  minGearAge      Int?      // Days since purchase
+  minGearDistance Float?    // Meters used
+  
+  // Campaign
+  startDate       DateTime
+  endDate         DateTime
+  isActive        Boolean   @default(true)
+  
+  // Tracking
+  impressions     Int       @default(0)
+  clicks          Int       @default(0)
+  
+  createdAt       DateTime  @default(now())
+  
+  views           ProductOfferView[]
+}
+
+model ProductOfferView {
+  id          String        @id @default(cuid())
+  offerId     String
+  offer       ProductOffer  @relation(fields: [offerId], references: [id])
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  viewedAt    DateTime      @default(now())
+  clickedAt   DateTime?
+  dismissed   Boolean       @default(false)
+  
+  @@unique([offerId, userId])
 }

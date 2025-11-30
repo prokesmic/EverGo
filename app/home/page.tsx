@@ -10,18 +10,9 @@ import { TeamsWidget } from "@/components/widgets/teams-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
 import { HeroProfile } from "@/components/HeroProfile"
 import { RankingsStrip } from "@/components/RankingsStrip"
-import { ActivityCard } from "@/components/feed/activity-card"
-import { Fragment } from "react"
-import { FeedComposer } from "@/components/feed/feed-composer"
-import { InsightCard } from "@/components/feed/insight-card"
+import { CreatePostBox } from "@/components/feed/create-post-box"
+import { Feed } from "@/components/feed/feed"
 import { Activity, User, Discipline, Sport } from "@prisma/client"
-
-type ActivityWithRelations = Activity & {
-    user: User
-    discipline: Discipline & {
-        sport: Sport
-    }
-}
 
 /**
  * Home Dashboard Page
@@ -98,20 +89,7 @@ export default async function HomePage() {
         color: stats.color
     })).sort((a, b) => b.distance - a.distance)
 
-    const activities = await prisma.activity.findMany({
-        orderBy: {
-            createdAt: "desc",
-        },
-        include: {
-            user: true,
-            discipline: {
-                include: {
-                    sport: true,
-                },
-            },
-        },
-        take: 20,
-    })
+
 
     // Fetch Rankings
     const topRankings = await prisma.ranking.findMany({
@@ -238,39 +216,8 @@ export default async function HomePage() {
             </div>
 
             <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
-                {/* Create Post Input */}
-                <div className="mb-8">
-                    <FeedComposer userImage={session.user?.image} userName={session.user?.name} />
-                </div>
-
-                {/* Activity Feed */}
-                <div className="space-y-6">
-                    {activities.map((activity: ActivityWithRelations, index: number) => (
-                        <Fragment key={activity.id}>
-                            <ActivityCard activity={activity} />
-
-                            {/* Interleaved Insights */}
-                            {index === 0 && (
-                                <InsightCard
-                                    type="advice"
-                                    text="Run another 5 km this week to overtake Sarah and move to #3 in club rankings."
-                                    actionText="View rankings"
-                                />
-                            )}
-                            {index === 2 && (
-                                <InsightCard
-                                    type="trend"
-                                    text="This is your 2nd best week this year. Keep it up!"
-                                />
-                            )}
-                        </Fragment>
-                    ))}
-                    {activities.length === 0 && (
-                        <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-gray-100">
-                            <p>No activities yet. Go log one!</p>
-                        </div>
-                    )}
-                </div>
+                <CreatePostBox />
+                <Feed />
             </PageGrid>
         </div>
     )

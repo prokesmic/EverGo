@@ -93,7 +93,6 @@ export default async function TeamsPage() {
                     <TeamCard
                         key={team.id}
                         team={team}
-                        isMember={userTeamIds.includes(team.id)}
                     />
                 ))}
             </div>
