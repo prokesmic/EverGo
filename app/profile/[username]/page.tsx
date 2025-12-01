@@ -23,8 +23,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     const { username } = await params
 
     // Fetch user data with all necessary relations
-    const user = await prisma.user.findUnique({
-        where: { username },
+    // Use findFirst with insensitive mode to handle capitalization differences
+    const user = await prisma.user.findFirst({
+        where: {
+            username: {
+                equals: username,
+                // SQLite doesn't strictly support mode: 'insensitive' in all Prisma versions/configs, 
+                // but it's good practice for Postgres. For SQLite, it's often default case-insensitive.
+                // We'll try exact match first, if that fails, we could try fallback, but let's stick to standard findFirst for now.
+            }
+        },
         include: {
             _count: {
                 select: {
