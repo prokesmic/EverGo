@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Heart, MessageCircle, Share2, MapPin, Clock, Activity, Flame, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
+import ActivityMap from "@/components/ui/map"
 
 interface ActivityPostCardProps {
     post: {
@@ -176,10 +177,21 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
             )}
 
             {/* Map & Photos */}
-            {post.mapImageUrl && (
-                <div className="w-full h-48 bg-gray-100 relative mb-3">
-                    {/* Placeholder for map image */}
-                    <img src={post.mapImageUrl} alt="Map" className="w-full h-full object-cover" />
+            {/* Map & Photos */}
+            {/* For demo purposes, we show the map if it's an activity type, even without specific route data yet */}
+            {activity && (
+                <div className="w-full h-64 bg-gray-100 relative mb-3 z-0">
+                    <ActivityMap
+                        center={[50.0755, 14.4378]} // Prague
+                        zoom={13}
+                        path={[
+                            [50.0755, 14.4378],
+                            [50.0765, 14.4388],
+                            [50.0775, 14.4398],
+                            [50.0785, 14.4408],
+                            [50.0795, 14.4418]
+                        ]}
+                    />
                 </div>
             )}
 

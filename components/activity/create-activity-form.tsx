@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Sport, Discipline } from "@prisma/client"
+import { Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -102,6 +103,35 @@ export function CreateActivityForm({ sports }: CreateActivityFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="p-4 border-2 border-dashed border-muted rounded-lg mb-6 text-center">
+                    <Input
+                        type="file"
+                        accept=".gpx"
+                        className="hidden"
+                        id="gpx-upload"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                                // Mock GPX parsing
+                                toast.info("Parsing GPX file...")
+                                setTimeout(() => {
+                                    form.setValue("distanceKm", "5.2")
+                                    form.setValue("durationMinutes", "32")
+                                    form.setValue("activityDate", new Date().toISOString().split("T")[0])
+                                    form.setValue("title", file.name.replace(".gpx", ""))
+                                    toast.success("Data imported from GPX!")
+                                }, 1000)
+                            }
+                        }}
+                    />
+                    <label htmlFor="gpx-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                        <Upload className="h-8 w-8 text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">
+                            Click to upload GPX file (Auto-fill)
+                        </span>
+                    </label>
+                </div>
+
                 <FormField
                     control={form.control}
                     name="title"

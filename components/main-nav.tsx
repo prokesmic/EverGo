@@ -13,8 +13,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useSession, signOut } from "next-auth/react"
-import { Home, Trophy, Users, PlusSquare, Search, Bell, MessageSquare } from "lucide-react"
+import { Home, Trophy, Users, PlusSquare, Bell, MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { SearchCommand } from "@/components/search-command"
 
 export function MainNav() {
     const pathname = usePathname()
@@ -63,13 +64,9 @@ export function MainNav() {
                 {/* Right Side Actions */}
                 <div className="flex items-center gap-4">
                     {/* Search Bar */}
+                    {/* Search Bar */}
                     <div className="hidden md:flex relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/60" />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="bg-black/20 border-none rounded-full pl-9 pr-4 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 w-64 transition-all"
-                        />
+                        <SearchCommand />
                     </div>
 
                     {session ? (
