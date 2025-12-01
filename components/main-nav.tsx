@@ -23,6 +23,7 @@ export function MainNav() {
     const navItems = [
         { href: "/home", label: "Home", icon: Home },
         { href: "/rankings", label: "Rankings", icon: Trophy },
+        { href: "/challenges", label: "Challenges", icon: Trophy },
         { href: "/teams", label: "Teams", icon: Users },
     ]
 
@@ -80,8 +81,10 @@ export function MainNav() {
                                 </Link>
                             </Button>
 
-                            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full">
-                                <Bell className="h-5 w-5" />
+                            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" asChild>
+                                <Link href="/notifications">
+                                    <Bell className="h-5 w-5" />
+                                </Link>
                             </Button>
 
                             <DropdownMenu>

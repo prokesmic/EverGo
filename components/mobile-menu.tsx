@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -52,6 +54,18 @@ export function MobileMenu() {
                         <section>
                             <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Calendar</h3>
                             <CalendarWidget />
+                        </section>
+
+                        <section>
+                            <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Discover</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button variant="outline" className="w-full justify-start" asChild>
+                                    <Link href="/challenges">Challenges</Link>
+                                </Button>
+                                <Button variant="outline" className="w-full justify-start" asChild>
+                                    <Link href="/notifications">Notifications</Link>
+                                </Button>
+                            </div>
                         </section>
 
                         <section>
