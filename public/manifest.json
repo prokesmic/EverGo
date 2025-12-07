@@ -1,21 +1,78 @@
 {
-    "name": "EverGo",
+    "name": "EverGo - The Global Network for Sports",
     "short_name": "EverGo",
-    "description": "The Global Network for Sports",
-    "start_url": "/",
+    "description": "Social network for athletes and active people with real-time rankings, challenges, and team activities.",
+    "start_url": "/home",
+    "scope": "/",
     "display": "standalone",
+    "orientation": "portrait-primary",
     "background_color": "#ffffff",
     "theme_color": "#0078D4",
+    "categories": ["sports", "fitness", "health", "social"],
     "icons": [
         {
-            "src": "/globe.svg",
-            "sizes": "192x192",
-            "type": "image/svg+xml"
+            "src": "/icons/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
         },
         {
-            "src": "/globe.svg",
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512.png",
             "sizes": "512x512",
-            "type": "image/svg+xml"
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icons/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
-    ]
+    ],
+    "screenshots": [
+        {
+            "src": "/screenshots/home.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Home feed with activity updates"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Record Activity",
+            "short_name": "Record",
+            "description": "Log a new sports activity",
+            "url": "/activity/new",
+            "icons": [{"src": "/icons/shortcut-record.png", "sizes": "96x96"}]
+        },
+        {
+            "name": "My Stats",
+            "short_name": "Stats",
+            "description": "View your performance statistics",
+            "url": "/stats",
+            "icons": [{"src": "/icons/shortcut-stats.png", "sizes": "96x96"}]
+        },
+        {
+            "name": "Leaderboard",
+            "short_name": "Rankings",
+            "description": "Check the global rankings",
+            "url": "/leaderboard",
+            "icons": [{"src": "/icons/shortcut-rankings.png", "sizes": "96x96"}]
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false
 }

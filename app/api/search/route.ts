@@ -1,70 +1,108 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 export async function GET(req: Request) {
-    try {
-        const session = await getServerSession(authOptions)
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
+  try {
+    const { searchParams } = new URL(req.url)
+    const query = searchParams.get("q")
+    const type = searchParams.get("type") // users, teams, challenges, or all
+    const limit = parseInt(searchParams.get("limit") || "10")
 
-        const { searchParams } = new URL(req.url)
-        const query = searchParams.get("q")
-
-        if (!query || query.length < 2) {
-            return NextResponse.json([])
-        }
-
-        const [users, teams, challenges] = await Promise.all([
-            prisma.user.findMany({
-                where: {
-                    OR: [
-                        { displayName: { contains: query } }, // Case-insensitive by default in SQLite/Postgres usually, but depends on collation
-                        { username: { contains: query } }
-                    ]
-                },
-                take: 5,
-                select: {
-                    id: true,
-                    displayName: true,
-                    username: true,
-                    avatarUrl: true
-                }
-            }),
-            prisma.team.findMany({
-                where: {
-                    name: { contains: query }
-                },
-                take: 5,
-                select: {
-                    id: true,
-                    name: true,
-                    logoUrl: true,
-                    sport: true
-                }
-            }),
-            prisma.challenge.findMany({
-                where: {
-                    title: { contains: query }
-                },
-                take: 5,
-                select: {
-                    id: true,
-                    title: true,
-                    targetType: true
-                }
-            })
-        ])
-
-        return NextResponse.json({
-            users,
-            teams,
-            challenges
-        })
-    } catch (error) {
-        console.error("Search error:", error)
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    if (!query || query.length < 2) {
+      return NextResponse.json({ results: [] })
     }
+
+    const results: any[] = []
+
+    // Search Users
+    if (!type || type === "all" || type === "users") {
+      const users = await prisma.user.findMany({
+        where: {
+          OR: [
+            { displayName: { contains: query, mode: "insensitive" } },
+            { username: { contains: query, mode: "insensitive" } },
+          ],
+        },
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+          city: true,
+        },
+        take: type === "users" ? limit : 5,
+      })
+
+      results.push(
+        ...users.map((user) => ({
+          type: "user",
+          id: user.username,
+          title: user.displayName,
+          subtitle: user.city ? `@${user.username} • ${user.city}` : `@${user.username}`,
+          image: user.avatarUrl,
+        }))
+      )
+    }
+
+    // Search Teams
+    if (!type || type === "all" || type === "teams") {
+      const teams = await prisma.team.findMany({
+        where: {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
+          ],
+        },
+        include: {
+          sport: true,
+        },
+        take: type === "teams" ? limit : 5,
+      })
+
+      results.push(
+        ...teams.map((team) => ({
+          type: "team",
+          id: team.slug,
+          title: team.name,
+          subtitle: `${team.memberCount} members • ${team.sport.name}`,
+          image: team.logoUrl,
+          icon: team.sport.icon,
+        }))
+      )
+    }
+
+    // Search Challenges
+    if (!type || type === "all" || type === "challenges") {
+      const challenges = await prisma.challenge.findMany({
+        where: {
+          OR: [
+            { title: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
+          ],
+          isActive: true,
+        },
+        include: {
+          sport: true,
+          _count: { select: { participants: true } },
+        },
+        take: type === "challenges" ? limit : 5,
+      })
+
+      results.push(
+        ...challenges.map((challenge) => ({
+          type: "challenge",
+          id: challenge.id,
+          title: challenge.title,
+          subtitle: `${challenge._count.participants} participants${challenge.sport ? ` • ${challenge.sport.name}` : ""}`,
+          image: challenge.imageUrl,
+          icon: challenge.sport?.icon || "🏆",
+        }))
+      )
+    }
+
+    return NextResponse.json({ results })
+  } catch (error) {
+    console.error("Search error:", error)
+    return NextResponse.json({ error: "Search failed" }, { status: 500 })
+  }
 }

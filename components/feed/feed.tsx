@@ -1,8 +1,11 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { ActivityPostCard } from "./activity-post-card"
-import { Loader2 } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
+import { ActivityCardSkeleton } from "@/components/ui/skeleton"
+import { Loader2, Plus } from "lucide-react"
 
 interface FeedProps {
     type?: "all" | "friends" | "following"
@@ -10,6 +13,7 @@ interface FeedProps {
 }
 
 export function Feed({ type = "all", refreshTrigger }: FeedProps) {
+    const router = useRouter()
     const [posts, setPosts] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [page, setPage] = useState(1)
@@ -60,19 +64,46 @@ export function Feed({ type = "all", refreshTrigger }: FeedProps) {
 
     if (loading && posts.length === 0) {
         return (
-            <div className="flex justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-brand-primary" />
+            <div className="space-y-4">
+                <ActivityCardSkeleton />
+                <ActivityCardSkeleton />
+                <ActivityCardSkeleton />
             </div>
         )
     }
 
     if (posts.length === 0) {
+        const emptyMessages = {
+            all: {
+                title: "No posts yet",
+                description: "Be the first to share your activity! Log a workout to get started.",
+            },
+            friends: {
+                title: "No friend posts",
+                description: "Your friends haven't posted yet, or you haven't added any friends. Start following athletes!",
+            },
+            following: {
+                title: "No posts from athletes you follow",
+                description: "Follow more athletes to see their activities in your feed.",
+            },
+        }
+
+        const message = emptyMessages[type]
+
         return (
-            <div className="text-center py-12 bg-white rounded-xl border border-border-light">
-                <div className="text-4xl mb-3">📭</div>
-                <h3 className="text-lg font-semibold text-text-primary mb-1">No posts yet</h3>
-                <p className="text-text-secondary">Be the first to share your activity!</p>
-            </div>
+            <EmptyState
+                icon="📭"
+                title={message.title}
+                description={message.description}
+                action={{
+                    label: "Log Activity",
+                    onClick: () => router.push("/activity/create"),
+                }}
+                secondaryAction={{
+                    label: "Find Athletes",
+                    href: "/search",
+                }}
+            />
         )
     }
 

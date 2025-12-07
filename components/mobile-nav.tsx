@@ -2,40 +2,75 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Trophy, Users, PlusSquare, User } from "lucide-react"
+import { Home, Trophy, Target, User, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { MobileMenu } from "@/components/mobile-menu"
+import { useSession } from "next-auth/react"
 
 export function MobileNav() {
-    const pathname = usePathname()
+  const pathname = usePathname()
+  const { data: session } = useSession()
 
-    const navItems = [
-        { href: "/home", label: "Home", icon: Home },
-        { href: "/rankings", label: "Rankings", icon: Trophy },
-        { href: "/activity/new", label: "Record", icon: PlusSquare },
-        { href: "/profile", label: "Profile", icon: User },
-    ]
+  const navItems = [
+    { href: "/home", label: "Home", icon: Home },
+    { href: "/leaderboard", label: "Rankings", icon: Trophy },
+    { href: "/challenges", label: "Challenges", icon: Target },
+    { href: session ? `/profile/${session.user?.username || 'me'}` : "/profile", label: "Profile", icon: User },
+  ]
 
-    return (
-        <div className="fixed bottom-0 left-0 z-50 w-full border-t bg-white lg:hidden">
-            <div className="grid h-16 grid-cols-5">
-                {navItems.map((item) => (
-                    <Link
-                        key={item.href}
-                        href={item.href}
-                        className={cn(
-                            "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors hover:text-foreground/80",
-                            pathname?.startsWith(item.href) ? "text-brand-blue" : "text-muted-foreground"
-                        )}
-                    >
-                        <item.icon className="h-5 w-5" />
-                        {item.label}
-                    </Link>
-                ))}
-                <div className="flex flex-col items-center justify-center gap-1 text-xs font-medium text-muted-foreground">
-                    <MobileMenu />
+  const isActive = (href: string) => {
+    if (href === "/home") return pathname === "/home" || pathname === "/"
+    return pathname?.startsWith(href)
+  }
+
+  return (
+    <>
+      {/* Floating Action Button for Record Activity */}
+      <Link
+        href="/activity/new"
+        className="fixed bottom-20 right-4 z-50 lg:hidden w-14 h-14 bg-gradient-to-r from-brand-blue to-blue-600 rounded-full shadow-lg flex items-center justify-center text-white active:scale-95 transition-transform"
+        style={{
+          boxShadow: "0 4px 14px rgba(0, 120, 212, 0.4)",
+        }}
+      >
+        <Plus className="w-7 h-7" strokeWidth={2.5} />
+      </Link>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border-light lg:hidden pb-safe">
+        <div className="grid h-16 grid-cols-4 max-w-lg mx-auto">
+          {navItems.map((item) => {
+            const active = isActive(item.href)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-all active:scale-95",
+                  active
+                    ? "text-brand-blue"
+                    : "text-text-muted"
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex items-center justify-center w-12 h-8 rounded-full transition-all",
+                    active && "bg-brand-blue/10"
+                  )}
+                >
+                  <item.icon
+                    className={cn(
+                      "w-6 h-6 transition-all",
+                      active && "scale-110"
+                    )}
+                    strokeWidth={active ? 2.5 : 2}
+                  />
                 </div>
-            </div>
+                <span className={cn(active && "font-semibold")}>{item.label}</span>
+              </Link>
+            )
+          })}
         </div>
-    )
+      </nav>
+    </>
+  )
 }

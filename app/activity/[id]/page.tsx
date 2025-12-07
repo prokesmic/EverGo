@@ -7,11 +7,59 @@ import ActivityMap from "@/components/ui/map"
 import { PageGrid } from "@/components/layout/page-grid"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
+import { Metadata } from "next"
 
 interface ActivityPageProps {
     params: Promise<{
         id: string
     }>
+}
+
+export async function generateMetadata({ params }: ActivityPageProps): Promise<Metadata> {
+    const { id } = await params
+
+    const activity = await prisma.activity.findUnique({
+        where: { id },
+        include: {
+            user: true,
+            sport: true,
+            discipline: true
+        }
+    })
+
+    if (!activity) {
+        return {
+            title: "Activity Not Found",
+        }
+    }
+
+    const distanceKm = ((activity.distanceMeters || 0) / 1000).toFixed(2)
+    const sportName = activity.sport?.name || "Activity"
+
+    return {
+        title: `${activity.title} - ${activity.user.displayName} | EverGo`,
+        description: `${activity.user.displayName} completed a ${distanceKm}km ${sportName} on EverGo. Check out their activity and stats!`,
+        openGraph: {
+            title: activity.title,
+            description: `${distanceKm}km ${sportName} • ${activity.user.displayName}`,
+            type: "article",
+            images: [
+                {
+                    url: activity.user.avatarUrl || "https://evergo.app/og-image.png",
+                    width: 1200,
+                    height: 630,
+                    alt: `${activity.user.displayName}'s ${sportName}`,
+                },
+            ],
+            siteName: "EverGo",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: activity.title,
+            description: `${distanceKm}km ${sportName} • ${activity.user.displayName}`,
+            images: [activity.user.avatarUrl || "https://evergo.app/og-image.png"],
+        },
+    }
 }
 
 export default async function ActivityPage({ params }: ActivityPageProps) {

@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useCallback } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Heart, MessageCircle, Share2, MapPin, Clock, Activity, Flame, TrendingUp } from "lucide-react"
+import { Heart, MessageCircle, Share2, MapPin, Clock, Activity, Flame, TrendingUp, MoreHorizontal, Bookmark, Flag, Eye } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import ActivityMap from "@/components/ui/map"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 interface ActivityPostCardProps {
     post: {
@@ -47,6 +49,40 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
     const [isLiked, setIsLiked] = useState(engagement.isLikedByMe)
     const [likesCount, setLikesCount] = useState(engagement.likesCount)
     const [showComments, setShowComments] = useState(false)
+    const [isSaved, setIsSaved] = useState(false)
+    const [showActions, setShowActions] = useState(false)
+
+    // Swipe state for mobile
+    const [swipeOffset, setSwipeOffset] = useState(0)
+    const [isSwiping, setIsSwiping] = useState(false)
+    const startX = useRef(0)
+    const cardRef = useRef<HTMLDivElement>(null)
+
+    // Double-tap to like
+    const lastTap = useRef(0)
+    const handleDoubleTap = useCallback(() => {
+        const now = Date.now()
+        const DOUBLE_TAP_DELAY = 300
+        if (now - lastTap.current < DOUBLE_TAP_DELAY) {
+            if (!isLiked) {
+                handleLikeWithHaptic()
+            }
+        }
+        lastTap.current = now
+    }, [isLiked])
+
+    // Haptic feedback helper
+    const triggerHaptic = (intensity: 'light' | 'medium' | 'heavy' = 'light') => {
+        if (navigator.vibrate) {
+            const durations = { light: 10, medium: 25, heavy: 50 }
+            navigator.vibrate(durations[intensity])
+        }
+    }
+
+    const handleLikeWithHaptic = async () => {
+        triggerHaptic('medium')
+        handleLike()
+    }
 
     const handleLike = async () => {
         // Optimistic update
@@ -60,6 +96,37 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
             // Revert on error
             setIsLiked(!isLiked)
             setLikesCount(prev => isLiked ? prev + 1 : prev - 1)
+        }
+    }
+
+    const handleShare = async () => {
+        const activityUrl = `${window.location.origin}/activity/${activity?.id || post.id}`
+        const shareData = {
+            title: activity?.title || "Check out this activity!",
+            text: `${user.displayName} completed a ${activity?.distanceMeters ? (activity.distanceMeters / 1000).toFixed(2) : "0"}km ${activity?.sportName || "activity"} on EverGo!`,
+            url: activityUrl,
+        }
+
+        try {
+            // Try native share API first (mobile)
+            if (navigator.share) {
+                await navigator.share(shareData)
+                toast.success("Shared successfully!")
+            } else {
+                // Fallback to clipboard
+                await navigator.clipboard.writeText(activityUrl)
+                toast.success("Link copied to clipboard!")
+            }
+        } catch (error) {
+            // Fallback if sharing fails
+            if (error instanceof Error && error.name !== "AbortError") {
+                try {
+                    await navigator.clipboard.writeText(activityUrl)
+                    toast.success("Link copied to clipboard!")
+                } catch {
+                    toast.error("Failed to share activity")
+                }
+            }
         }
     }
 
@@ -77,34 +144,133 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
         return `${m}:${s.toString().padStart(2, '0')}`
     }
 
+    // Handle swipe gestures
+    const handleTouchStart = (e: React.TouchEvent) => {
+        startX.current = e.touches[0].clientX
+        setIsSwiping(true)
+    }
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!isSwiping) return
+        const diff = e.touches[0].clientX - startX.current
+        // Only allow left swipe (negative diff) with max of -100px
+        if (diff < 0) {
+            setSwipeOffset(Math.max(diff * 0.5, -80))
+        }
+    }
+
+    const handleTouchEnd = () => {
+        setIsSwiping(false)
+        if (swipeOffset < -40) {
+            // Show quick actions
+            setShowActions(true)
+            triggerHaptic('light')
+        }
+        setSwipeOffset(0)
+    }
+
+    const handleSave = () => {
+        setIsSaved(!isSaved)
+        triggerHaptic('light')
+        toast.success(isSaved ? "Removed from saved" : "Saved to collection")
+        setShowActions(false)
+    }
+
     if (!activity && post.postType === 'ACTIVITY') return null // Should not happen
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-border-light overflow-hidden mb-4">
-            {/* Header */}
-            <div className="flex items-start gap-3 p-4">
-                <Link href={`/profile/${user.username}`}>
-                    <Avatar className="h-10 w-10 border border-border-light">
-                        <AvatarImage src={user.avatarUrl || undefined} alt={user.displayName} />
-                        <AvatarFallback>{user.displayName[0]}</AvatarFallback>
-                    </Avatar>
-                </Link>
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <Link href={`/profile/${user.username}`} className="font-semibold text-text-primary hover:underline truncate">
-                            {user.displayName}
-                        </Link>
-                        {activity && (
-                            <span className="text-text-secondary text-sm">
-                                {activity.sportIcon} <span className="font-medium text-text-primary">{activity.sportName}</span>
-                            </span>
-                        )}
-                    </div>
-                    <div className="text-xs text-text-muted">
-                        {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                    </div>
-                </div>
+        <div className="relative mb-4">
+            {/* Swipe Action Background */}
+            <div
+                className={cn(
+                    "absolute right-0 top-0 bottom-0 w-20 flex items-center justify-center bg-brand-blue rounded-r-xl transition-opacity",
+                    swipeOffset < -20 ? "opacity-100" : "opacity-0"
+                )}
+            >
+                <Bookmark className="w-6 h-6 text-white" />
             </div>
+
+            {/* Main Card with Swipe */}
+            <div
+                ref={cardRef}
+                className="bg-white rounded-xl shadow-sm border border-border-light overflow-hidden relative"
+                style={{
+                    transform: `translateX(${swipeOffset}px)`,
+                    transition: isSwiping ? 'none' : 'transform 0.2s ease-out'
+                }}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onClick={handleDoubleTap}
+            >
+                {/* Header - increased touch targets */}
+                <div className="flex items-start gap-3 p-4">
+                    <Link href={`/profile/${user.username}`} className="shrink-0">
+                        <Avatar className="h-11 w-11 border-2 border-border-light active:scale-95 transition-transform">
+                            <AvatarImage src={user.avatarUrl || undefined} alt={user.displayName} />
+                            <AvatarFallback className="text-sm font-semibold">{user.displayName[0]}</AvatarFallback>
+                        </Avatar>
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <Link href={`/profile/${user.username}`} className="font-semibold text-text-primary hover:underline truncate active:opacity-70">
+                                {user.displayName}
+                            </Link>
+                            {activity && (
+                                <span className="text-text-secondary text-sm">
+                                    {activity.sportIcon} <span className="font-medium text-text-primary">{activity.sportName}</span>
+                                </span>
+                            )}
+                        </div>
+                        <div className="text-xs text-text-muted flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                        </div>
+                    </div>
+                    {/* More actions button */}
+                    <button
+                        className="p-2 -mr-2 rounded-full hover:bg-surface-secondary active:bg-surface-secondary transition-colors"
+                        onClick={(e) => { e.stopPropagation(); setShowActions(!showActions) }}
+                    >
+                        <MoreHorizontal className="w-5 h-5 text-text-muted" />
+                    </button>
+                </div>
+
+                {/* Quick Actions Dropdown */}
+                {showActions && (
+                    <div className="absolute right-4 top-14 z-20 bg-white rounded-lg shadow-lg border border-border-light py-1 min-w-[160px]">
+                        <button
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-secondary active:bg-surface-secondary text-left"
+                            onClick={(e) => { e.stopPropagation(); handleSave() }}
+                        >
+                            <Bookmark className={cn("w-5 h-5", isSaved ? "fill-brand-blue text-brand-blue" : "text-text-secondary")} />
+                            <span className="text-sm font-medium">{isSaved ? "Unsave" : "Save"}</span>
+                        </button>
+                        <Link
+                            href={`/activity/${activity?.id || post.id}`}
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-secondary active:bg-surface-secondary"
+                            onClick={() => setShowActions(false)}
+                        >
+                            <Eye className="w-5 h-5 text-text-secondary" />
+                            <span className="text-sm font-medium">View Details</span>
+                        </Link>
+                        <button
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-secondary active:bg-surface-secondary text-left"
+                            onClick={(e) => { e.stopPropagation(); setShowActions(false); toast.info("Report submitted") }}
+                        >
+                            <Flag className="w-5 h-5 text-text-secondary" />
+                            <span className="text-sm font-medium">Report</span>
+                        </button>
+                    </div>
+                )}
+
+                {/* Click outside to close */}
+                {showActions && (
+                    <div
+                        className="fixed inset-0 z-10"
+                        onClick={(e) => { e.stopPropagation(); setShowActions(false) }}
+                    />
+                )}
 
             {/* Content */}
             <div className="px-4 pb-3">
@@ -213,28 +379,45 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
                 </div>
             </div>
 
-            {/* Actions */}
-            <div className="px-2 py-1 flex items-center border-t border-border-light">
-                <Button
-                    variant="ghost"
-                    className={`flex-1 gap-2 ${isLiked ? 'text-brand-primary' : 'text-text-secondary'}`}
-                    onClick={handleLike}
+            {/* Actions - larger touch targets for mobile */}
+            <div className="px-1 py-1 flex items-center border-t border-border-light">
+                <button
+                    className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-lg transition-all active:scale-95",
+                        isLiked ? "text-red-500" : "text-text-secondary"
+                    )}
+                    onClick={(e) => { e.stopPropagation(); handleLikeWithHaptic() }}
                 >
-                    <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-                    Like
-                </Button>
-                <Button
-                    variant="ghost"
-                    className="flex-1 gap-2 text-text-secondary"
-                    onClick={() => setShowComments(!showComments)}
+                    <Heart className={cn(
+                        "w-6 h-6 transition-transform",
+                        isLiked && "fill-current animate-[heartBeat_0.3s_ease-in-out]"
+                    )} />
+                    <span className="text-sm font-medium hidden sm:inline">Like</span>
+                </button>
+                <button
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-text-secondary transition-all active:scale-95"
+                    onClick={(e) => { e.stopPropagation(); setShowComments(!showComments) }}
                 >
-                    <MessageCircle className="w-5 h-5" />
-                    Comment
-                </Button>
-                <Button variant="ghost" className="flex-1 gap-2 text-text-secondary">
-                    <Share2 className="w-5 h-5" />
-                    Share
-                </Button>
+                    <MessageCircle className="w-6 h-6" />
+                    <span className="text-sm font-medium hidden sm:inline">Comment</span>
+                </button>
+                <button
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-text-secondary transition-all active:scale-95"
+                    onClick={(e) => { e.stopPropagation(); handleShare() }}
+                >
+                    <Share2 className="w-6 h-6" />
+                    <span className="text-sm font-medium hidden sm:inline">Share</span>
+                </button>
+                <button
+                    className={cn(
+                        "flex items-center justify-center p-3 rounded-lg transition-all active:scale-95",
+                        isSaved ? "text-brand-blue" : "text-text-secondary"
+                    )}
+                    onClick={(e) => { e.stopPropagation(); handleSave() }}
+                >
+                    <Bookmark className={cn("w-6 h-6", isSaved && "fill-current")} />
+                </button>
+            </div>
             </div>
         </div>
     )

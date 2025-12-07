@@ -13,6 +13,8 @@ import { HeroProfile } from "@/components/HeroProfile"
 import { RankingsStrip } from "@/components/RankingsStrip"
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
+import { StreakAlert } from "@/components/widgets/streak-alert"
+import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestions-wrapper"
 
 
 /**
@@ -89,6 +91,21 @@ export default async function HomePage() {
         percentage: weeklyDistance > 0 ? (stats.distance / weeklyDistance) * 100 : 0,
         color: stats.color
     })).sort((a, b) => b.distance - a.distance)
+
+    // Get last activity date for streak alert
+    const lastActivity = await prisma.activity.findFirst({
+        where: {
+            userId: user.id
+        },
+        orderBy: {
+            activityDate: "desc"
+        }
+    })
+
+    // Calculate current streak
+    const currentStreak = user.currentStreakDays || 0
+    const weeklyGoal = user.weeklyActivityGoal || 3
+    const weeklyProgress = weeklyActivities.length
 
 
 
@@ -168,6 +185,7 @@ export default async function HomePage() {
     const rightSidebar = (
         <>
             <PartnerFinderWidget />
+            <FollowSuggestionsWrapper />
             <CalendarWidget />
             <TeamsWidget teams={formattedTeams} />
             <BrandsWidget />
@@ -226,6 +244,12 @@ export default async function HomePage() {
 
             <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
                 <CreatePostBox userImage={user.avatarUrl || undefined} />
+                <StreakAlert
+                    currentStreak={currentStreak}
+                    lastActivityDate={lastActivity?.activityDate || null}
+                    weeklyGoal={weeklyGoal}
+                    weeklyProgress={weeklyProgress}
+                />
                 <Feed />
             </PageGrid>
         </div>

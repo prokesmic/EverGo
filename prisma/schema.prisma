@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -1002,4 +1003,97 @@ model ProductOfferView {
   dismissed   Boolean       @default(false)
   
   @@unique([offerId, userId])
+}
+
+// --- Training Plans Models ---
+
+model TrainingPlan {
+  id              String    @id @default(cuid())
+
+  // Plan details
+  name            String
+  description     String
+  duration        Int       // Total weeks
+  level           String    // Enum: BEGINNER, INTERMEDIATE, ADVANCED
+
+  // Sport association
+  sportId         String
+
+  // Settings
+  isTemplate      Boolean   @default(true)  // Pre-built template vs custom
+  isPublic        Boolean   @default(true)
+  creatorId       String?   // null for system templates
+
+  // Metadata
+  imageUrl        String?
+  tags            String    // JSON array: ["marathon", "5K", "beginner"]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  weeks           TrainingPlanWeek[]
+  userPlans       UserTrainingPlan[]
+
+  @@index([sportId, level])
+  @@index([isPublic])
+}
+
+model TrainingPlanWeek {
+  id              String    @id @default(cuid())
+  planId          String
+  plan            TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  weekNumber      Int       // 1-indexed
+  title           String?   // e.g., "Base Building"
+  description     String?
+
+  workouts        TrainingPlanWorkout[]
+
+  @@unique([planId, weekNumber])
+  @@index([planId])
+}
+
+model TrainingPlanWorkout {
+  id              String    @id @default(cuid())
+  weekId          String
+  week            TrainingPlanWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
+
+  dayOfWeek       Int       // 0 = Monday, 6 = Sunday
+  title           String    // e.g., "Easy Run"
+  description     String?   // e.g., "Run at comfortable pace"
+
+  // Target metrics
+  targetType      String    // Enum: DISTANCE, DURATION, REST
+  targetValue     Float?    // km or minutes
+  targetUnit      String?   // "km", "min"
+
+  // Additional guidance
+  intensity       String?   // Enum: EASY, MODERATE, HARD, RACE_PACE
+  notes           String?   // JSON: { warmup: "10min", cooldown: "5min", intervals: [...] }
+
+  @@index([weekId])
+}
+
+model UserTrainingPlan {
+  id              String    @id @default(cuid())
+  userId          String
+  planId          String
+  plan            TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  // Progress
+  startDate       DateTime
+  currentWeek     Int       @default(1)
+  status          String    @default("ACTIVE") // Enum: ACTIVE, PAUSED, COMPLETED, ABANDONED
+
+  // Completion tracking (JSON)
+  completedWorkouts String  @default("[]") // [{weekNumber, dayOfWeek, activityId, completedAt}]
+
+  completedAt     DateTime?
+  pausedAt        DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([userId, planId])
+  @@index([userId])
 }

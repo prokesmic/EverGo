@@ -19,13 +19,52 @@ interface RankingsClientProps {
 
 export function RankingsClient({ sports }: RankingsClientProps) {
     const { data: session } = useSession()
-    const [sport, setSport] = useState("all")
-    const [scope, setScope] = useState("global")
-    const [period, setPeriod] = useState("all_time")
+
+    // Load initial state from localStorage or use defaults
+    const [sport, setSport] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("rankings_filter_sport") || "all"
+        }
+        return "all"
+    })
+
+    const [scope, setScope] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("rankings_filter_scope") || "global"
+        }
+        return "global"
+    })
+
+    const [period, setPeriod] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("rankings_filter_period") || "all_time"
+        }
+        return "all_time"
+    })
+
     const [leaderboard, setLeaderboard] = useState<any[]>([])
     const [userRankings, setUserRankings] = useState<any>(null)
     const [insights, setInsights] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+
+    // Persist filters to localStorage whenever they change
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            localStorage.setItem("rankings_filter_sport", sport)
+        }
+    }, [sport])
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            localStorage.setItem("rankings_filter_scope", scope)
+        }
+    }, [scope])
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            localStorage.setItem("rankings_filter_period", period)
+        }
+    }, [period])
 
     useEffect(() => {
         const fetchData = async () => {
