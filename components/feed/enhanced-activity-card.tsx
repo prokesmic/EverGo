@@ -281,11 +281,11 @@ export function EnhancedActivityCard({ post }: EnhancedActivityCardProps) {
               </div>
             )}
 
-            {activity.avgSpeed !== null && (
+            {activity.avgSpeed != null && (
               <div className="bg-surface-secondary rounded-lg p-3 text-center">
                 <Wind className="w-4 h-4 mx-auto mb-1 text-blue-500" />
                 <div className="text-xs text-text-muted mb-0.5">Avg Speed</div>
-                <div className="font-bold text-text-primary">{activity.avgSpeed.toFixed(1)} km/h</div>
+                <div className="font-bold text-text-primary">{activity.avgSpeed!.toFixed(1)} km/h</div>
               </div>
             )}
           </div>

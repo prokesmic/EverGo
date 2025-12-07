@@ -16,14 +16,6 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
     where: { id },
     include: {
       sport: true,
-      creator: {
-        select: {
-          id: true,
-          displayName: true,
-          username: true,
-          avatarUrl: true,
-        },
-      },
       participants: {
         include: {
           user: {
@@ -77,21 +69,24 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
     },
   })
 
-  // Calculate progress for each participant
-  const leaderboard = participantIds.map((userId) => {
+  // Calculate progress for each participant based on targetType
+  const leaderboard = participantIds.map((userId: string) => {
     const userActivities = activities.filter((a) => a.userId === userId)
     const participant = challenge.participants.find((p) => p.userId === userId)!
 
     let progress = 0
 
-    if (challenge.challengeType === "DISTANCE") {
+    // Use targetType from schema: DISTANCE, DURATION, ACTIVITIES, ELEVATION
+    if (challenge.targetType === "DISTANCE") {
       progress =
         userActivities.reduce((sum, a) => sum + (a.distanceMeters || 0), 0) / 1000 // km
-    } else if (challenge.challengeType === "DURATION") {
+    } else if (challenge.targetType === "DURATION") {
       progress =
         userActivities.reduce((sum, a) => sum + (a.durationSeconds || 0), 0) / 3600 // hours
-    } else if (challenge.challengeType === "ACTIVITY_COUNT") {
+    } else if (challenge.targetType === "ACTIVITIES") {
       progress = userActivities.length
+    } else if (challenge.targetType === "ELEVATION") {
+      progress = userActivities.reduce((sum, a) => sum + (a.elevationGain || 0), 0)
     }
 
     const progressPercentage = Math.min(
@@ -100,6 +95,7 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
     )
 
     return {
+      rank: 0,
       userId,
       user: participant.user,
       progress,
@@ -110,14 +106,11 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
     }
   })
 
-  // Sort by progress (descending)
+  // Sort by progress (descending) and add ranks
   leaderboard.sort((a, b) => b.progress - a.progress)
-
-  // Add ranks
-  const rankedLeaderboard = leaderboard.map((entry, index) => ({
-    ...entry,
-    rank: index + 1,
-  }))
+  leaderboard.forEach((entry, index) => {
+    entry.rank = index + 1
+  })
 
   // Check if current user is participating
   let currentUser = null
@@ -132,7 +125,7 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
     : false
 
   const currentUserProgress = isParticipating
-    ? rankedLeaderboard.find((entry) => entry.userId === currentUser!.id)
+    ? leaderboard.find((entry) => entry.userId === currentUser!.id) || null
     : null
 
   // Calculate challenge status
@@ -150,7 +143,7 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
         status,
         participantsCount: challenge._count.participants,
       }}
-      leaderboard={rankedLeaderboard}
+      leaderboard={leaderboard}
       isParticipating={isParticipating}
       currentUserProgress={currentUserProgress}
       currentUserId={currentUser?.id}

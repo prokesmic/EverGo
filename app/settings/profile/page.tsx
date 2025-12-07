@@ -23,7 +23,7 @@ export default async function ProfileSettingsPage() {
       coverPhotoUrl: true,
       city: true,
       country: true,
-      birthDate: true,
+      dateOfBirth: true,
       gender: true,
     },
   })

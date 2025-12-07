@@ -17,8 +17,11 @@ export function RealtimeFeed({ type = "all" }: RealtimeFeedProps) {
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
+    if (!supabase) return
+
+    const client = supabase
     // Subscribe to real-time changes on the Post table
-    const channel = supabase
+    const channel = client
       .channel("posts-changes")
       .on(
         "postgres_changes",
@@ -74,7 +77,7 @@ export function RealtimeFeed({ type = "all" }: RealtimeFeedProps) {
       })
 
     // Subscribe to Activity table changes
-    const activityChannel = supabase
+    const activityChannel = client
       .channel("activities-changes")
       .on(
         "postgres_changes",
@@ -91,7 +94,7 @@ export function RealtimeFeed({ type = "all" }: RealtimeFeedProps) {
       .subscribe()
 
     // Subscribe to Like table changes for real-time like updates
-    const likeChannel = supabase
+    const likeChannel = client
       .channel("likes-changes")
       .on(
         "postgres_changes",
@@ -109,7 +112,7 @@ export function RealtimeFeed({ type = "all" }: RealtimeFeedProps) {
       .subscribe()
 
     // Subscribe to Comment table changes
-    const commentChannel = supabase
+    const commentChannel = client
       .channel("comments-changes")
       .on(
         "postgres_changes",

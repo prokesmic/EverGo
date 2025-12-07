@@ -2,38 +2,6 @@
 
 import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
-import "leaflet/dist/leaflet.css"
-
-// Dynamically import Leaflet components to avoid SSR issues
-const MapContainer = dynamic(
-    () => import("react-leaflet").then((mod) => mod.MapContainer),
-    { ssr: false }
-)
-const TileLayer = dynamic(
-    () => import("react-leaflet").then((mod) => mod.TileLayer),
-    { ssr: false }
-)
-const Polyline = dynamic(
-    () => import("react-leaflet").then((mod) => mod.Polyline),
-    { ssr: false }
-)
-const Marker = dynamic(
-    () => import("react-leaflet").then((mod) => mod.Marker),
-    { ssr: false }
-)
-const Popup = dynamic(
-    () => import("react-leaflet").then((mod) => mod.Popup),
-    { ssr: false }
-)
-
-// Fix for default marker icon
-import L from "leaflet"
-const icon = L.icon({
-    iconUrl: "/images/marker-icon.png",
-    shadowUrl: "/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-})
 
 interface MapProps {
     center?: [number, number]
@@ -43,16 +11,38 @@ interface MapProps {
     className?: string
 }
 
-export default function Map({ center = [51.505, -0.09], zoom = 13, path, markers, className }: MapProps) {
-    const [isMounted, setIsMounted] = useState(false)
+// Create a wrapper component that loads leaflet CSS
+function MapInner({ center = [51.505, -0.09], zoom = 13, path, markers, className }: MapProps) {
+    const [LeafletComponents, setLeafletComponents] = useState<{
+        MapContainer: any
+        TileLayer: any
+        Polyline: any
+        Marker: any
+        Popup: any
+    } | null>(null)
 
     useEffect(() => {
-        setIsMounted(true)
+        // Dynamically import all react-leaflet components
+        Promise.all([
+            import("react-leaflet"),
+            // @ts-ignore - CSS import for side effects
+            import("leaflet/dist/leaflet.css")
+        ]).then(([reactLeaflet]) => {
+            setLeafletComponents({
+                MapContainer: reactLeaflet.MapContainer,
+                TileLayer: reactLeaflet.TileLayer,
+                Polyline: reactLeaflet.Polyline,
+                Marker: reactLeaflet.Marker,
+                Popup: reactLeaflet.Popup
+            })
+        })
     }, [])
 
-    if (!isMounted) {
-        return <div className={`bg-gray-100 animate-pulse ${className}`} />
+    if (!LeafletComponents) {
+        return <div className={`bg-gray-100 animate-pulse ${className}`} style={{ height: "100%", width: "100%" }} />
     }
+
+    const { MapContainer, TileLayer, Polyline, Marker, Popup } = LeafletComponents
 
     return (
         <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} className={className} style={{ height: "100%", width: "100%" }}>
@@ -61,7 +51,7 @@ export default function Map({ center = [51.505, -0.09], zoom = 13, path, markers
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {path && <Polyline positions={path} color="blue" />}
-            {markers && markers.map((marker, idx) => (
+            {markers && markers.map((marker: { position: [number, number], title: string }, idx: number) => (
                 <Marker key={idx} position={marker.position}>
                     <Popup>{marker.title}</Popup>
                 </Marker>
@@ -69,3 +59,6 @@ export default function Map({ center = [51.505, -0.09], zoom = 13, path, markers
         </MapContainer>
     )
 }
+
+// Export with dynamic loading and SSR disabled
+export default dynamic(() => Promise.resolve(MapInner), { ssr: false })

@@ -133,7 +133,7 @@ export default async function AnalyticsPage() {
     },
     recentActivities: activities.slice(0, 30).map((a) => ({
       date: a.activityDate.toISOString(),
-      sport: a.sport.name,
+      sport: a.sport?.name || "Other",
       distance: (a.distanceMeters || 0) / 1000,
       duration: (a.durationSeconds || 0) / 60,
       pace: a.avgPace || 0,

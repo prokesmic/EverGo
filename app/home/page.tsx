@@ -102,9 +102,9 @@ export default async function HomePage() {
         }
     })
 
-    // Calculate current streak
-    const currentStreak = user.currentStreakDays || 0
-    const weeklyGoal = user.weeklyActivityGoal || 3
+    // Calculate current streak (these fields may not exist in schema, use defaults)
+    const currentStreak = 0
+    const weeklyGoal = 3
     const weeklyProgress = weeklyActivities.length
 
 

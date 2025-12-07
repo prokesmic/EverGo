@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
         coverPhotoUrl: true,
         city: true,
         country: true,
-        birthDate: true,
+        dateOfBirth: true,
         gender: true,
       },
     })

@@ -88,8 +88,8 @@ export async function GET(
       ...challenge,
       participation: userParticipation[challenge.id] || null,
       leaderboard: challenge.participants.map((p, index) => ({
+        ...p,
         rank: index + 1,
-        ...p
       }))
     }))
 

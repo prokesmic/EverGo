@@ -54,7 +54,10 @@ export function CommentsSection({ postId, initialComments = [] }: CommentsSectio
 
   // Real-time subscriptions
   useEffect(() => {
-    const channel = supabase
+    if (!supabase) return
+
+    const client = supabase
+    const channel = client
       .channel(`comments-${postId}`)
       .on(
         "postgres_changes",

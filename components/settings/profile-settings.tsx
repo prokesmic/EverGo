@@ -23,7 +23,7 @@ interface ProfileSettingsProps {
     coverPhotoUrl: string | null
     city: string | null
     country: string | null
-    birthDate: Date | null
+    dateOfBirth: Date | null
     gender: string | null
   }
 }
@@ -65,12 +65,17 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
     setAvatarLoading(true)
 
     try {
+      if (!supabase) {
+        toast.error("Storage not configured")
+        return
+      }
+
       // Upload to Supabase Storage
       const fileExt = file.name.split(".").pop()
       const fileName = `${user.id}-${Date.now()}.${fileExt}`
       const filePath = `avatars/${fileName}`
 
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("profile-photos")
         .upload(filePath, file, {
           cacheControl: "3600",
@@ -123,11 +128,16 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
     setCoverLoading(true)
 
     try {
+      if (!supabase) {
+        toast.error("Storage not configured")
+        return
+      }
+
       const fileExt = file.name.split(".").pop()
       const fileName = `${user.id}-${Date.now()}.${fileExt}`
       const filePath = `covers/${fileName}`
 
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("profile-photos")
         .upload(filePath, file, {
           cacheControl: "3600",

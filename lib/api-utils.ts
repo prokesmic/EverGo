@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { logger } from '@/lib/logger'
-import { rateLimitMiddleware, RATE_LIMITS, getClientIp, checkRateLimit } from '@/lib/rate-limit'
+import { rateLimitMiddleware, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 
 type RateLimitType = keyof typeof RATE_LIMITS
 

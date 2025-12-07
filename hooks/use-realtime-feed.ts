@@ -32,7 +32,8 @@ export function useRealtimeFeed(options: UseRealtimeFeedOptions = {}) {
       return
     }
 
-    const channel = supabase
+    const client = supabase
+    const channel = client
       .channel('feed-realtime')
       .on(
         'postgres_changes',
@@ -80,7 +81,7 @@ export function useRealtimeFeed(options: UseRealtimeFeedOptions = {}) {
       })
 
     return () => {
-      supabase.removeChannel(channel)
+      client.removeChannel(channel)
     }
   }, [enabled, onNewPost, onPostUpdate, onPostDelete])
 
@@ -104,7 +105,8 @@ export function useRealtimeNotifications(userId: string | undefined) {
       return
     }
 
-    const channel = supabase
+    const client = supabase
+    const channel = client
       .channel(`notifications-${userId}`)
       .on(
         'postgres_changes',
@@ -130,7 +132,7 @@ export function useRealtimeNotifications(userId: string | undefined) {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      client.removeChannel(channel)
     }
   }, [userId])
 
@@ -154,7 +156,8 @@ export function useRealtimeActivity(postId: string) {
       return
     }
 
-    const likesChannel = supabase
+    const client = supabase
+    const likesChannel = client
       .channel(`likes-${postId}`)
       .on(
         'postgres_changes',
@@ -174,7 +177,7 @@ export function useRealtimeActivity(postId: string) {
       )
       .subscribe()
 
-    const commentsChannel = supabase
+    const commentsChannel = client
       .channel(`comments-${postId}`)
       .on(
         'postgres_changes',
@@ -191,8 +194,8 @@ export function useRealtimeActivity(postId: string) {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(likesChannel)
-      supabase.removeChannel(commentsChannel)
+      client.removeChannel(likesChannel)
+      client.removeChannel(commentsChannel)
     }
   }, [postId])
 
