@@ -12,6 +12,8 @@ import { TeamsWidget } from "@/components/widgets/teams-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
 import { PersonalRecordsList } from "@/components/profile/personal-records-list"
 
+export const dynamic = 'force-dynamic'
+
 interface ProfilePageProps {
     params: Promise<{
         username: string

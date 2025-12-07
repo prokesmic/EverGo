@@ -16,6 +16,7 @@ import { Feed } from "@/components/feed/feed"
 import { StreakAlert } from "@/components/widgets/streak-alert"
 import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestions-wrapper"
 
+export const dynamic = 'force-dynamic'
 
 /**
  * Home Dashboard Page

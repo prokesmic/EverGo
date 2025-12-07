@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db"
 import { CreateActivityForm } from "@/components/activity/create-activity-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+export const dynamic = 'force-dynamic'
+
 export default async function CreateActivityPage() {
     const sports = await prisma.sport.findMany({
         include: {

@@ -3,6 +3,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/db"
 import { AnimatedLeaderboard } from "@/components/rankings/animated-leaderboard"
 
+export const dynamic = 'force-dynamic'
+
 export default async function LeaderboardPage() {
   const session = await getServerSession(authOptions)
 

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db"
 import { TrainingPlansList } from "@/components/training/training-plans-list"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+export const dynamic = 'force-dynamic'
+
 export default async function TrainingPlansPage() {
   const session = await getServerSession(authOptions)
 

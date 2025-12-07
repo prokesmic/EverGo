@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { ProfileSettings } from "@/components/settings/profile-settings"
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProfileSettingsPage() {
   const session = await getServerSession(authOptions)
 

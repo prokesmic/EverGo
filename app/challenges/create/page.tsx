@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db"
 import { ChallengeCreationForm } from "@/components/challenges/challenge-creation-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+export const dynamic = 'force-dynamic'
+
 export default async function CreateChallengePage() {
   const session = await getServerSession(authOptions)
 

@@ -9,6 +9,8 @@ import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
 import { Metadata } from "next"
 
+export const dynamic = 'force-dynamic'
+
 interface ActivityPageProps {
     params: Promise<{
         id: string

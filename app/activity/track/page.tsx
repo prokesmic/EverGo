@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db"
 import { GPSTrackerPage } from "@/components/activity/gps-tracker-page"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+export const dynamic = 'force-dynamic'
+
 export default async function TrackActivityPage() {
   const sports = await prisma.sport.findMany({
     include: {

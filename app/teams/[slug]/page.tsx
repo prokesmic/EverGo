@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Users, Calendar, Trophy } from "lucide-react"
 import { format } from "date-fns"
 
+export const dynamic = 'force-dynamic'
+
 export default async function TeamPage({ params }: { params: { slug: string } }) {
     const session = await getServerSession(authOptions)
     const slug = params.slug

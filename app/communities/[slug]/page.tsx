@@ -7,6 +7,8 @@ import { CommunityPostComposer } from "@/components/communities/community-post-c
 import { CommunityPostCard } from "@/components/communities/community-post-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+export const dynamic = 'force-dynamic'
+
 export default async function CommunityPage({ params }: { params: { slug: string } }) {
     const session = await getServerSession(authOptions)
     const slug = params.slug

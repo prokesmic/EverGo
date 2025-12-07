@@ -4,6 +4,8 @@ import { notFound } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { ChallengeDetail } from "@/components/challenges/challenge-detail"
 
+export const dynamic = 'force-dynamic'
+
 interface ChallengePageProps {
   params: Promise<{ id: string }>
 }

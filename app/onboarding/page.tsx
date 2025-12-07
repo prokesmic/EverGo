@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow"
 
+export const dynamic = 'force-dynamic'
+
 export default async function OnboardingPage() {
   const session = await getServerSession(authOptions)
 

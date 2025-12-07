@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
 
+export const dynamic = 'force-dynamic'
+
 export default async function AnalyticsPage() {
   const session = await getServerSession(authOptions)
 

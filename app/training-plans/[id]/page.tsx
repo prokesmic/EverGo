@@ -4,6 +4,8 @@ import { notFound } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { TrainingPlanDetail } from "@/components/training/training-plan-detail"
 
+export const dynamic = 'force-dynamic'
+
 interface TrainingPlanPageProps {
   params: Promise<{ id: string }>
 }
