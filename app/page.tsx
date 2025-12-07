@@ -8,6 +8,8 @@ import { LandingSocialProof } from "@/components/landing/LandingSocialProof"
 import { LandingCTA } from "@/components/landing/LandingCTA"
 import { LandingComparison } from "@/components/landing/LandingComparison"
 
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   const session = await getServerSession(authOptions)
 
