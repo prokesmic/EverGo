@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { rateLimitMiddleware, RATE_LIMITS, getClientIp } from "@/lib/rate-limit"
+import { logger } from "@/lib/logger"
 
 export async function GET(req: Request) {
+  // Apply search-specific rate limiting
+  const rateLimitResponse = rateLimitMiddleware(req, RATE_LIMITS.search)
+  if (rateLimitResponse) {
+    return rateLimitResponse
+  }
+
   try {
     const { searchParams } = new URL(req.url)
     const query = searchParams.get("q")
@@ -102,7 +110,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ results })
   } catch (error) {
-    console.error("Search error:", error)
+    logger.error("Search error", error, { ip: getClientIp(req) })
     return NextResponse.json({ error: "Search failed" }, { status: 500 })
   }
 }
