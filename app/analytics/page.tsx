@@ -67,7 +67,7 @@ export default async function AnalyticsPage() {
   // Group activities by sport
   const sportBreakdown: Record<string, { count: number; distance: number; time: number }> = {}
   activities.forEach((activity) => {
-    const sportName = activity.sport.name
+    const sportName = activity.sport?.name || "Other"
     if (!sportBreakdown[sportName]) {
       sportBreakdown[sportName] = { count: 0, distance: 0, time: 0 }
     }
