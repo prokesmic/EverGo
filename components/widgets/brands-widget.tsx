@@ -1,6 +1,5 @@
-import { ShoppingBag, ChevronRight, Tag } from "lucide-react"
+import { ShoppingBag, Tag } from "lucide-react"
 import { CardShell } from "@/components/ui/CardShell"
-import Link from "next/link"
 
 export function BrandsWidget() {
     const brands = [
@@ -14,7 +13,6 @@ export function BrandsWidget() {
         <CardShell
             title="Favourite Brands"
             icon={<ShoppingBag className="h-5 w-5" />}
-            action={<Link href="/brands" className="flex items-center">View all <ChevronRight className="h-3 w-3 ml-1" /></Link>}
         >
             <div className="grid grid-cols-2 gap-3">
                 {brands.map((brand) => (

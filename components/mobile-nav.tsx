@@ -14,7 +14,7 @@ export function MobileNav() {
     { href: "/home", label: "Home", icon: Home },
     { href: "/leaderboard", label: "Rankings", icon: Trophy },
     { href: "/challenges", label: "Challenges", icon: Target },
-    { href: session ? `/profile/${session.user?.username || 'me'}` : "/profile", label: "Profile", icon: User },
+    { href: session ? `/profile/${session.user?.username || session.user?.name?.toLowerCase().replace(/\s+/g, '') || 'me'}` : "/login", label: "Profile", icon: User },
   ]
 
   const isActive = (href: string) => {
@@ -26,7 +26,7 @@ export function MobileNav() {
     <>
       {/* Floating Action Button for Record Activity */}
       <Link
-        href="/activity/new"
+        href="/activity/create"
         className="fixed bottom-20 right-4 z-50 lg:hidden w-14 h-14 bg-gradient-to-r from-brand-blue to-blue-600 rounded-full shadow-lg flex items-center justify-center text-white active:scale-95 transition-transform"
         style={{
           boxShadow: "0 4px 14px rgba(0, 120, 212, 0.4)",
