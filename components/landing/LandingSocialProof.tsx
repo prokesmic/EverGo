@@ -102,7 +102,7 @@ export function LandingSocialProof() {
 
   return (
     <section className="w-full py-20 md:py-28 bg-gray-50 overflow-hidden">
-      <div className="container px-4 md:px-6">
+      <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-gray-700 text-sm font-medium mb-4 shadow-sm">

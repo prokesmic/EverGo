@@ -48,7 +48,7 @@ export function LandingHeader() {
             : "bg-transparent"
         )}
       >
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link
             href="/"

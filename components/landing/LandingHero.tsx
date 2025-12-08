@@ -31,10 +31,10 @@ export function LandingHero() {
         }}
       />
 
-      <div className="container relative px-4 md:px-6 py-20 md:py-32">
+      <div className="container relative px-4 md:px-6 py-20 md:py-32 mx-auto max-w-7xl">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Content */}
-          <div className="flex flex-col space-y-8 text-center lg:text-left">
+          <div className="flex flex-col space-y-8 text-center lg:text-left mx-auto lg:mx-0 max-w-2xl lg:max-w-none">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-full text-white text-sm font-medium w-fit mx-auto lg:mx-0 border border-white/20">
               <span className="relative flex h-2 w-2">

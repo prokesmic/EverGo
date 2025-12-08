@@ -50,7 +50,7 @@ const socialLinks = [
 export function LandingFooter() {
   return (
     <footer className="w-full bg-gray-900 text-white">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Footer Content */}
         <div className="py-12 md:py-16 grid grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand Column */}

@@ -14,7 +14,7 @@ export function LandingCTA() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
       </div>
 
-      <div className="container relative px-4 md:px-6">
+      <div className="container relative px-4 md:px-6 mx-auto max-w-7xl">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium">

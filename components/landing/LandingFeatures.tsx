@@ -103,7 +103,7 @@ export function LandingFeatures() {
 
   return (
     <section className="w-full py-20 md:py-28 bg-white overflow-hidden">
-      <div className="container px-4 md:px-6">
+      <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-blue/10 to-brand-green/10 rounded-full text-brand-blue text-sm font-medium mb-4">

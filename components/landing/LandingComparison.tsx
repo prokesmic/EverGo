@@ -185,7 +185,7 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
 export function LandingComparison() {
   return (
     <section className="w-full py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
-      <div className="container px-4 md:px-6">
+      <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 rounded-full text-yellow-800 text-sm font-medium mb-4">
