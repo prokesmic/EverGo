@@ -687,7 +687,7 @@
 }
 
 .card-interactive {
-  @apply card-elevated cursor-pointer;
+  @apply bg-card rounded-2xl shadow-sm border border-border/50 transition-all duration-200 cursor-pointer;
 }
 
 .card-interactive:hover {
@@ -713,19 +713,19 @@
 }
 
 .chip-primary {
-  @apply chip bg-primary/10 text-primary hover:bg-primary/20;
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all bg-primary/10 text-primary hover:bg-primary/20;
 }
 
 .chip-secondary {
-  @apply chip bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all bg-secondary text-secondary-foreground hover:bg-secondary/80;
 }
 
 .chip-active {
-  @apply chip bg-primary text-primary-foreground;
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all bg-primary text-primary-foreground;
 }
 
 .chip-sport {
-  @apply chip uppercase tracking-wider;
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all uppercase tracking-wider;
 }
 
 /* Trend Indicators */
@@ -836,7 +836,7 @@
 }
 
 .leaderboard-row-highlight {
-  @apply leaderboard-row bg-primary/5 border border-primary/20;
+  @apply flex items-center gap-4 p-3 rounded-xl transition-all duration-200 bg-primary/5 border border-primary/20;
 }
 
 .leaderboard-rank {
@@ -844,19 +844,19 @@
 }
 
 .leaderboard-rank-gold {
-  @apply leaderboard-rank bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg;
+  @apply w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg;
 }
 
 .leaderboard-rank-silver {
-  @apply leaderboard-rank bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-md;
+  @apply w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-md;
 }
 
 .leaderboard-rank-bronze {
-  @apply leaderboard-rank bg-gradient-to-br from-orange-400 to-amber-600 text-white shadow-md;
+  @apply w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold bg-gradient-to-br from-orange-400 to-amber-600 text-white shadow-md;
 }
 
 .leaderboard-rank-default {
-  @apply leaderboard-rank bg-muted text-muted-foreground;
+  @apply w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold bg-muted text-muted-foreground;
 }
 
 /* Skeleton Loading Enhancement */
@@ -871,7 +871,7 @@
 
 /* Widget Card */
 .widget-card {
-  @apply card-elevated p-4;
+  @apply bg-card rounded-2xl shadow-sm border border-border/50 transition-all duration-200 p-4;
 }
 
 .widget-header {
