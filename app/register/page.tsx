@@ -24,6 +24,7 @@ export default function RegisterPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        console.log("Form submitted", formData)
         setIsLoading(true)
 
         if (formData.password !== formData.confirmPassword) {
@@ -38,6 +39,8 @@ export default function RegisterPage() {
             return
         }
 
+        console.log("Sending registration request...")
+
         try {
             const response = await fetch("/api/auth/register", {
                 method: "POST",
@@ -48,7 +51,9 @@ export default function RegisterPage() {
                 }),
             })
 
+            console.log("Response status:", response.status)
             const data = await response.json()
+            console.log("Response data:", data)
 
             if (response.ok) {
                 toast.success("Account created successfully")
