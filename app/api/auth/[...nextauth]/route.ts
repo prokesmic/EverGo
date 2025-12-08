@@ -29,30 +29,43 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
+                console.log("[Auth] Authorize called with email:", credentials?.email)
+
                 if (!credentials?.email || !credentials?.password) {
+                    console.log("[Auth] Missing credentials")
                     return null
                 }
 
                 try {
+                    console.log("[Auth] Looking up user...")
                     const user = await prisma.user.findUnique({
                         where: {
                             email: credentials.email
                         }
                     })
 
-                    if (!user || !user.password) {
+                    if (!user) {
+                        console.log("[Auth] User not found")
                         return null
                     }
 
+                    if (!user.password) {
+                        console.log("[Auth] User has no password (OAuth account?)")
+                        return null
+                    }
+
+                    console.log("[Auth] Comparing passwords...")
                     const isPasswordValid = await bcrypt.compare(
                         credentials.password,
                         user.password
                     )
 
                     if (!isPasswordValid) {
+                        console.log("[Auth] Invalid password")
                         return null
                     }
 
+                    console.log("[Auth] Login successful for user:", user.id)
                     return {
                         id: user.id,
                         email: user.email,
@@ -61,7 +74,7 @@ export const authOptions: NextAuthOptions = {
                         image: user.avatarUrl,
                     }
                 } catch (error) {
-                    console.error("Auth error:", error)
+                    console.error("[Auth] Error:", error)
                     return null
                 }
             }
