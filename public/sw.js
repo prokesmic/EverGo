@@ -1,6 +1,6 @@
 // Service Worker for Push Notifications and Offline Support
 
-const CACHE_VERSION = 4
+const CACHE_VERSION = 5
 const CACHE_NAME = `evergo-v${CACHE_VERSION}`
 const STATIC_CACHE = `evergo-static-v${CACHE_VERSION}`
 const DYNAMIC_CACHE = `evergo-dynamic-v${CACHE_VERSION}`
@@ -104,25 +104,26 @@ self.addEventListener("fetch", (event) => {
     return
   }
 
-  // Strategy for API requests: Stale-While-Revalidate
+  // Strategy for API requests: Network-First (with cache fallback for offline)
   if (isApiRequest(url)) {
     event.respondWith(
-      caches.open(API_CACHE).then((cache) => {
-        return cache.match(event.request).then((cachedResponse) => {
-          const fetchPromise = fetch(event.request)
-            .then((networkResponse) => {
-              // Only cache successful responses
-              if (networkResponse.ok) {
-                cache.put(event.request, networkResponse.clone())
-              }
-              return networkResponse
+      fetch(event.request)
+        .then((networkResponse) => {
+          // Only cache successful GET responses
+          if (networkResponse.ok && event.request.method === "GET") {
+            const responseToCache = networkResponse.clone()
+            caches.open(API_CACHE).then((cache) => {
+              cache.put(event.request, responseToCache)
             })
-            .catch(() => cachedResponse)
-
-          // Return cached response immediately, update in background
-          return cachedResponse || fetchPromise
+          }
+          return networkResponse
         })
-      })
+        .catch(() => {
+          // Network failed, try cache as fallback
+          return caches.open(API_CACHE).then((cache) => {
+            return cache.match(event.request)
+          })
+        })
     )
     return
   }
