@@ -13,10 +13,8 @@ export default function RegisterPage() {
     const router = useRouter()
     const [formData, setFormData] = useState({
         email: "",
-        username: "",
         password: "",
         confirmPassword: "",
-        displayName: ""
     })
     const [isLoading, setIsLoading] = useState(false)
 
@@ -34,15 +32,19 @@ export default function RegisterPage() {
             return
         }
 
+        if (formData.password.length < 6) {
+            toast.error("Password must be at least 6 characters")
+            setIsLoading(false)
+            return
+        }
+
         try {
             const response = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     email: formData.email,
-                    username: formData.username,
                     password: formData.password,
-                    displayName: formData.displayName
                 }),
             })
 
@@ -76,32 +78,11 @@ export default function RegisterPage() {
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="m@example.com"
+                                placeholder="you@example.com"
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="username">Username</Label>
-                            <Input
-                                id="username"
-                                type="text"
-                                placeholder="runner123"
-                                value={formData.username}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="displayName">Display Name</Label>
-                            <Input
-                                id="displayName"
-                                type="text"
-                                placeholder="John Doe"
-                                value={formData.displayName}
-                                onChange={handleChange}
-                                required
+                                autoComplete="email"
                             />
                         </div>
                         <div className="space-y-2">
@@ -109,9 +90,11 @@ export default function RegisterPage() {
                             <Input
                                 id="password"
                                 type="password"
+                                placeholder="At least 6 characters"
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
+                                autoComplete="new-password"
                             />
                         </div>
                         <div className="space-y-2">
@@ -119,9 +102,11 @@ export default function RegisterPage() {
                             <Input
                                 id="confirmPassword"
                                 type="password"
+                                placeholder="Confirm your password"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 required
+                                autoComplete="new-password"
                             />
                         </div>
                         <Button type="submit" className="w-full bg-brand-blue hover:bg-brand-blue-dark" disabled={isLoading}>
