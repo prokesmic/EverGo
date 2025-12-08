@@ -3,12 +3,12 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { NextResponse } from "next/server"
 
-// GET /api/teams/[teamId]/challenges - Get team challenges
+// GET /api/teams/[slug]/challenges - Get team challenges
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ teamId: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { teamId } = await params
+  const { slug } = await params
   const session = await getServerSession(authOptions)
   const { searchParams } = new URL(request.url)
   const status = searchParams.get("status") || "active"
@@ -16,7 +16,7 @@ export async function GET(
   try {
     // Verify team exists
     const team = await prisma.team.findUnique({
-      where: { id: teamId },
+      where: { slug },
       include: { sport: true }
     })
 
@@ -26,7 +26,7 @@ export async function GET(
 
     const where: any = {
       scope: "TEAM",
-      teamId: teamId,
+      teamId: team.id,
       isActive: true
     }
 
@@ -108,12 +108,12 @@ export async function GET(
   }
 }
 
-// POST /api/teams/[teamId]/challenges - Create team challenge
+// POST /api/teams/[slug]/challenges - Create team challenge
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ teamId: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { teamId } = await params
+  const { slug } = await params
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.email) {
@@ -121,6 +121,15 @@ export async function POST(
   }
 
   try {
+    const team = await prisma.team.findUnique({
+      where: { slug },
+      include: { sport: true }
+    })
+
+    if (!team) {
+      return NextResponse.json({ error: "Team not found" }, { status: 404 })
+    }
+
     const user = await prisma.user.findUnique({ where: { email: session.user.email } })
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
@@ -128,20 +137,11 @@ export async function POST(
 
     // Check if user is team admin/owner
     const membership = await prisma.teamMember.findUnique({
-      where: { teamId_userId: { teamId, userId: user.id } }
+      where: { teamId_userId: { teamId: team.id, userId: user.id } }
     })
 
     if (!membership || !["OWNER", "ADMIN", "CAPTAIN"].includes(membership.role)) {
       return NextResponse.json({ error: "Only team admins can create challenges" }, { status: 403 })
-    }
-
-    const team = await prisma.team.findUnique({
-      where: { id: teamId },
-      include: { sport: true }
-    })
-
-    if (!team) {
-      return NextResponse.json({ error: "Team not found" }, { status: 404 })
     }
 
     const body = await request.json()
@@ -174,7 +174,7 @@ export async function POST(
         targetValue: parseFloat(targetValue),
         targetUnit,
         scope: "TEAM",
-        teamId,
+        teamId: team.id,
         sportId: team.sportId,
         isActive: true
       },
@@ -187,7 +187,7 @@ export async function POST(
     // Auto-join all team members if requested
     if (autoJoinMembers) {
       const teamMembers = await prisma.teamMember.findMany({
-        where: { teamId },
+        where: { teamId: team.id },
         select: { userId: true }
       })
 

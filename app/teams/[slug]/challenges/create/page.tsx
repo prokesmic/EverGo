@@ -28,7 +28,7 @@ import Link from "next/link"
 import { toast } from "sonner"
 
 interface PageProps {
-  params: Promise<{ teamId: string }>
+  params: Promise<{ slug: string }>
 }
 
 const TARGET_TYPES = [
@@ -82,7 +82,7 @@ const PRESET_CHALLENGES = [
 ]
 
 export default function CreateTeamChallengePage({ params }: PageProps) {
-  const { teamId } = use(params)
+  const { slug } = use(params)
   const router = useRouter()
   const { data: session } = useSession()
 
@@ -103,7 +103,7 @@ export default function CreateTeamChallengePage({ params }: PageProps) {
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        const res = await fetch(`/api/teams/${teamId}`)
+        const res = await fetch(`/api/teams/${slug}`)
         const data = await res.json()
         if (data.team) {
           setTeam(data.team)
@@ -116,7 +116,7 @@ export default function CreateTeamChallengePage({ params }: PageProps) {
     }
 
     fetchTeam()
-  }, [teamId])
+  }, [slug])
 
   const handleTargetTypeChange = (value: string) => {
     setTargetType(value)
@@ -154,7 +154,7 @@ export default function CreateTeamChallengePage({ params }: PageProps) {
     setIsSubmitting(true)
 
     try {
-      const res = await fetch(`/api/teams/${teamId}/challenges`, {
+      const res = await fetch(`/api/teams/${slug}/challenges`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -173,7 +173,7 @@ export default function CreateTeamChallengePage({ params }: PageProps) {
 
       if (data.success) {
         toast.success("Challenge created successfully!")
-        router.push(`/teams/${teamId}?tab=challenges`)
+        router.push(`/teams/${slug}?tab=challenges`)
       } else {
         toast.error(data.error || "Failed to create challenge")
       }
@@ -199,7 +199,7 @@ export default function CreateTeamChallengePage({ params }: PageProps) {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/teams/${teamId}`}
+            href={`/teams/${slug}`}
             className="text-text-secondary hover:text-text-primary flex items-center gap-1 text-sm mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
