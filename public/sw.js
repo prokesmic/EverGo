@@ -1,6 +1,6 @@
 // Service Worker for Push Notifications and Offline Support
 
-const CACHE_VERSION = 3
+const CACHE_VERSION = 4
 const CACHE_NAME = `evergo-v${CACHE_VERSION}`
 const STATIC_CACHE = `evergo-static-v${CACHE_VERSION}`
 const DYNAMIC_CACHE = `evergo-dynamic-v${CACHE_VERSION}`
@@ -159,8 +159,9 @@ self.addEventListener("fetch", (event) => {
         }
         return fetch(event.request).then((networkResponse) => {
           if (networkResponse.ok) {
+            const responseToCache = networkResponse.clone()
             caches.open(STATIC_CACHE).then((cache) => {
-              cache.put(event.request, networkResponse.clone())
+              cache.put(event.request, responseToCache)
             })
           }
           return networkResponse

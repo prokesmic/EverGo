@@ -21,7 +21,7 @@ export function MobileHeader() {
     const fetchNotifications = async () => {
       if (session?.user) {
         try {
-          const res = await fetch("/api/notifications?unread=true&limit=1")
+          const res = await fetch("/api/notifications?unreadOnly=true&limit=1")
           const data = await res.json()
           setUnreadCount(data.unreadCount || 0)
         } catch (e) {
