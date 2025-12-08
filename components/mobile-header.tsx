@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Search, Bell, Flame } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -10,6 +11,7 @@ import { MobileSearch } from "@/components/mobile-search"
 
 export function MobileHeader() {
   const { data: session } = useSession()
+  const pathname = usePathname()
   const [showSearch, setShowSearch] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const [streak, setStreak] = useState(0)
@@ -44,6 +46,11 @@ export function MobileHeader() {
     fetchNotifications()
     fetchStreak()
   }, [session])
+
+  // Hide mobile header on landing page
+  if (pathname === "/") {
+    return null
+  }
 
   return (
     <>

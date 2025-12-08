@@ -1,100 +1,228 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Star } from "lucide-react"
+import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 const testimonials = [
   {
+    id: 1,
     name: "Sarah Chen",
     role: "Marathon Runner",
     location: "San Francisco, CA",
     avatar: "https://i.pravatar.cc/150?img=1",
-    quote: "Finally, a platform that understands multi-sport athletes. I can track my running, swimming, and cycling all in one place!",
+    quote: "Finally, a platform that understands multi-sport athletes. I can track my running, swimming, and cycling all in one place. The rankings keep me motivated every single day!",
     rating: 5,
+    sport: "Running",
+    highlight: "Multi-sport tracking",
   },
   {
+    id: 2,
     name: "Marcus Rodriguez",
     role: "Triathlete",
     location: "Madrid, Spain",
     avatar: "https://i.pravatar.cc/150?img=12",
-    quote: "The local rankings motivated me to push harder. I went from #47 to #8 in my city in just 3 months!",
+    quote: "The local rankings motivated me to push harder. I went from #47 to #8 in my city in just 3 months! The competition is real and keeps me accountable.",
     rating: 5,
+    sport: "Triathlon",
+    highlight: "Ranked up 39 spots",
   },
   {
+    id: 3,
     name: "Emma Thompson",
     role: "Fitness Enthusiast",
     location: "London, UK",
     avatar: "https://i.pravatar.cc/150?img=5",
-    quote: "Love the partner finder feature! I've met amazing workout buddies through EverGo.",
+    quote: "Love the partner finder feature! I've met amazing workout buddies through EverGo. We train together twice a week now and it's completely changed my routine.",
     rating: 5,
+    sport: "Gym & Running",
+    highlight: "Found 3 training partners",
+  },
+  {
+    id: 4,
+    name: "David Park",
+    role: "Weekend Cyclist",
+    location: "Seoul, South Korea",
+    avatar: "https://i.pravatar.cc/150?img=8",
+    quote: "As a casual cyclist, I never thought I'd care about rankings. But seeing myself climb the local leaderboard has made cycling so much more fun!",
+    rating: 5,
+    sport: "Cycling",
+    highlight: "2000km logged this year",
+  },
+  {
+    id: 5,
+    name: "Ana Kowalski",
+    role: "CrossFit Athlete",
+    location: "Warsaw, Poland",
+    avatar: "https://i.pravatar.cc/150?img=9",
+    quote: "The team challenges are incredible. My gym uses EverGo for our monthly competitions and it's brought our community so much closer together.",
+    rating: 5,
+    sport: "CrossFit",
+    highlight: "Team challenge winner",
   },
 ]
 
+const stats = [
+  { value: "4.9★", label: "App Store Rating", sublabel: "12K+ reviews" },
+  { value: "98%", label: "User Satisfaction", sublabel: "based on surveys" },
+  { value: "50K+", label: "Active Athletes", sublabel: "this month" },
+  { value: "Free", label: "Forever Plan", sublabel: "full features" },
+]
+
 export function LandingSocialProof() {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+
+  // Auto-advance carousel
+  useEffect(() => {
+    if (!isAutoPlaying) return
+
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % testimonials.length)
+    }, 5000)
+
+    return () => clearInterval(timer)
+  }, [isAutoPlaying])
+
+  const goToPrev = () => {
+    setIsAutoPlaying(false)
+    setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  }
+
+  const goToNext = () => {
+    setIsAutoPlaying(false)
+    setActiveIndex((prev) => (prev + 1) % testimonials.length)
+  }
+
+  const goToSlide = (index: number) => {
+    setIsAutoPlaying(false)
+    setActiveIndex(index)
+  }
+
   return (
-    <section className="w-full py-16 md:py-24 bg-gray-50">
+    <section className="w-full py-20 md:py-28 bg-gray-50 overflow-hidden">
       <div className="container px-4 md:px-6">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Loved by athletes worldwide
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-gray-700 text-sm font-medium mb-4 shadow-sm">
+            <div className="flex gap-0.5">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              ))}
+            </div>
+            <span>Loved by athletes worldwide</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+            Real athletes, real results
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Join thousands of athletes who are achieving their goals with EverGo
           </p>
         </div>
 
-        {/* Testimonials Grid */}
-        <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
-          {testimonials.map((testimonial, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow"
-            >
-              {/* Rating */}
-              <div className="flex gap-1 mb-4">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
+        {/* Testimonials Carousel */}
+        <div className="relative max-w-5xl mx-auto">
+          {/* Main Testimonial Card */}
+          <div className="relative bg-white rounded-3xl shadow-xl p-8 md:p-12 overflow-hidden">
+            {/* Quote Icon */}
+            <Quote className="absolute top-6 right-6 w-16 h-16 text-gray-100" />
+
+            {/* Testimonial Content */}
+            <div className="relative grid md:grid-cols-3 gap-8 items-center">
+              {/* Author Info - Left */}
+              <div className="md:col-span-1">
+                <div className="flex flex-col items-center text-center">
+                  <Avatar className="h-24 w-24 border-4 border-white shadow-lg mb-4">
+                    <AvatarImage src={testimonials[activeIndex].avatar} />
+                    <AvatarFallback className="text-2xl">
+                      {testimonials[activeIndex].name[0]}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="font-bold text-xl text-gray-900">
+                    {testimonials[activeIndex].name}
+                  </div>
+                  <div className="text-gray-600">{testimonials[activeIndex].role}</div>
+                  <div className="text-sm text-gray-500">{testimonials[activeIndex].location}</div>
+
+                  {/* Rating */}
+                  <div className="flex gap-0.5 mt-4">
+                    {[...Array(testimonials[activeIndex].rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+
+                  {/* Highlight Badge */}
+                  <div className="mt-4 px-4 py-2 bg-brand-blue/10 text-brand-blue rounded-full text-sm font-medium">
+                    {testimonials[activeIndex].highlight}
+                  </div>
+                </div>
               </div>
 
-              {/* Quote */}
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                "{testimonial.quote}"
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={testimonial.avatar} />
-                  <AvatarFallback>{testimonial.name[0]}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                  <div className="text-sm text-gray-600">{testimonial.role}</div>
-                  <div className="text-xs text-gray-500">{testimonial.location}</div>
+              {/* Quote - Right */}
+              <div className="md:col-span-2">
+                <blockquote className="text-xl md:text-2xl text-gray-800 leading-relaxed font-medium">
+                  &ldquo;{testimonials[activeIndex].quote}&rdquo;
+                </blockquote>
+                <div className="mt-6 flex items-center gap-2">
+                  <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                    {testimonials[activeIndex].sport}
+                  </span>
                 </div>
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* Navigation Arrows */}
+          <button
+            onClick={goToPrev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 hover:shadow-xl transition-all"
+            aria-label="Previous testimonial"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          <button
+            onClick={goToNext}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 hover:shadow-xl transition-all"
+            aria-label="Next testimonial"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          {/* Dots Indicator */}
+          <div className="flex justify-center gap-2 mt-8">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all",
+                  index === activeIndex
+                    ? "w-8 bg-brand-blue"
+                    : "bg-gray-300 hover:bg-gray-400"
+                )}
+                aria-label={`Go to testimonial ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Stats Bar */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-brand-blue mb-2">4.9★</div>
-            <div className="text-sm text-gray-600">App Store Rating</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-brand-blue mb-2">98%</div>
-            <div className="text-sm text-gray-600">User Satisfaction</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-brand-blue mb-2">24/7</div>
-            <div className="text-sm text-gray-600">Support Available</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-brand-blue mb-2">Free</div>
-            <div className="text-sm text-gray-600">Forever Plan</div>
-          </div>
+        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          {stats.map((stat, index) => (
+            <div
+              key={index}
+              className="text-center p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="text-3xl md:text-4xl font-bold text-brand-blue mb-1">
+                {stat.value}
+              </div>
+              <div className="font-medium text-gray-900">{stat.label}</div>
+              <div className="text-xs text-gray-500">{stat.sublabel}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

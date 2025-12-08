@@ -10,6 +10,11 @@ export function MobileNav() {
   const pathname = usePathname()
   const { data: session } = useSession()
 
+  // Hide mobile nav on landing page
+  if (pathname === "/") {
+    return null
+  }
+
   const navItems = [
     { href: "/home", label: "Home", icon: Home },
     { href: "/leaderboard", label: "Rankings", icon: Trophy },

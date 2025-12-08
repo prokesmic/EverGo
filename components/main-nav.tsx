@@ -21,6 +21,11 @@ export function MainNav() {
     const pathname = usePathname()
     const { data: session } = useSession()
 
+    // Hide main nav on landing page - it has its own header
+    if (pathname === "/") {
+        return null
+    }
+
     const navItems = [
         { href: "/home", label: "Home", icon: Home },
         { href: "/rankings", label: "Rankings", icon: Trophy },
