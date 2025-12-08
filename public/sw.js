@@ -1,6 +1,6 @@
 // Service Worker for Push Notifications and Offline Support
 
-const CACHE_VERSION = 2
+const CACHE_VERSION = 3
 const CACHE_NAME = `evergo-v${CACHE_VERSION}`
 const STATIC_CACHE = `evergo-static-v${CACHE_VERSION}`
 const DYNAMIC_CACHE = `evergo-dynamic-v${CACHE_VERSION}`
@@ -9,24 +9,15 @@ const IMAGE_CACHE = `evergo-images-v${CACHE_VERSION}`
 
 const OFFLINE_URL = "/offline"
 
-// Core static assets to cache immediately
+// Core static assets to cache immediately (only assets that definitely exist)
 const STATIC_ASSETS = [
   "/",
-  "/home",
   "/offline",
   "/manifest.json",
-  "/icons/icon.svg",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
 ]
 
-// Pages to cache for offline use
-const PRECACHE_PAGES = [
-  "/leaderboard",
-  "/challenges",
-  "/profile",
-  "/stats",
-]
+// Pages to cache for offline use (will be cached opportunistically)
+const PRECACHE_PAGES = []
 
 // API endpoints to cache (stale-while-revalidate)
 const CACHEABLE_API_ROUTES = [
