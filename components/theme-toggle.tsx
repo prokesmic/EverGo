@@ -32,7 +32,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       )}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
-      {/* Sun Icon */}
+      {/* Sun Icon - shows in dark mode (click to go light) */}
       <Sun
         className={cn(
           "absolute w-5 h-5 transition-all duration-300",
@@ -41,7 +41,7 @@ export function ThemeToggle({ className }: { className?: string }) {
             : "opacity-0 rotate-90 scale-0"
         )}
       />
-      {/* Moon Icon */}
+      {/* Moon Icon - shows in light mode (click to go dark) */}
       <Moon
         className={cn(
           "absolute w-5 h-5 transition-all duration-300",
