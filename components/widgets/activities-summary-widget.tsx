@@ -1,5 +1,9 @@
-import { Activity, Clock, Flame, ChevronRight } from "lucide-react"
+"use client"
+
+import { Activity, ChevronRight, TrendingUp } from "lucide-react"
 import { CardShell } from "@/components/ui/CardShell"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 interface ActivityBreakdown {
     sport: string
@@ -15,6 +19,17 @@ interface ActivitiesSummaryWidgetProps {
     breakdown: ActivityBreakdown[]
 }
 
+const sportColorMap: Record<string, string> = {
+    running: "bg-sport-running",
+    cycling: "bg-sport-cycling",
+    swimming: "bg-sport-swimming",
+    football: "bg-sport-football",
+    fitness: "bg-sport-fitness",
+    tennis: "bg-sport-tennis",
+    basketball: "bg-sport-basketball",
+    other: "bg-muted-foreground"
+}
+
 export function ActivitiesSummaryWidget({
     totalDistance,
     totalTime,
@@ -24,60 +39,78 @@ export function ActivitiesSummaryWidget({
     const formatTime = (minutes: number) => {
         const h = Math.floor(minutes / 60)
         const m = Math.round(minutes % 60)
-        return `${h}:${m.toString().padStart(2, '0')}`
+        return h > 0 ? `${h}h ${m}m` : `${m}m`
     }
 
     return (
         <CardShell
             title="Weekly Summary"
-            action={<span className="flex items-center">View all <ChevronRight className="h-3 w-3 ml-1" /></span>}
+            icon={<TrendingUp className="h-5 w-5" />}
+            action={<Link href="/activity" className="flex items-center text-primary hover:underline">View all <ChevronRight className="h-3 w-3 ml-1" /></Link>}
         >
-            <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="space-y-1">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">Distance</div>
-                    <div className="text-2xl font-bold text-gray-900">{totalDistance.toFixed(1)} <span className="text-sm font-normal text-gray-500">km</span></div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="stat-card-mini">
+                    <span className="stat-value-mini">{totalDistance.toFixed(1)}</span>
+                    <span className="stat-label-mini">km</span>
                 </div>
-                <div className="space-y-1">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">Time</div>
-                    <div className="text-2xl font-bold text-gray-900">{formatTime(totalTime)} <span className="text-sm font-normal text-gray-500">h</span></div>
+                <div className="stat-card-mini">
+                    <span className="stat-value-mini">{formatTime(totalTime)}</span>
+                    <span className="stat-label-mini">time</span>
                 </div>
-                <div className="space-y-1">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">Calories</div>
-                    <div className="text-2xl font-bold text-gray-900">{(totalCalories / 1000).toFixed(1)}k <span className="text-sm font-normal text-gray-500">kcal</span></div>
+                <div className="stat-card-mini">
+                    <span className="stat-value-mini">{totalCalories > 1000 ? `${(totalCalories / 1000).toFixed(1)}k` : totalCalories}</span>
+                    <span className="stat-label-mini">kcal</span>
                 </div>
             </div>
 
+            {/* Activity Breakdown */}
             <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>Activity Breakdown</span>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="font-medium">Activity Breakdown</span>
                     <span>Last 7 Days</span>
                 </div>
 
-                {/* Mini Bar Chart / Progress Bars */}
-                <div className="space-y-2">
+                {/* Stacked Progress Bar */}
+                {breakdown.length > 0 && (
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden flex">
+                        {breakdown.map((item, index) => (
+                            <div
+                                key={item.sport}
+                                className={cn(
+                                    "h-full transition-all duration-500",
+                                    sportColorMap[item.sport.toLowerCase()] || "bg-primary"
+                                )}
+                                style={{ width: `${item.percentage}%` }}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* Sport Legend */}
+                <div className="space-y-1.5">
                     {breakdown.map((item) => (
-                        <div key={item.sport} className="flex items-center gap-3">
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${item.color.replace('text-', 'bg-').replace('bg-', 'bg-opacity-10 text-')}`}>
-                                <Activity className="h-3 w-3" />
-                            </div>
-                            <div className="flex-1">
-                                <div className="flex justify-between text-xs mb-1">
-                                    <span className="font-medium capitalize">{item.sport}</span>
-                                    <span className="text-gray-500">{item.distance.toFixed(1)} km</span>
-                                </div>
-                                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                                    <div
-                                        className={`h-full rounded-full ${item.color.split(' ')[0]}`}
-                                        style={{ width: `${item.percentage}%` }}
-                                    ></div>
-                                </div>
-                            </div>
+                        <div key={item.sport} className="flex items-center gap-2">
+                            <div className={cn(
+                                "w-2.5 h-2.5 rounded-full shrink-0",
+                                sportColorMap[item.sport.toLowerCase()] || "bg-primary"
+                            )} />
+                            <span className="text-xs font-medium capitalize flex-1">{item.sport}</span>
+                            <span className="text-xs text-muted-foreground tabular-nums">{item.distance.toFixed(1)} km</span>
+                            <span className="text-xs text-muted-foreground/70 tabular-nums w-10 text-right">{item.percentage.toFixed(0)}%</span>
                         </div>
                     ))}
-                    {breakdown.length === 0 && (
-                        <div className="text-xs text-gray-400 text-center py-2">No activities this week</div>
-                    )}
                 </div>
+
+                {breakdown.length === 0 && (
+                    <div className="text-center py-4 text-muted-foreground">
+                        <Activity className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                        <p className="text-xs">No activities this week</p>
+                        <Link href="/activity/create" className="text-xs text-primary hover:underline mt-1 inline-block">
+                            Log your first activity
+                        </Link>
+                    </div>
+                )}
             </div>
         </CardShell>
     )

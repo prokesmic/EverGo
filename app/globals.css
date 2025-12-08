@@ -672,3 +672,231 @@
     margin-right: auto;
   }
 }
+
+/* ==============================
+   EverGo Redesign - Enhanced Styles
+   ============================== */
+
+/* Card Enhancements */
+.card-elevated {
+  @apply bg-card rounded-2xl shadow-sm border border-border/50 transition-all duration-200;
+}
+
+.card-elevated:hover {
+  @apply shadow-md border-border;
+}
+
+.card-interactive {
+  @apply card-elevated cursor-pointer;
+}
+
+.card-interactive:hover {
+  @apply -translate-y-0.5 shadow-lg;
+}
+
+/* Section Headers */
+.section-header {
+  @apply flex items-center justify-between mb-4;
+}
+
+.section-title {
+  @apply text-lg font-semibold text-foreground;
+}
+
+.section-action {
+  @apply text-sm text-primary hover:text-primary-dark font-medium transition-colors;
+}
+
+/* Chip/Badge Enhancements */
+.chip {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all;
+}
+
+.chip-primary {
+  @apply chip bg-primary/10 text-primary hover:bg-primary/20;
+}
+
+.chip-secondary {
+  @apply chip bg-secondary text-secondary-foreground hover:bg-secondary/80;
+}
+
+.chip-active {
+  @apply chip bg-primary text-primary-foreground;
+}
+
+.chip-sport {
+  @apply chip uppercase tracking-wider;
+}
+
+/* Trend Indicators */
+.trend-up {
+  @apply text-green-600 dark:text-green-400;
+}
+
+.trend-down {
+  @apply text-red-600 dark:text-red-400;
+}
+
+.trend-neutral {
+  @apply text-muted-foreground;
+}
+
+/* Stat Cards */
+.stat-card {
+  @apply flex flex-col items-center justify-center p-4 rounded-xl bg-muted/50;
+}
+
+.stat-value {
+  @apply text-2xl font-bold text-foreground tabular-nums;
+}
+
+.stat-label {
+  @apply text-xs text-muted-foreground uppercase tracking-wider mt-1;
+}
+
+/* Mini Stat Cards - for compact widgets */
+.stat-card-mini {
+  @apply flex flex-col items-center justify-center p-2.5 rounded-lg bg-muted/30;
+}
+
+.stat-value-mini {
+  @apply text-lg font-bold text-foreground tabular-nums leading-tight;
+}
+
+.stat-label-mini {
+  @apply text-[10px] text-muted-foreground uppercase tracking-wider;
+}
+
+/* Progress Bars */
+.progress-bar {
+  @apply h-2 bg-muted rounded-full overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full bg-primary rounded-full transition-all duration-500 ease-out;
+}
+
+/* Avatar Group */
+.avatar-group {
+  @apply flex -space-x-2;
+}
+
+.avatar-group > * {
+  @apply ring-2 ring-background;
+}
+
+/* Empty State */
+.empty-state {
+  @apply flex flex-col items-center justify-center text-center py-12 px-6;
+}
+
+.empty-state-icon {
+  @apply w-16 h-16 text-muted-foreground/40 mb-4;
+}
+
+.empty-state-title {
+  @apply text-lg font-semibold text-foreground mb-2;
+}
+
+.empty-state-description {
+  @apply text-sm text-muted-foreground max-w-sm mb-6;
+}
+
+/* Page Subheader/Toolbar */
+.page-subheader {
+  @apply bg-card/80 backdrop-blur-sm border-b border-border sticky top-14 z-40;
+}
+
+.page-toolbar {
+  @apply flex items-center justify-between gap-4 py-3 px-4 max-w-[1400px] mx-auto;
+}
+
+.filter-bar {
+  @apply flex items-center gap-2 flex-wrap;
+}
+
+/* XP/Level Badge */
+.xp-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold;
+  @apply bg-gradient-to-r from-amber-500 to-orange-500 text-white;
+}
+
+.level-badge {
+  @apply inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold;
+  @apply bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg;
+}
+
+/* Leaderboard Row Styles */
+.leaderboard-row {
+  @apply flex items-center gap-4 p-3 rounded-xl transition-all duration-200;
+}
+
+.leaderboard-row:hover {
+  @apply bg-muted/50;
+}
+
+.leaderboard-row-highlight {
+  @apply leaderboard-row bg-primary/5 border border-primary/20;
+}
+
+.leaderboard-rank {
+  @apply w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold;
+}
+
+.leaderboard-rank-gold {
+  @apply leaderboard-rank bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg;
+}
+
+.leaderboard-rank-silver {
+  @apply leaderboard-rank bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800 shadow-md;
+}
+
+.leaderboard-rank-bronze {
+  @apply leaderboard-rank bg-gradient-to-br from-orange-400 to-amber-600 text-white shadow-md;
+}
+
+.leaderboard-rank-default {
+  @apply leaderboard-rank bg-muted text-muted-foreground;
+}
+
+/* Skeleton Loading Enhancement */
+.skeleton-shimmer {
+  @apply animate-pulse bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%];
+}
+
+/* Toast Enhancements for Gamification */
+.toast-xp {
+  @apply flex items-center gap-2 text-sm font-medium;
+}
+
+/* Widget Card */
+.widget-card {
+  @apply card-elevated p-4;
+}
+
+.widget-header {
+  @apply flex items-center justify-between mb-3;
+}
+
+.widget-title {
+  @apply text-sm font-semibold text-foreground;
+}
+
+/* Hover Card Actions */
+.hover-actions {
+  @apply absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-200 flex items-end justify-center pb-4;
+}
+
+.hover-actions:hover {
+  @apply opacity-100;
+}
+
+/* Gradient Text */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+}
+
+/* Focus Ring Enhancement */
+.focus-ring {
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}

@@ -1,18 +1,24 @@
-import { Trophy, Globe, MapPin, Users, TrendingUp, Minus, TrendingDown } from "lucide-react"
+"use client"
+
+import { Trophy, Globe, MapPin, Users, TrendingUp, Minus, TrendingDown, ChevronRight, Award } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 export interface RankingStat {
     scope: "CLUB" | "CITY" | "COUNTRY" | "GLOBAL"
     rank: number
     totalParticipants: number
     trend?: "up" | "down" | "same"
+    trendValue?: number
 }
 
 interface RankingsStripProps {
     rankings: RankingStat[]
+    seasonName?: string
+    seasonDaysLeft?: number
 }
 
-export function RankingsStrip({ rankings }: RankingsStripProps) {
+export function RankingsStrip({ rankings, seasonName = "Winter 2025", seasonDaysLeft = 12 }: RankingsStripProps) {
     const getIcon = (scope: string) => {
         switch (scope) {
             case "CLUB": return <Users className="h-4 w-4" />
@@ -25,54 +31,101 @@ export function RankingsStrip({ rankings }: RankingsStripProps) {
 
     const getLabel = (scope: string) => {
         switch (scope) {
-            case "CLUB": return "Club Rank"
-            case "CITY": return "City Rank"
-            case "COUNTRY": return "National Rank"
-            case "GLOBAL": return "Global Rank"
+            case "CLUB": return "Club"
+            case "CITY": return "City"
+            case "COUNTRY": return "National"
+            case "GLOBAL": return "Global"
             default: return "Rank"
         }
     }
 
-    const getTrendIcon = (trend?: "up" | "down" | "same") => {
+    const getScopeFilter = (scope: string) => {
+        switch (scope) {
+            case "CLUB": return "club"
+            case "CITY": return "city"
+            case "COUNTRY": return "country"
+            case "GLOBAL": return "global"
+            default: return "global"
+        }
+    }
+
+    const getTrendIcon = (trend?: "up" | "down" | "same", value?: number) => {
         switch (trend) {
-            case "up": return <TrendingUp className="h-3 w-3 text-green-500" />
-            case "down": return <TrendingDown className="h-3 w-3 text-red-500" />
-            default: return <Minus className="h-3 w-3 text-gray-400" />
+            case "up": return (
+                <span className="flex items-center gap-0.5 text-green-500 text-xs font-medium">
+                    <TrendingUp className="h-3 w-3" />
+                    {value && <span>+{value}</span>}
+                </span>
+            )
+            case "down": return (
+                <span className="flex items-center gap-0.5 text-red-500 text-xs font-medium">
+                    <TrendingDown className="h-3 w-3" />
+                    {value && <span>-{value}</span>}
+                </span>
+            )
+            default: return <Minus className="h-3 w-3 text-muted-foreground" />
         }
     }
 
     return (
-        <div className="w-full bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 text-white shadow-lg rounded-xl py-3 px-6 mb-0 flex items-center justify-between overflow-x-auto no-scrollbar gap-8 border border-white/10">
-            {rankings.map((stat, index) => (
-                <div key={stat.scope} className="flex items-center gap-3 min-w-fit group">
-                    <div className={cn(
-                        "p-2 rounded-full bg-white/10 text-white/80 transition-colors group-hover:bg-brand-blue group-hover:text-white",
-                        stat.rank <= 3 && "bg-yellow-500/20 text-yellow-400 group-hover:bg-yellow-500 group-hover:text-white"
-                    )}>
-                        {getIcon(stat.scope)}
-                    </div>
-
-                    <div>
-                        <div className="text-[10px] uppercase tracking-wider text-white/60 font-semibold mb-0.5">
-                            {getLabel(stat.scope)}
+        <div className="card-elevated p-3 mb-4 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            {/* Rankings Segments */}
+            <div className="flex items-center gap-1 flex-1">
+                {rankings.map((stat, index) => (
+                    <Link
+                        key={stat.scope}
+                        href={`/rankings?scope=${getScopeFilter(stat.scope)}`}
+                        className={cn(
+                            "flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 group min-w-fit",
+                            "hover:bg-muted/80 active:scale-[0.98]",
+                            stat.rank <= 3 && "bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-950/50"
+                        )}
+                    >
+                        <div className={cn(
+                            "p-1.5 rounded-lg transition-colors",
+                            stat.rank <= 3
+                                ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white"
+                                : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
+                        )}>
+                            {getIcon(stat.scope)}
                         </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-lg font-bold text-white">#{stat.rank}</span>
-                            <span className="text-xs text-white/40 font-medium">/ {stat.totalParticipants}</span>
-                            {getTrendIcon(stat.trend)}
-                        </div>
-                    </div>
 
-                    {/* Divider */}
-                    {index < rankings.length - 1 && (
-                        <div className="h-8 w-px bg-white/10 ml-4 hidden md:block"></div>
-                    )}
+                        <div className="flex flex-col">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                                {getLabel(stat.scope)}
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                                <span className={cn(
+                                    "text-base font-bold tabular-nums",
+                                    stat.rank <= 3 ? "text-amber-600 dark:text-amber-400" : "text-foreground"
+                                )}>
+                                    #{stat.rank}
+                                </span>
+                                <span className="text-xs text-muted-foreground">/ {stat.totalParticipants.toLocaleString()}</span>
+                                {getTrendIcon(stat.trend, stat.trendValue)}
+                            </div>
+                        </div>
+
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground ml-1 transition-colors" />
+                    </Link>
+                ))}
+            </div>
+
+            {/* Season Badge */}
+            {seasonName && (
+                <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10 ml-auto shrink-0">
+                    <Award className="h-4 w-4 text-primary" />
+                    <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-foreground">{seasonName}</span>
+                        <span className="text-[10px] text-muted-foreground">{seasonDaysLeft} days left</span>
+                    </div>
                 </div>
-            ))}
+            )}
 
             {rankings.length === 0 && (
-                <div className="text-sm text-white/60 w-full text-center">
-                    Complete your first activity to see your rankings!
+                <div className="flex items-center justify-center gap-2 w-full py-2 text-muted-foreground">
+                    <Trophy className="h-4 w-4" />
+                    <span className="text-sm">Complete your first activity to see your rankings!</span>
                 </div>
             )}
         </div>

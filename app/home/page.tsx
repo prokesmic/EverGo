@@ -13,8 +13,8 @@ import { HeroProfile } from "@/components/HeroProfile"
 import { RankingsStrip } from "@/components/RankingsStrip"
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
-import { StreakAlert } from "@/components/widgets/streak-alert"
 import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestions-wrapper"
+import { TodaySummaryCard } from "@/components/widgets/today-summary-card"
 
 export const dynamic = 'force-dynamic'
 
@@ -41,8 +41,11 @@ export default async function HomePage() {
         const sevenDaysAgo = new Date()
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
         // Parallel fetch for better performance
-        const [weeklyActivities, lastActivity, userTeams] = await Promise.all([
+        const [weeklyActivities, todayActivities, lastActivity, userTeams] = await Promise.all([
             prisma.activity.findMany({
                 where: {
                     userId: user.id,
@@ -54,6 +57,13 @@ export default async function HomePage() {
                     }
                 },
                 take: 50 // Limit for performance
+            }),
+            prisma.activity.findMany({
+                where: {
+                    userId: user.id,
+                    activityDate: { gte: today }
+                },
+                take: 10
             }),
             prisma.activity.findFirst({
                 where: { userId: user.id },
@@ -107,6 +117,15 @@ export default async function HomePage() {
         const weeklyGoal = 3
         const weeklyProgress = weeklyActivities.length
 
+        // Calculate today's stats
+        let todayDistance = 0
+        let todayTime = 0
+        todayActivities.forEach((activity: any) => {
+            todayDistance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
+            todayTime += activity.durationSeconds ? activity.durationSeconds / 60 : 0
+        })
+        const hasActivityToday = todayActivities.length > 0
+
         // Use mock rankings for now to reduce DB calls
         const formattedRankings = [
             { rank: 1, name: "Top Athlete", value: "500 pts", avatarUrl: "", isCurrentUser: false },
@@ -142,9 +161,9 @@ export default async function HomePage() {
 
         const rightSidebar = (
             <>
+                <CalendarWidget />
                 <PartnerFinderWidget />
                 <FollowSuggestionsWrapper />
-                <CalendarWidget />
                 <TeamsWidget teams={formattedTeams} />
                 <BrandsWidget />
             </>
@@ -152,37 +171,45 @@ export default async function HomePage() {
 
         // Mock rankings for strip
         const displayRankings = [
-            { scope: "CLUB", rank: 3, totalParticipants: 24, trend: "up" },
+            { scope: "CLUB", rank: 3, totalParticipants: 24, trend: "up", trendValue: 2 },
             { scope: "CITY", rank: 12, totalParticipants: 150, trend: "same" },
-            { scope: "GLOBAL", rank: 142, totalParticipants: 5000, trend: "down" }
+            { scope: "COUNTRY", rank: 89, totalParticipants: 1200, trend: "up", trendValue: 5 },
+            { scope: "GLOBAL", rank: 142, totalParticipants: 5000, trend: "down", trendValue: 3 }
         ] as any[]
 
         return (
             <div className="min-h-screen bg-background pb-20 md:pb-0">
-                <div className="max-w-[1400px] mx-auto px-4 pt-6">
+                <div className="max-w-[1400px] mx-auto px-4 pt-4">
                     <HeroProfile
                         name={user.displayName || "Athlete"}
                         location={user.city || "Prague, Czech Republic"}
                         primarySport={activityBreakdown.length > 0 ? activityBreakdown[0].sport : "running"}
                         avatarUrl={user.avatarUrl || ""}
-                        coverUrl={user.coverPhotoUrl || ""}
                         weeklyDistanceKm={parseFloat(weeklyDistance.toFixed(1))}
                         weeklyTimeMinutes={Math.round(weeklyTime)}
                         weeklyCalories={weeklyCalories}
-                        streakDays={14}
-                    />
-
-                    <RankingsStrip rankings={displayRankings} />
-                </div>
-
-                <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
-                    <CreatePostBox userImage={user.avatarUrl || undefined} />
-                    <StreakAlert
-                        currentStreak={currentStreak}
-                        lastActivityDate={lastActivity?.activityDate || null}
+                        streakDays={currentStreak || 14}
                         weeklyGoal={weeklyGoal}
                         weeklyProgress={weeklyProgress}
                     />
+
+                    <RankingsStrip
+                        rankings={displayRankings}
+                        seasonName="Winter 2025"
+                        seasonDaysLeft={12}
+                    />
+                </div>
+
+                <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
+                    <TodaySummaryCard
+                        hasActivityToday={hasActivityToday}
+                        todayDistance={todayDistance}
+                        todayTime={todayTime}
+                        streakDays={currentStreak || 14}
+                        nextGoalName="Weekly Goal"
+                        nextGoalProgress={Math.round((weeklyProgress / weeklyGoal) * 100)}
+                    />
+                    <CreatePostBox userImage={user.avatarUrl || undefined} />
                     <Feed />
                 </PageGrid>
             </div>

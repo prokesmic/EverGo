@@ -2,25 +2,37 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import { useSearchParams } from "next/navigation"
 import { PageGrid } from "@/components/layout/page-grid"
+import { PageSubheader } from "@/components/layout/page-subheader"
 import { YourRankingsWidget } from "@/components/rankings/your-rankings-widget"
-import { RankingBar } from "@/components/rankings/ranking-bar"
 import { InsightsCard } from "@/components/rankings/insights-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { Trophy, Users, MapPin, Globe } from "lucide-react"
+import { Trophy, Users, MapPin, Globe, TrendingUp, TrendingDown, Minus, Medal, Crown, Sparkles, Filter, ChevronRight } from "lucide-react"
 import { Sport } from "@prisma/client"
+import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 interface RankingsClientProps {
     sports: Sport[]
 }
 
+const scopeOptions = [
+    { id: 'global', label: 'Global', icon: Globe },
+    { id: 'country', label: 'National', icon: MapPin },
+    { id: 'city', label: 'City', icon: MapPin },
+    { id: 'club', label: 'Club', icon: Users },
+]
+
 export function RankingsClient({ sports }: RankingsClientProps) {
     const { data: session } = useSession()
+    const searchParams = useSearchParams()
 
-    // Load initial state from localStorage or use defaults
+    // Initialize from URL params or localStorage
+    const urlScope = searchParams.get('scope')
+
     const [sport, setSport] = useState(() => {
         if (typeof window !== "undefined") {
             return localStorage.getItem("rankings_filter_sport") || "all"
@@ -29,6 +41,7 @@ export function RankingsClient({ sports }: RankingsClientProps) {
     })
 
     const [scope, setScope] = useState(() => {
+        if (urlScope) return urlScope
         if (typeof window !== "undefined") {
             return localStorage.getItem("rankings_filter_scope") || "global"
         }
@@ -70,19 +83,11 @@ export function RankingsClient({ sports }: RankingsClientProps) {
         const fetchData = async () => {
             setLoading(true)
             try {
-                // Fetch Leaderboard
                 const leaderboardRes = await fetch(`/api/rankings/leaderboard?sport=${sport}&scope=${scope}&period=${period}`)
                 const leaderboardData = await leaderboardRes.json()
                 setLeaderboard(leaderboardData.leaderboard || [])
 
-                if (session?.user?.email) { // Using email as proxy for ID check if ID not available in session user object directly yet
-                    // We need userId. NextAuth session usually has it if configured. 
-                    // Assuming session.user.id exists or we need to fetch it.
-                    // For now, let's assume we can get it or the API handles it.
-                    // Actually, the API expects userId in path.
-                    // Let's assume session.user has id. If not, we might need to fetch /api/auth/session or similar.
-                    // Standard NextAuth setup often needs a callback to add id to session.
-                    // I'll assume it's there for now.
+                if (session?.user?.email) {
                     const userId = (session.user as any).id
                     if (userId) {
                         const userRes = await fetch(`/api/rankings/user/${userId}`)
@@ -104,164 +109,248 @@ export function RankingsClient({ sports }: RankingsClientProps) {
         fetchData()
     }, [sport, scope, period, session])
 
+    const getRankBadge = (rank: number) => {
+        if (rank === 1) return <Crown className="h-5 w-5 text-amber-500" />
+        if (rank === 2) return <Medal className="h-5 w-5 text-gray-400" />
+        if (rank === 3) return <Medal className="h-5 w-5 text-amber-600" />
+        return <span className="text-sm font-bold text-muted-foreground tabular-nums">{rank}</span>
+    }
+
+    const getTrendIcon = (trend?: string, amount?: number) => {
+        if (trend === 'up') return (
+            <span className="flex items-center gap-0.5 text-green-600 text-xs font-medium">
+                <TrendingUp className="h-3.5 w-3.5" />
+                {amount && <span>+{amount}</span>}
+            </span>
+        )
+        if (trend === 'down') return (
+            <span className="flex items-center gap-0.5 text-red-500 text-xs font-medium">
+                <TrendingDown className="h-3.5 w-3.5" />
+                {amount && <span>-{amount}</span>}
+            </span>
+        )
+        return <Minus className="h-3.5 w-3.5 text-muted-foreground" />
+    }
+
     const leftSidebar = (
-        <div className="space-y-6">
+        <>
             {userRankings && <YourRankingsWidget rankings={userRankings} />}
-        </div>
+            {insights.length > 0 && <InsightsCard insights={insights} />}
+        </>
     )
 
     const rightSidebar = (
-        <div className="space-y-6">
-            <InsightsCard insights={insights} />
+        <>
+            {/* Season Info */}
+            <div className="card-elevated p-4">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-foreground">Winter 2025 Season</h3>
+                        <p className="text-xs text-muted-foreground">12 days remaining</p>
+                    </div>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                    Climb the leaderboard to earn exclusive season badges and rewards!
+                </p>
+                <Link href="/challenges" className="text-sm text-primary hover:underline font-medium flex items-center gap-1">
+                    View Season Challenges <ChevronRight className="h-3 w-3" />
+                </Link>
+            </div>
+
             {/* Pro Tip Card */}
-            <div className="bg-gradient-to-br from-brand-blue to-brand-blue-dark rounded-xl shadow-lg p-6 text-white">
-                <h3 className="font-semibold mb-2">Pro Tip</h3>
-                <p className="text-sm text-white/90">
+            <div className="card-elevated p-4 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/10">
+                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <Trophy className="h-4 w-4 text-primary" />
+                    Pro Tip
+                </h3>
+                <p className="text-sm text-muted-foreground">
                     Consistency is key! Log activities at least 3 times a week to boost your ranking score multiplier.
                 </p>
             </div>
+        </>
+    )
+
+    const filterBar = (
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
+            {/* Scope Toggle Buttons */}
+            <div className="flex rounded-xl bg-muted/50 p-1 gap-1">
+                {scopeOptions.map((s) => (
+                    <button
+                        key={s.id}
+                        onClick={() => setScope(s.id)}
+                        className={cn(
+                            "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
+                            scope === s.id
+                                ? "bg-background text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
+                        <s.icon className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">{s.label}</span>
+                    </button>
+                ))}
+            </div>
+
+            {/* Sport Filter */}
+            <Select value={sport} onValueChange={setSport}>
+                <SelectTrigger className="w-full lg:w-[180px] h-9">
+                    <SelectValue placeholder="Select Sport" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Sports</SelectItem>
+                    {sports.map((s) => (
+                        <SelectItem key={s.slug} value={s.slug}>
+                            {s.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
+            {/* Period Filter */}
+            <Select value={period} onValueChange={setPeriod}>
+                <SelectTrigger className="w-full lg:w-[150px] h-9">
+                    <SelectValue placeholder="Select Period" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all_time">All Time</SelectItem>
+                    <SelectItem value="this_year">This Year</SelectItem>
+                    <SelectItem value="this_month">This Month</SelectItem>
+                    <SelectItem value="this_week">This Week</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
     )
 
     return (
-        <div className="min-h-screen bg-bg-page pb-20 md:pb-0">
-            {userRankings && (
-                <RankingBar rankings={userRankings.sportIndex} />
-            )}
-
-            <div className="max-w-[1400px] mx-auto px-4 pt-6 mb-6">
-                <h1 className="text-3xl font-bold text-text-primary">Rankings</h1>
-                <p className="text-text-secondary">See who's topping the leaderboards.</p>
-            </div>
+        <div className="min-h-screen bg-background pb-20 md:pb-0">
+            <PageSubheader
+                title="Rankings"
+                subtitle="See who's topping the leaderboards"
+                filters={filterBar}
+            />
 
             <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
-                <div className="space-y-6">
-                    {/* Filters */}
-                    <div className="bg-white rounded-xl shadow-sm border border-border-light p-4">
-                        <div className="flex flex-col md:flex-row gap-4">
-                            <div className="w-full md:w-[200px]">
-                                <Label className="mb-2 block text-xs font-medium text-text-muted">Sport</Label>
-                                <Select value={sport} onValueChange={setSport}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select Sport" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Sports (Sport Index)</SelectItem>
-                                        {sports.map((s) => (
-                                            <SelectItem key={s.slug} value={s.slug}>
-                                                {s.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                {/* Leaderboard Card */}
+                <div className="card-elevated overflow-hidden">
+                    {/* Header */}
+                    <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Trophy className="h-4 w-4 text-primary" />
+                            <span className="font-semibold text-sm">
+                                {scope === 'global' ? 'Global' : scope === 'country' ? 'National' : scope === 'city' ? 'City' : 'Club'} Leaderboard
+                            </span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                            {period === 'all_time' ? 'All Time' : period === 'this_year' ? 'This Year' : period === 'this_month' ? 'This Month' : 'This Week'}
+                        </span>
+                    </div>
 
-                            <div className="flex-1">
-                                <Label className="mb-2 block text-xs font-medium text-text-muted">Scope</Label>
-                                <div className="flex rounded-lg border border-border-medium overflow-hidden divide-x divide-border-medium">
-                                    {[
-                                        { id: 'global', label: 'Global', icon: Globe },
-                                        { id: 'country', label: 'Country', icon: MapPin },
-                                        { id: 'city', label: 'City', icon: MapPin },
-                                        { id: 'friends', label: 'Friends', icon: Users },
-                                    ].map((s) => (
-                                        <button
-                                            key={s.id}
-                                            onClick={() => setScope(s.id)}
-                                            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition-colors ${scope === s.id
-                                                    ? 'bg-brand-blue text-white'
-                                                    : 'bg-white text-text-secondary hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            <s.icon className="w-4 h-4" />
-                                            <span className="hidden sm:inline">{s.label}</span>
-                                        </button>
-                                    ))}
+                    {/* Leaderboard List */}
+                    <div className="divide-y divide-border">
+                        {loading ? (
+                            <div className="py-12 text-center text-muted-foreground">
+                                <div className="animate-pulse flex flex-col items-center gap-2">
+                                    <Trophy className="h-8 w-8 opacity-50" />
+                                    <span>Loading rankings...</span>
                                 </div>
                             </div>
-
-                            <div className="w-full md:w-[180px]">
-                                <Label className="mb-2 block text-xs font-medium text-text-muted">Period</Label>
-                                <Select value={period} onValueChange={setPeriod}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select Period" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all_time">All Time</SelectItem>
-                                        <SelectItem value="this_year">This Year</SelectItem>
-                                        <SelectItem value="this_month">This Month</SelectItem>
-                                        <SelectItem value="this_week">This Week</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                        ) : leaderboard.length === 0 ? (
+                            <div className="empty-state py-12">
+                                <Trophy className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                                <h3 className="font-semibold text-foreground mb-1">No rankings yet</h3>
+                                <p className="text-sm text-muted-foreground mb-4">Be the first to climb the leaderboard!</p>
+                                <Button asChild>
+                                    <Link href="/activity/create">Log Activity</Link>
+                                </Button>
                             </div>
-                        </div>
+                        ) : (
+                            leaderboard.map((entry, index) => {
+                                const isCurrentUser = session?.user?.email === entry.username || (session?.user as any)?.id === entry.userId
+                                const isTopThree = entry.rank <= 3
+
+                                return (
+                                    <Link
+                                        key={entry.userId}
+                                        href={`/profile/${entry.username || entry.userId}`}
+                                        className={cn(
+                                            "leaderboard-row flex items-center gap-3 px-4 py-3 transition-all duration-200",
+                                            "hover:bg-muted/50",
+                                            isCurrentUser && "bg-primary/5 hover:bg-primary/10",
+                                            isTopThree && "bg-gradient-to-r from-amber-50/50 to-transparent dark:from-amber-950/20"
+                                        )}
+                                    >
+                                        {/* Rank */}
+                                        <div className={cn(
+                                            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                                            isTopThree ? "bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30" : "bg-muted/50"
+                                        )}>
+                                            {getRankBadge(entry.rank)}
+                                        </div>
+
+                                        {/* Avatar */}
+                                        <Avatar className={cn(
+                                            "h-10 w-10 border-2 shrink-0",
+                                            isTopThree ? "border-amber-400/50" : "border-border"
+                                        )}>
+                                            <AvatarImage src={entry.avatarUrl} alt={entry.displayName} />
+                                            <AvatarFallback className="text-sm font-semibold">
+                                                {entry.displayName?.[0]?.toUpperCase() || "?"}
+                                            </AvatarFallback>
+                                        </Avatar>
+
+                                        {/* Name & Location */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className={cn(
+                                                    "font-semibold text-sm truncate",
+                                                    isCurrentUser && "text-primary"
+                                                )}>
+                                                    {entry.displayName}
+                                                </span>
+                                                {isCurrentUser && (
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                                                        You
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                <MapPin className="h-3 w-3" />
+                                                <span className="truncate">{entry.location || "Unknown location"}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Score */}
+                                        <div className="text-right shrink-0">
+                                            <div className={cn(
+                                                "font-bold tabular-nums",
+                                                isTopThree ? "text-amber-600 dark:text-amber-400" : "text-foreground"
+                                            )}>
+                                                {entry.score.toLocaleString()}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground">points</div>
+                                        </div>
+
+                                        {/* Trend */}
+                                        <div className="w-12 flex justify-end shrink-0">
+                                            {getTrendIcon(entry.trend, entry.trendAmount)}
+                                        </div>
+                                    </Link>
+                                )
+                            })
+                        )}
                     </div>
 
-                    {/* Leaderboard Table */}
-                    <div className="bg-white rounded-xl shadow-sm border border-border-light overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 border-b border-border-light">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider w-16">#</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Athlete</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Location</th>
-                                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-muted uppercase tracking-wider">Score</th>
-                                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-muted uppercase tracking-wider">Trend</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border-light">
-                                    {loading ? (
-                                        <tr>
-                                            <td colSpan={5} className="px-4 py-8 text-center text-text-muted">Loading rankings...</td>
-                                        </tr>
-                                    ) : leaderboard.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="px-4 py-8 text-center text-text-muted">No rankings found for this criteria.</td>
-                                        </tr>
-                                    ) : (
-                                        leaderboard.map((entry) => (
-                                            <tr
-                                                key={entry.userId}
-                                                className={`hover:bg-gray-50 transition-colors ${session?.user?.email === entry.username ? 'bg-blue-50/50' : ''
-                                                    }`}
-                                            >
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center justify-center w-8 h-8 font-bold text-text-primary">
-                                                        {entry.rank === 1 && <span className="text-2xl">🥇</span>}
-                                                        {entry.rank === 2 && <span className="text-2xl">🥈</span>}
-                                                        {entry.rank === 3 && <span className="text-2xl">🥉</span>}
-                                                        {entry.rank > 3 && entry.rank}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-9 w-9 border border-border-light">
-                                                            <AvatarImage src={entry.avatarUrl} alt={entry.displayName} />
-                                                            <AvatarFallback>{entry.displayName?.[0]}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div>
-                                                            <div className="font-medium text-text-primary text-sm">{entry.displayName}</div>
-                                                            {/* Friend badge could go here */}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-text-secondary">
-                                                    {entry.location || "Unknown"}
-                                                </td>
-                                                <td className="px-4 py-3 text-right font-bold text-text-primary">
-                                                    {entry.score.toLocaleString()}
-                                                </td>
-                                                <td className="px-4 py-3 text-right">
-                                                    <span className="text-gray-400 text-sm">-</span>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                    {/* Load More */}
+                    {leaderboard.length > 0 && leaderboard.length >= 20 && (
+                        <div className="p-4 border-t border-border text-center">
+                            <Button variant="outline" size="sm">
+                                Load More
+                            </Button>
                         </div>
-                    </div>
+                    )}
                 </div>
             </PageGrid>
         </div>
