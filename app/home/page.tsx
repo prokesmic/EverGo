@@ -9,7 +9,7 @@ import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { TeamsWidget } from "@/components/widgets/teams-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
 import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
-import { HeroProfile } from "@/components/HeroProfile"
+import { DashboardHero } from "@/components/dashboard/DashboardHero"
 import { RankingsStrip } from "@/components/RankingsStrip"
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
@@ -180,7 +180,7 @@ export default async function HomePage() {
         return (
             <div className="min-h-screen bg-background pb-20 md:pb-0">
                 <div className="max-w-[1400px] mx-auto px-4 pt-4">
-                    <HeroProfile
+                    <DashboardHero
                         name={user.displayName || "Athlete"}
                         location={user.city || "Prague, Czech Republic"}
                         primarySport={activityBreakdown.length > 0 ? activityBreakdown[0].sport : "running"}
@@ -193,11 +193,13 @@ export default async function HomePage() {
                         weeklyProgress={weeklyProgress}
                     />
 
-                    <RankingsStrip
-                        rankings={displayRankings}
-                        seasonName="Winter 2025"
-                        seasonDaysLeft={12}
-                    />
+                    <div className="mt-4">
+                        <RankingsStrip
+                            rankings={displayRankings}
+                            seasonName="Winter 2025"
+                            seasonDaysLeft={12}
+                        />
+                    </div>
                 </div>
 
                 <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
