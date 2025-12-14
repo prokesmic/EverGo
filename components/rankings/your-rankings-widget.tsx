@@ -27,7 +27,10 @@ interface YourRankingsWidgetProps {
 }
 
 export function YourRankingsWidget({ rankings }: YourRankingsWidgetProps) {
-    if (!rankings) return null
+    if (!rankings || !rankings.sportIndex) return null
+
+    // Ensure sports is always an array
+    const sports = Array.isArray(rankings.sports) ? rankings.sports : []
 
     return (
         <div className="card-elevated overflow-hidden">
@@ -44,7 +47,7 @@ export function YourRankingsWidget({ rankings }: YourRankingsWidgetProps) {
 
             {/* Sport Rankings List */}
             <div className="divide-y divide-border">
-                {rankings.sports.map((sport) => (
+                {sports.map((sport) => (
                     <div key={sport.slug} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-3">
                             <span className="text-lg">{sport.icon}</span>
