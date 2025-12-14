@@ -1,59 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { UserPlus, Activity, Trophy, Users, ChevronRight, Smartphone, Globe, Target, LucideIcon } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { UserPlus, Activity, Trophy, Users, ChevronRight, Globe, Zap, MapPin } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
-type ProfileVisual = {
-  type: "profile"
-  data: {
-    name: string
-    sports: string[]
-    level: string
-  }
-}
-
-type ActivityVisual = {
-  type: "activity"
-  data: {
-    type: string
-    distance: string
-    time: string
-    pace: string
-  }
-}
-
-type RankingVisual = {
-  type: "ranking"
-  data: {
-    city: string
-    rank: number
-    total: number
-    trend: string
-  }
-}
-
-type CommunityVisual = {
-  type: "community"
-  data: {
-    partners: number
-    teams: number
-    followers: number
-  }
-}
-
-type StepVisualType = ProfileVisual | ActivityVisual | RankingVisual | CommunityVisual
-
-type Step = {
-  number: string
-  icon: LucideIcon
-  title: string
-  description: string
-  details: string[]
-  visual: StepVisualType
-}
-
-const steps: Step[] = [
+const steps = [
   {
     number: "01",
     icon: UserPlus,
@@ -64,14 +17,7 @@ const steps: Step[] = [
       "Set weekly distance and time goals",
       "Connect with Garmin, Strava, or Apple Health",
     ],
-    visual: {
-      type: "profile",
-      data: {
-        name: "Alex Runner",
-        sports: ["Running", "Cycling", "Swimming"],
-        level: "Intermediate",
-      },
-    },
+    mockup: "profile",
   },
   {
     number: "02",
@@ -83,15 +29,7 @@ const steps: Step[] = [
       "Auto-sync from fitness apps",
       "Quick manual entry option",
     ],
-    visual: {
-      type: "activity",
-      data: {
-        type: "Morning Run",
-        distance: "10.2 km",
-        time: "52:34",
-        pace: "5:09 /km",
-      },
-    },
+    mockup: "activity",
   },
   {
     number: "03",
@@ -103,15 +41,7 @@ const steps: Step[] = [
       "Weekly and monthly leaderboards",
       "Sponsored challenges with prizes",
     ],
-    visual: {
-      type: "ranking",
-      data: {
-        city: "Prague",
-        rank: 12,
-        total: 1420,
-        trend: "+3",
-      },
-    },
+    mockup: "ranking",
   },
   {
     number: "04",
@@ -123,200 +53,247 @@ const steps: Step[] = [
       "Team challenges and events",
       "Social feed with your network",
     ],
-    visual: {
-      type: "community",
-      data: {
-        partners: 12,
-        teams: 3,
-        followers: 248,
-      },
-    },
+    mockup: "community",
   },
 ]
 
-function StepVisual({ step, isActive }: { step: Step; isActive: boolean }) {
-  const baseClass = cn(
-    "absolute inset-0 flex items-center justify-center transition-all duration-500",
-    isActive ? "opacity-100 scale-100" : "opacity-0 scale-95"
+// Mockup screens for each step
+function ProfileMockup() {
+  return (
+    <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-700/50">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-2xl font-bold text-slate-950">
+          A
+        </div>
+        <div>
+          <div className="font-bold text-white text-lg">Alex Runner</div>
+          <div className="text-sm text-slate-400">Intermediate Athlete</div>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {["Running", "Cycling", "Swimming"].map((sport) => (
+          <span
+            key={sport}
+            className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-medium border border-emerald-500/30"
+          >
+            {sport}
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center gap-2 text-slate-400 text-sm">
+        <MapPin className="w-4 h-4" />
+        <span>Prague, Czech Republic</span>
+      </div>
+    </div>
   )
+}
 
-  if (step.visual.type === "profile") {
-    return (
-      <div className={baseClass}>
-        <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-blue to-brand-green flex items-center justify-center text-white text-2xl font-bold">
-              A
-            </div>
-            <div>
-              <div className="font-bold text-gray-900">{step.visual.data.name}</div>
-              <div className="text-sm text-gray-500">{step.visual.data.level}</div>
-            </div>
+function ActivityMockup() {
+  return (
+    <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-700/50">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
+          <Activity className="w-4 h-4 text-white" />
+        </div>
+        <span className="font-semibold text-white">Morning Run</span>
+        <span className="ml-auto text-xs text-slate-400">Just now</span>
+      </div>
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-white">10.2</div>
+          <div className="text-xs text-slate-400">km</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-white">52:34</div>
+          <div className="text-xs text-slate-400">time</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-white">5:09</div>
+          <div className="text-xs text-slate-400">/km</div>
+        </div>
+      </div>
+      {/* Mini map mockup */}
+      <div className="h-24 bg-slate-900 rounded-xl relative overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <svg viewBox="0 0 100 50" className="w-full h-full">
+            <path
+              d="M10,25 Q30,10 50,25 T90,25"
+              fill="none"
+              stroke="url(#routeGradient)"
+              strokeWidth="3"
+            />
+            <defs>
+              <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#34d399" />
+                <stop offset="100%" stopColor="#22d3ee" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div className="absolute bottom-2 right-2 bg-slate-800/80 backdrop-blur px-2 py-1 rounded text-xs text-slate-300">
+          Prague, CZ
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RankingMockup() {
+  return (
+    <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-700/50">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Globe className="w-5 h-5 text-cyan-400" />
+          <span className="font-semibold text-white">Prague Rankings</span>
+        </div>
+        <span className="text-emerald-400 text-sm font-medium flex items-center gap-1">
+          <Zap className="w-3 h-3" />
+          +3 this week
+        </span>
+      </div>
+      <div className="flex items-center justify-center py-6">
+        <div className="relative">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+            <span className="text-4xl font-bold text-white">#12</span>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {step.visual.data.sports.map((sport) => (
-              <span
-                key={sport}
-                className="px-3 py-1 bg-brand-blue/10 text-brand-blue rounded-full text-sm font-medium"
-              >
-                {sport}
-              </span>
-            ))}
+          <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
+            <Trophy className="w-4 h-4 text-white" />
           </div>
         </div>
       </div>
-    )
-  }
+      <div className="text-center text-sm text-slate-400">
+        out of <span className="text-white font-medium">1,420</span> athletes
+      </div>
+    </div>
+  )
+}
 
-  if (step.visual.type === "activity") {
-    return (
-      <div className={baseClass}>
-        <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <Activity className="w-5 h-5 text-brand-green" />
-            <span className="font-semibold text-gray-900">{step.visual.data.type}</span>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{step.visual.data.distance}</div>
-              <div className="text-xs text-gray-500">Distance</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{step.visual.data.time}</div>
-              <div className="text-xs text-gray-500">Duration</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{step.visual.data.pace}</div>
-              <div className="text-xs text-gray-500">Pace</div>
-            </div>
-          </div>
-          <div className="mt-4 h-12 bg-gradient-to-r from-brand-blue/20 via-brand-green/30 to-brand-blue/20 rounded-lg relative overflow-hidden">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full h-0.5 bg-brand-green" />
-            </div>
-          </div>
+function CommunityMockup() {
+  return (
+    <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-700/50">
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="text-center p-3 bg-purple-500/20 rounded-xl border border-purple-500/30">
+          <Users className="w-6 h-6 text-purple-400 mx-auto mb-1" />
+          <div className="text-xl font-bold text-white">12</div>
+          <div className="text-xs text-slate-400">Partners</div>
+        </div>
+        <div className="text-center p-3 bg-cyan-500/20 rounded-xl border border-cyan-500/30">
+          <Trophy className="w-6 h-6 text-cyan-400 mx-auto mb-1" />
+          <div className="text-xl font-bold text-white">3</div>
+          <div className="text-xs text-slate-400">Teams</div>
+        </div>
+        <div className="text-center p-3 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
+          <Zap className="w-6 h-6 text-emerald-400 mx-auto mb-1" />
+          <div className="text-xl font-bold text-white">248</div>
+          <div className="text-xs text-slate-400">Followers</div>
         </div>
       </div>
-    )
-  }
-
-  if (step.visual.type === "ranking") {
-    return (
-      <div className={baseClass}>
-        <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-brand-blue" />
-              <span className="font-semibold text-gray-900">{step.visual.data.city} Rankings</span>
-            </div>
-            <span className="text-green-500 text-sm font-medium">{step.visual.data.trend} this week</span>
-          </div>
-          <div className="flex items-center justify-center py-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                <span className="text-4xl font-bold text-white">#{step.visual.data.rank}</span>
-              </div>
-              <Trophy className="absolute -top-2 -right-2 w-8 h-8 text-yellow-500" />
-            </div>
-          </div>
-          <div className="text-center text-sm text-gray-500">
-            out of {step.visual.data.total.toLocaleString()} athletes
-          </div>
+      <div className="flex justify-center -space-x-3">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div
+            key={i}
+            className="w-10 h-10 rounded-full border-2 border-slate-800 bg-slate-600"
+            style={{
+              backgroundImage: `url(https://i.pravatar.cc/100?img=${i + 20})`,
+              backgroundSize: 'cover',
+            }}
+          />
+        ))}
+        <div className="w-10 h-10 rounded-full border-2 border-slate-800 bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-slate-950 text-xs font-semibold">
+          +242
         </div>
       </div>
-    )
-  }
-
-  if (step.visual.type === "community") {
-    return (
-      <div className={baseClass}>
-        <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center p-3 bg-purple-50 rounded-xl">
-              <Users className="w-6 h-6 text-purple-500 mx-auto mb-1" />
-              <div className="text-xl font-bold text-gray-900">{step.visual.data.partners}</div>
-              <div className="text-xs text-gray-500">Partners</div>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-xl">
-              <Target className="w-6 h-6 text-blue-500 mx-auto mb-1" />
-              <div className="text-xl font-bold text-gray-900">{step.visual.data.teams}</div>
-              <div className="text-xs text-gray-500">Teams</div>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-xl">
-              <Smartphone className="w-6 h-6 text-green-500 mx-auto mb-1" />
-              <div className="text-xl font-bold text-gray-900">{step.visual.data.followers}</div>
-              <div className="text-xs text-gray-500">Followers</div>
-            </div>
-          </div>
-          <div className="flex justify-center -space-x-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="w-10 h-10 rounded-full border-2 border-white bg-gray-200"
-                style={{
-                  backgroundImage: `url(https://i.pravatar.cc/100?img=${i + 20})`,
-                  backgroundSize: 'cover',
-                }}
-              />
-            ))}
-            <div className="w-10 h-10 rounded-full border-2 border-white bg-brand-blue flex items-center justify-center text-white text-xs font-semibold">
-              +{step.visual.data.followers - 6}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return null
+    </div>
+  )
 }
 
 export function LandingHowItWorks() {
   const [activeStep, setActiveStep] = useState(0)
+  const sectionRef = useRef<HTMLElement>(null)
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  // Scroll-based step detection
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = stepRefs.current.findIndex((ref) => ref === entry.target)
+            if (index !== -1) {
+              setActiveStep(index)
+            }
+          }
+        })
+      },
+      { threshold: 0.5, rootMargin: "-20% 0px -20% 0px" }
+    )
+
+    stepRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref)
+    })
+
+    return () => observer.disconnect()
+  }, [])
+
+  const renderMockup = () => {
+    switch (steps[activeStep].mockup) {
+      case "profile":
+        return <ProfileMockup />
+      case "activity":
+        return <ActivityMockup />
+      case "ranking":
+        return <RankingMockup />
+      case "community":
+        return <CommunityMockup />
+      default:
+        return <ProfileMockup />
+    }
+  }
 
   return (
-    <section className="w-full py-20 md:py-28 bg-gray-50">
+    <section ref={sectionRef} className="w-full py-20 md:py-28 bg-slate-900">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue/10 rounded-full text-brand-blue text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-cyan-400 text-sm font-medium mb-4 border border-white/10">
             <span>Simple to start</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
             Get started in minutes
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-slate-400">
             No complex setup. No learning curve. Just sign up and start tracking.
           </p>
         </div>
 
-        {/* Interactive Steps */}
+        {/* Scrollytelling Layout */}
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Steps List */}
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Steps List - Left side */}
             <div className="space-y-4">
               {steps.map((step, index) => {
                 const Icon = step.icon
                 const isActive = index === activeStep
 
                 return (
-                  <button
+                  <div
                     key={index}
+                    ref={(el) => { stepRefs.current[index] = el }}
                     onClick={() => setActiveStep(index)}
                     className={cn(
-                      "w-full text-left p-6 rounded-2xl transition-all duration-300",
+                      "w-full text-left p-6 rounded-2xl transition-all duration-300 cursor-pointer",
                       isActive
-                        ? "bg-white shadow-lg border-l-4 border-brand-blue"
-                        : "bg-white/50 hover:bg-white/80 border-l-4 border-transparent"
+                        ? "bg-slate-800 border-l-4 border-emerald-400 shadow-lg"
+                        : "bg-slate-800/30 hover:bg-slate-800/50 border-l-4 border-transparent"
                     )}
                   >
                     <div className="flex items-start gap-4">
                       <div
                         className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
                           isActive
-                            ? "bg-brand-blue text-white"
-                            : "bg-gray-100 text-gray-400"
+                            ? "bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950"
+                            : "bg-slate-700 text-slate-400"
                         )}
                       >
                         <Icon className="w-6 h-6" />
@@ -327,7 +304,7 @@ export function LandingHowItWorks() {
                           <h3
                             className={cn(
                               "font-semibold transition-colors",
-                              isActive ? "text-gray-900" : "text-gray-600"
+                              isActive ? "text-white" : "text-slate-400"
                             )}
                           >
                             {step.title}
@@ -336,8 +313,8 @@ export function LandingHowItWorks() {
                             className={cn(
                               "w-5 h-5 transition-all",
                               isActive
-                                ? "text-brand-blue rotate-90"
-                                : "text-gray-300"
+                                ? "text-emerald-400 rotate-90"
+                                : "text-slate-600"
                             )}
                           />
                         </div>
@@ -345,20 +322,20 @@ export function LandingHowItWorks() {
                         <p
                           className={cn(
                             "text-sm transition-colors",
-                            isActive ? "text-gray-600" : "text-gray-400"
+                            isActive ? "text-slate-300" : "text-slate-500"
                           )}
                         >
                           {step.description}
                         </p>
 
                         {isActive && (
-                          <ul className="mt-4 space-y-2">
+                          <ul className="mt-4 space-y-2 animate-fadeIn">
                             {step.details.map((detail, i) => (
                               <li
                                 key={i}
-                                className="flex items-center gap-2 text-sm text-gray-600"
+                                className="flex items-center gap-2 text-sm text-slate-300"
                               >
-                                <div className="w-1.5 h-1.5 rounded-full bg-brand-green" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                                 {detail}
                               </li>
                             ))}
@@ -366,40 +343,38 @@ export function LandingHowItWorks() {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </div>
                 )
               })}
             </div>
 
-            {/* Visual Preview */}
-            <div className="relative hidden lg:block">
-              <div className="aspect-square relative">
-                {/* Background decoration */}
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-brand-green/5 rounded-3xl" />
+            {/* Sticky Mockup - Right side */}
+            <div className="hidden lg:block">
+              <div className="sticky top-1/4">
+                <div className="relative">
+                  {/* Background glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-3xl blur-xl" />
 
-                {/* Step visuals */}
-                {steps.map((step, index) => (
-                  <StepVisual
-                    key={index}
-                    step={step}
-                    isActive={index === activeStep}
-                  />
-                ))}
+                  {/* Mockup container */}
+                  <div className="relative transition-all duration-500">
+                    {renderMockup()}
+                  </div>
 
-                {/* Progress indicator */}
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                  {steps.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveStep(index)}
-                      className={cn(
-                        "w-2 h-2 rounded-full transition-all",
-                        index === activeStep
-                          ? "w-8 bg-brand-blue"
-                          : "bg-gray-300 hover:bg-gray-400"
-                      )}
-                    />
-                  ))}
+                  {/* Progress indicator */}
+                  <div className="flex justify-center gap-2 mt-6">
+                    {steps.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setActiveStep(index)}
+                        className={cn(
+                          "h-2 rounded-full transition-all duration-300",
+                          index === activeStep
+                            ? "w-8 bg-gradient-to-r from-emerald-400 to-cyan-500"
+                            : "w-2 bg-slate-600 hover:bg-slate-500"
+                        )}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -408,14 +383,17 @@ export function LandingHowItWorks() {
 
         {/* Bottom CTA */}
         <div className="text-center mt-16">
-          <a
-            href="/register"
-            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-brand-blue to-brand-green rounded-xl hover:shadow-xl transition-all hover:-translate-y-0.5"
+          <Button
+            asChild
+            size="lg"
+            className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold px-8 py-6 h-auto shadow-lg shadow-cyan-500/25 hover:shadow-xl hover:shadow-cyan-500/40 transition-all hover:scale-[1.02]"
           >
-            Start Your Journey Free
-            <ChevronRight className="w-5 h-5 ml-1" />
-          </a>
-          <p className="text-sm text-gray-500 mt-3">No credit card required</p>
+            <Link href="/register" className="flex items-center gap-2">
+              Start Your Journey Free
+              <ChevronRight className="w-5 h-5" />
+            </Link>
+          </Button>
+          <p className="text-sm text-slate-500 mt-3">No credit card required</p>
         </div>
       </div>
     </section>

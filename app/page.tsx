@@ -9,10 +9,10 @@ import { LandingFooter } from "@/components/landing/LandingFooter"
 import { LandingUpcoming } from "@/components/landing/LandingUpcoming"
 import { CommandPalette } from "@/components/landing/CommandPalette"
 
-// Static landing page - no database needed
+// Static landing page - Dark mode first design
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-slate-950">
       <LandingHeader />
       <CommandPalette />
       <main className="flex-1">

@@ -1,6 +1,6 @@
 "use client"
 
-import { Sparkles, Smartphone, Brain, Bell, Zap, Calendar } from "lucide-react"
+import { Sparkles, Smartphone, Brain, Bell, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const upcomingFeatures = [
@@ -9,54 +9,54 @@ const upcomingFeatures = [
     title: "AI Coach",
     description: "Personalized training plans powered by AI. Coming Q1 2026.",
     status: "coming-soon",
-    gradient: "from-purple-500 to-indigo-600",
+    gradient: "from-purple-500 to-violet-600",
   },
   {
     icon: Smartphone,
     title: "Apple Watch App",
     description: "Track workouts directly from your wrist. In development.",
     status: "in-development",
-    gradient: "from-pink-500 to-rose-600",
+    gradient: "from-emerald-400 to-cyan-500",
   },
   {
     icon: Bell,
     title: "Smart Notifications",
     description: "Get reminded at optimal training times based on your schedule.",
     status: "coming-soon",
-    gradient: "from-orange-500 to-red-600",
+    gradient: "from-amber-400 to-orange-500",
   },
   {
     icon: Calendar,
     title: "Event Calendar",
     description: "Find and register for local races and events.",
     status: "in-development",
-    gradient: "from-blue-500 to-cyan-600",
+    gradient: "from-cyan-400 to-blue-500",
   },
 ]
 
 const statusLabels = {
-  "coming-soon": { label: "Coming Soon", color: "bg-yellow-100 text-yellow-800" },
-  "in-development": { label: "In Development", color: "bg-blue-100 text-blue-800" },
-  "beta": { label: "Beta", color: "bg-green-100 text-green-800" },
+  "coming-soon": { label: "Coming Soon", color: "bg-amber-500/20 text-amber-400 border border-amber-500/30" },
+  "in-development": { label: "In Development", color: "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" },
+  "beta": { label: "Beta", color: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" },
 }
 
 export function LandingUpcoming() {
   return (
-    <section className="w-full py-20 md:py-28 bg-gray-900 text-white overflow-hidden">
+    <section className="w-full py-20 md:py-28 bg-slate-900 text-white overflow-hidden">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-white text-sm font-medium mb-4">
-            <Sparkles className="w-4 h-4 text-yellow-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-white text-sm font-medium mb-4 border border-white/10">
+            <Sparkles className="w-4 h-4 text-amber-400" />
             <span>What&apos;s Next</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
             The future of
-            <span className="block bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
               EverGo
             </span>
           </h2>
-          <p className="text-lg text-gray-400">
+          <p className="text-lg text-slate-400">
             We&apos;re constantly building new features to help you achieve your fitness goals
           </p>
         </div>
@@ -70,7 +70,7 @@ export function LandingUpcoming() {
             return (
               <div
                 key={index}
-                className="group relative bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 hover:border-gray-600 transition-all hover:bg-gray-800"
+                className="group relative bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-slate-600 transition-all hover:bg-slate-800"
               >
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4">
@@ -89,7 +89,7 @@ export function LandingUpcoming() {
 
                 {/* Content */}
                 <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
+                <p className="text-slate-400 text-sm leading-relaxed">{feature.description}</p>
               </div>
             )
           })}
@@ -102,13 +102,13 @@ export function LandingUpcoming() {
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white placeholder:text-gray-500 focus:outline-none focus:border-brand-blue transition-colors"
+              className="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
             />
-            <button className="px-6 py-3 bg-gradient-to-r from-brand-blue to-brand-green rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-brand-blue/25 transition-all">
+            <button className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-xl font-semibold text-slate-950 hover:shadow-lg hover:shadow-cyan-500/25 transition-all">
               Notify Me
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-3">
+          <p className="text-xs text-slate-500 mt-3">
             No spam. Unsubscribe anytime.
           </p>
         </div>

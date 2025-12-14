@@ -1,206 +1,306 @@
 "use client"
 
-import { useState } from "react"
-import { Trophy, Users, TrendingUp, Zap, Target, Heart, Map, Award, ChevronRight, Sparkles } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useEffect, useState } from "react"
+import { TrendingUp, Zap, Sparkles, Activity, Bike, Waves, Dribbble } from "lucide-react"
 
-const featureCategories = [
-  { id: "track", label: "Track", icon: Activity },
-  { id: "compete", label: "Compete", icon: Trophy },
-  { id: "connect", label: "Connect", icon: Users },
+// Sport icons for the rotating animation
+const sportIcons = [
+  { icon: Activity, name: "Running" },
+  { icon: Bike, name: "Cycling" },
+  { icon: Waves, name: "Swimming" },
+  { icon: Dribbble, name: "Golf" },
 ]
 
-import { Activity } from "lucide-react"
+// Animated line graph component
+function AnimatedGraph() {
+  const [progress, setProgress] = useState(0)
 
-const features = [
-  {
-    id: "multi-sport",
-    category: "track",
-    icon: Target,
-    title: "25+ Sports Supported",
-    description: "Running, cycling, swimming, tennis, golf, hiking, skiing, and many more. One profile for all your activities.",
-    gradient: "from-blue-500 to-cyan-500",
-    stats: { value: "25+", label: "sports" },
-  },
-  {
-    id: "tracking",
-    category: "track",
-    icon: TrendingUp,
-    title: "Smart Performance Analytics",
-    description: "Track your progress with detailed metrics, trends, and AI-powered insights. Know exactly how you're improving.",
-    gradient: "from-indigo-500 to-purple-500",
-    stats: { value: "100%", label: "data ownership" },
-  },
-  {
-    id: "integrations",
-    category: "track",
-    icon: Zap,
-    title: "Sync Everywhere",
-    description: "Connect Garmin, Apple Health, Strava, and more. Your data, automatically imported.",
-    gradient: "from-yellow-500 to-orange-500",
-    stats: { value: "15+", label: "integrations" },
-  },
-  {
-    id: "rankings",
-    category: "compete",
-    icon: Trophy,
-    title: "Real Rankings",
-    description: "See your rank at club, city, country, and global levels. Know exactly where you stand among athletes.",
-    gradient: "from-yellow-400 to-orange-500",
-    stats: { value: "4", label: "levels" },
-  },
-  {
-    id: "challenges",
-    category: "compete",
-    icon: Award,
-    title: "Challenges & Badges",
-    description: "Join sponsored challenges, earn achievement badges, and win prizes from top sports brands.",
-    gradient: "from-green-500 to-emerald-500",
-    stats: { value: "50+", label: "badges" },
-  },
-  {
-    id: "leaderboards",
-    category: "compete",
-    icon: Sparkles,
-    title: "Weekly Leaderboards",
-    description: "Fresh competition every week. Climb the charts and celebrate your achievements.",
-    gradient: "from-pink-500 to-rose-500",
-    stats: { value: "Weekly", label: "reset" },
-  },
-  {
-    id: "partners",
-    category: "connect",
-    icon: Users,
-    title: "Find Training Partners",
-    description: "Match with athletes in your area who share your pace, goals, and schedule.",
-    gradient: "from-purple-500 to-pink-500",
-    stats: { value: "Smart", label: "matching" },
-  },
-  {
-    id: "teams",
-    category: "connect",
-    icon: Heart,
-    title: "Teams & Communities",
-    description: "Join clubs, create teams, and compete together. Build your athletic squad.",
-    gradient: "from-red-500 to-pink-500",
-    stats: { value: "1000+", label: "teams" },
-  },
-  {
-    id: "routes",
-    category: "connect",
-    icon: Map,
-    title: "Discover Routes",
-    description: "Find popular routes near you, save favorites, and share your discoveries with the community.",
-    gradient: "from-teal-500 to-green-500",
-    stats: { value: "10K+", label: "routes" },
-  },
-]
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 2))
+    }, 50)
+    return () => clearInterval(interval)
+  }, [])
 
-export function LandingFeatures() {
-  const [activeCategory, setActiveCategory] = useState("track")
-
-  const filteredFeatures = features.filter((f) => f.category === activeCategory)
+  // Generate a smooth wave-like path
+  const generatePath = () => {
+    const points = []
+    for (let i = 0; i <= 100; i += 5) {
+      const y = 50 + Math.sin((i / 100) * Math.PI * 3 + progress / 20) * 30
+      points.push(`${i},${y}`)
+    }
+    return `M${points.join(" L")}`
+  }
 
   return (
-    <section className="w-full py-20 md:py-28 bg-white overflow-hidden">
+    <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+      {/* Grid lines */}
+      {[20, 40, 60, 80].map((y) => (
+        <line
+          key={y}
+          x1="0"
+          y1={y}
+          x2="100"
+          y2={y}
+          stroke="currentColor"
+          strokeOpacity="0.1"
+          strokeDasharray="2 2"
+        />
+      ))}
+      {/* Main animated line */}
+      <path
+        d={generatePath()}
+        fill="none"
+        stroke="url(#gradient)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        className="drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+      />
+      {/* Gradient definition */}
+      <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#34d399" />
+          <stop offset="100%" stopColor="#22d3ee" />
+        </linearGradient>
+      </defs>
+      {/* Animated dot at the end */}
+      <circle
+        cx="100"
+        cy={50 + Math.sin((100 / 100) * Math.PI * 3 + progress / 20) * 30}
+        r="4"
+        fill="#22d3ee"
+        className="animate-pulse"
+      />
+    </svg>
+  )
+}
+
+// Rotating sport icons component
+function RotatingSportsIcons() {
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % sportIcons.length)
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="flex items-center justify-center gap-4">
+      {sportIcons.map((sport, index) => {
+        const Icon = sport.icon
+        const isActive = index === currentIndex
+        return (
+          <div
+            key={sport.name}
+            className={`transition-all duration-500 ${
+              isActive
+                ? "scale-125 opacity-100"
+                : "scale-75 opacity-40"
+            }`}
+          >
+            <div
+              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-500 ${
+                isActive
+                  ? "bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950"
+                  : "bg-slate-800 text-slate-500"
+              }`}
+            >
+              <Icon className="w-6 h-6" />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// Orbiting logos component
+function OrbitingLogos() {
+  const partners = [
+    { name: "Garmin", color: "#007CC3" },
+    { name: "Strava", color: "#FC4C02" },
+    { name: "Apple", color: "#A2AAAD" },
+  ]
+
+  return (
+    <div className="relative w-48 h-48 mx-auto">
+      {/* Center EverGo logo */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-2xl font-bold text-slate-950 shadow-lg shadow-cyan-500/30">
+          ⚡
+        </div>
+      </div>
+      {/* Orbiting logos */}
+      {partners.map((partner, index) => (
+        <div
+          key={partner.name}
+          className="absolute w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shadow-lg"
+          style={{
+            backgroundColor: partner.color,
+            color: "white",
+            top: "50%",
+            left: "50%",
+            transform: `rotate(${index * 120}deg) translateX(70px) rotate(-${index * 120}deg)`,
+            animation: `orbit 8s linear infinite`,
+            animationDelay: `${index * -2.67}s`,
+          }}
+        >
+          {partner.name[0]}
+        </div>
+      ))}
+      {/* Orbit path */}
+      <div className="absolute inset-4 rounded-full border border-slate-700/50 border-dashed" />
+    </div>
+  )
+}
+
+export function LandingFeatures() {
+  return (
+    <section className="w-full py-20 md:py-28 bg-slate-950 overflow-hidden">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-blue/10 to-brand-green/10 rounded-full text-brand-blue text-sm font-medium mb-4">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-emerald-400 text-sm font-medium mb-4 border border-white/10">
             <Sparkles className="w-4 h-4" />
             <span>Powerful features</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
             Everything you need to
-            <span className="block bg-gradient-to-r from-brand-blue to-brand-green bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
               level up your fitness
             </span>
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-slate-400">
             From casual fitness to competitive training, EverGo has you covered
           </p>
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex justify-center mb-12">
-          <div className="inline-flex bg-gray-100 rounded-full p-1">
-            {featureCategories.map((cat) => {
-              const Icon = cat.icon
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all",
-                    activeCategory === cat.id
-                      ? "bg-white text-gray-900 shadow-md"
-                      : "text-gray-600 hover:text-gray-900"
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  {cat.label}
-                </button>
-              )
-            })}
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
+          {/* Card 1: Analytics - Large, spans 2 rows */}
+          <div className="md:row-span-2 bg-slate-900 rounded-2xl p-6 border border-slate-700/50 flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white">Smart Analytics</h3>
+                <p className="text-xs text-slate-400">Real-time performance tracking</p>
+              </div>
+            </div>
+            <div className="flex-1 relative min-h-[200px]">
+              <AnimatedGraph />
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <div className="text-center">
+                <div className="text-lg font-bold text-emerald-400">+24%</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider">This month</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-cyan-400">142 km</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Total</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-purple-400">5:12</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Avg pace</div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Features Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
-          {filteredFeatures.map((feature, index) => {
-            const Icon = feature.icon
-            return (
-              <div
-                key={feature.id}
-                className="group relative bg-white rounded-2xl p-8 border border-gray-100 hover:border-gray-200 hover:shadow-xl transition-all duration-300"
-                style={{
-                  animationDelay: `${index * 100}ms`,
-                }}
-              >
-                {/* Background gradient on hover */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-[0.03] rounded-2xl transition-opacity duration-300`}
-                />
+          {/* Card 2: 25+ Sports - Square */}
+          <div className="bg-slate-900 rounded-2xl p-6 border border-slate-700/50 flex flex-col items-center justify-center text-center">
+            <div className="text-6xl font-extrabold bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent mb-4">
+              25+
+            </div>
+            <h3 className="font-bold text-white mb-2">Sports Supported</h3>
+            <div className="mt-4">
+              <RotatingSportsIcons />
+            </div>
+          </div>
 
-                {/* Icon */}
-                <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${feature.gradient} mb-6`}>
-                  <Icon className="w-7 h-7 text-white" />
-                </div>
+          {/* Card 3: Sync Everywhere - Square */}
+          <div className="bg-slate-900 rounded-2xl p-6 border border-slate-700/50 relative overflow-hidden">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white">Sync Everywhere</h3>
+                <p className="text-xs text-slate-400">Auto-import from your devices</p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <OrbitingLogos />
+            </div>
+          </div>
 
-                {/* Content */}
-                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-gray-800">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed mb-6">
-                  {feature.description}
+          {/* Card 4: Rankings - Horizontal span 2 */}
+          <div className="md:col-span-2 bg-slate-900 rounded-2xl p-6 border border-slate-700/50">
+            <div className="flex flex-col md:flex-row md:items-center gap-6">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white mb-2">Real Rankings</h3>
+                <p className="text-slate-400 text-sm mb-4">
+                  Compete at every level - from your local club to the global stage
                 </p>
-
-                {/* Stats Badge */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-2xl font-bold bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent`}>
-                      {feature.stats.value}
+                <div className="flex flex-wrap gap-2">
+                  {["Club", "City", "Country", "Global"].map((level, i) => (
+                    <span
+                      key={level}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                        i === 0
+                          ? "bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950"
+                          : "bg-slate-800 text-slate-400 border border-slate-700"
+                      }`}
+                    >
+                      {level}
                     </span>
-                    <span className="text-sm text-gray-500">{feature.stats.label}</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-gray-400 group-hover:translate-x-1 transition-all" />
+                  ))}
                 </div>
               </div>
-            )
-          })}
-        </div>
-
-        {/* View All Link */}
-        <div className="text-center mt-12">
-          <a
-            href="/features"
-            className="inline-flex items-center gap-2 text-brand-blue font-semibold hover:text-brand-green transition-colors"
-          >
-            See all features
-            <ChevronRight className="w-4 h-4" />
-          </a>
+              <div className="flex gap-3">
+                {[
+                  { rank: 1, name: "Sarah K.", points: "2,847", color: "from-yellow-400 to-amber-500" },
+                  { rank: 2, name: "Mike R.", points: "2,654", color: "from-slate-300 to-slate-400" },
+                  { rank: 3, name: "You", points: "2,521", color: "from-amber-600 to-orange-600", highlight: true },
+                ].map((user) => (
+                  <div
+                    key={user.rank}
+                    className={`text-center p-3 rounded-xl ${
+                      user.highlight
+                        ? "bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30"
+                        : "bg-slate-800"
+                    }`}
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-full bg-gradient-to-br ${user.color} flex items-center justify-center mx-auto mb-2 text-white font-bold`}
+                    >
+                      {user.rank}
+                    </div>
+                    <div className={`text-sm font-medium ${user.highlight ? "text-emerald-400" : "text-white"}`}>
+                      {user.name}
+                    </div>
+                    <div className="text-xs text-slate-500">{user.points} pts</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* CSS for orbit animation */}
+      <style jsx>{`
+        @keyframes orbit {
+          from {
+            transform: rotate(0deg) translateX(70px) rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg) translateX(70px) rotate(-360deg);
+          }
+        }
+      `}</style>
     </section>
   )
 }

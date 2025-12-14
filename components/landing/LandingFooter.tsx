@@ -49,7 +49,7 @@ const socialLinks = [
 
 export function LandingFooter() {
   return (
-    <footer className="w-full bg-gray-900 text-white">
+    <footer className="w-full bg-slate-950 border-t border-slate-800">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Footer Content */}
         <div className="py-12 md:py-16 grid grid-cols-2 md:grid-cols-5 gap-8">
@@ -57,9 +57,11 @@ export function LandingFooter() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 font-bold text-xl mb-4">
               <span className="text-2xl">⚡</span>
-              EverGo
+              <span className="bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
+                EverGo
+              </span>
             </Link>
-            <p className="text-sm text-gray-400 mb-6">
+            <p className="text-sm text-slate-400 mb-6">
               The global network for sports. Track, compete, connect.
             </p>
 
@@ -73,7 +75,7 @@ export function LandingFooter() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                    className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border border-slate-700/50"
                     aria-label={social.label}
                   >
                     <Icon className="w-5 h-5" />
@@ -94,7 +96,7 @@ export function LandingFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-gray-400 hover:text-white transition-colors"
+                      className="text-sm text-slate-400 hover:text-white transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -106,14 +108,14 @@ export function LandingFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="py-6 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-500">
-            © {new Date().getFullYear()} EverGo. All rights reserved.
+        <div className="py-6 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-slate-500">
+            &copy; {new Date().getFullYear()} EverGo. All rights reserved.
           </p>
 
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+          <div className="flex items-center gap-4 text-sm text-slate-500">
             <span>Made with passion for athletes</span>
-            <span className="text-gray-700">|</span>
+            <span className="text-slate-700">|</span>
             <a href="#" className="hover:text-white transition-colors">
               English
             </a>

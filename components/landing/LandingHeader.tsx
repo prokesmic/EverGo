@@ -5,7 +5,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Search, Command } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ThemeToggle } from "@/components/theme-toggle"
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -44,21 +43,20 @@ export function LandingHeader() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           isScrolled
-            ? "bg-white/95 backdrop-blur-lg shadow-sm border-b border-gray-100"
+            ? "bg-slate-950/70 backdrop-blur-md shadow-lg shadow-black/10 border-b border-white/5"
             : "bg-transparent"
         )}
       >
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo with gradient */}
           <Link
             href="/"
-            className={cn(
-              "flex items-center gap-2 font-bold text-xl tracking-tight transition-colors",
-              isScrolled ? "text-gray-900" : "text-white"
-            )}
+            className="flex items-center gap-2 font-bold text-xl tracking-tight"
           >
             <span className="text-2xl">⚡</span>
-            EverGo
+            <span className="bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
+              EverGo
+            </span>
           </Link>
 
           {/* Center Navigation - Desktop */}
@@ -67,12 +65,7 @@ export function LandingHeader() {
               <a
                 key={link.href}
                 href={link.href}
-                className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-full transition-colors",
-                  isScrolled
-                    ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                    : "text-white/90 hover:text-white hover:bg-white/10"
-                )}
+                className="px-4 py-2 text-sm font-medium rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
               >
                 {link.label}
               </a>
@@ -81,55 +74,29 @@ export function LandingHeader() {
 
           {/* Right Side Actions - Desktop */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Search Pill */}
+            {/* Search Pill with kbd */}
             <button
-              className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors",
-                isScrolled
-                  ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  : "bg-white/10 text-white/80 hover:bg-white/20"
-              )}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors border border-white/10"
             >
               <Search className="w-4 h-4" />
               <span className="hidden lg:inline">Search</span>
-              <kbd className={cn(
-                "hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded",
-                isScrolled ? "bg-gray-200 text-gray-500" : "bg-white/20 text-white/70"
-              )}>
+              <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-white/10 text-slate-400">
                 <Command className="w-3 h-3" />K
               </kbd>
             </button>
 
-            {/* Theme Toggle */}
-            <ThemeToggle
-              className={cn(
-                isScrolled
-                  ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                  : "text-white/80 hover:text-white hover:bg-white/10"
-              )}
-            />
-
             <Link
               href="/login"
-              className={cn(
-                "px-4 py-2 text-sm font-medium transition-colors",
-                isScrolled
-                  ? "text-gray-700 hover:text-gray-900"
-                  : "text-white hover:text-white/80"
-              )}
+              className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
             >
               Log in
             </Link>
 
+            {/* Primary CTA with gradient and glow */}
             <Button
               asChild
               size="sm"
-              className={cn(
-                "font-semibold transition-all",
-                isScrolled
-                  ? "bg-brand-blue text-white hover:bg-brand-blue/90"
-                  : "bg-white text-brand-blue hover:bg-white/90"
-              )}
+              className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/30 transition-all hover:shadow-cyan-500/50"
             >
               <Link href="/register">Sign Up Free</Link>
             </Button>
@@ -138,12 +105,7 @@ export function LandingHeader() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={cn(
-              "md:hidden p-2 rounded-lg transition-colors",
-              isScrolled
-                ? "text-gray-700 hover:bg-gray-100"
-                : "text-white hover:bg-white/10"
-            )}
+            className="md:hidden p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? (
@@ -163,47 +125,29 @@ export function LandingHeader() {
               : "max-h-0 opacity-0"
           )}
         >
-          <nav className={cn(
-            "px-4 py-4 space-y-2",
-            isScrolled ? "bg-white" : "bg-gray-900/95 backdrop-blur-lg"
-          )}>
+          <nav className="px-4 py-4 space-y-2 bg-slate-950/95 backdrop-blur-lg border-t border-white/5">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  "block px-4 py-3 rounded-lg font-medium transition-colors",
-                  isScrolled
-                    ? "text-gray-700 hover:bg-gray-100"
-                    : "text-white/90 hover:bg-white/10"
-                )}
+                className="block px-4 py-3 rounded-lg font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
               >
                 {link.label}
               </a>
             ))}
 
-            <div className="pt-4 border-t border-gray-200/20 space-y-2">
+            <div className="pt-4 border-t border-white/10 space-y-2">
               <Link
                 href="/login"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  "block px-4 py-3 rounded-lg font-medium text-center transition-colors",
-                  isScrolled
-                    ? "text-gray-700 hover:bg-gray-100"
-                    : "text-white/90 hover:bg-white/10"
-                )}
+                className="block px-4 py-3 rounded-lg font-medium text-center text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
               >
                 Log in
               </Link>
               <Button
                 asChild
-                className={cn(
-                  "w-full font-semibold",
-                  isScrolled
-                    ? "bg-brand-blue text-white hover:bg-brand-blue/90"
-                    : "bg-white text-brand-blue hover:bg-white/90"
-                )}
+                className="w-full bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/30"
               >
                 <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
                   Sign Up Free
@@ -213,7 +157,6 @@ export function LandingHeader() {
           </nav>
         </div>
       </header>
-
     </>
   )
 }

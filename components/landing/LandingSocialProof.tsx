@@ -64,7 +64,7 @@ const testimonials = [
 ]
 
 const stats = [
-  { value: "4.9★", label: "App Store Rating", sublabel: "12K+ reviews" },
+  { value: "4.9", label: "App Store Rating", sublabel: "12K+ reviews" },
   { value: "98%", label: "User Satisfaction", sublabel: "based on surveys" },
   { value: "50K+", label: "Active Athletes", sublabel: "this month" },
   { value: "Free", label: "Forever Plan", sublabel: "full features" },
@@ -101,11 +101,11 @@ export function LandingSocialProof() {
   }
 
   return (
-    <section className="w-full py-20 md:py-28 bg-gray-50 overflow-hidden">
+    <section className="w-full py-20 md:py-28 bg-slate-900 overflow-hidden">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-gray-700 text-sm font-medium mb-4 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-white text-sm font-medium mb-4 border border-white/10">
             <div className="flex gap-0.5">
               {[1, 2, 3, 4, 5].map((i) => (
                 <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -113,10 +113,10 @@ export function LandingSocialProof() {
             </div>
             <span>Loved by athletes worldwide</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
             Real athletes, real results
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
             Join thousands of athletes who are achieving their goals with EverGo
           </p>
         </div>
@@ -124,27 +124,27 @@ export function LandingSocialProof() {
         {/* Testimonials Carousel */}
         <div className="relative max-w-5xl mx-auto">
           {/* Main Testimonial Card */}
-          <div className="relative bg-white rounded-3xl shadow-xl p-8 md:p-12 overflow-hidden">
+          <div className="relative bg-slate-800 rounded-3xl border border-slate-700/50 p-8 md:p-12 overflow-hidden">
             {/* Quote Icon */}
-            <Quote className="absolute top-6 right-6 w-16 h-16 text-gray-100" />
+            <Quote className="absolute top-6 right-6 w-16 h-16 text-slate-700/50" />
 
             {/* Testimonial Content */}
             <div className="relative grid md:grid-cols-3 gap-8 items-center">
               {/* Author Info - Left */}
               <div className="md:col-span-1">
                 <div className="flex flex-col items-center text-center">
-                  <Avatar className="h-24 w-24 border-4 border-white shadow-lg mb-4">
+                  <Avatar className="h-24 w-24 border-4 border-slate-700 shadow-lg mb-4">
                     <AvatarImage src={testimonials[activeIndex].avatar} />
-                    <AvatarFallback className="text-2xl">
+                    <AvatarFallback className="text-2xl bg-slate-700 text-white">
                       {testimonials[activeIndex].name[0]}
                     </AvatarFallback>
                   </Avatar>
 
-                  <div className="font-bold text-xl text-gray-900">
+                  <div className="font-bold text-xl text-white">
                     {testimonials[activeIndex].name}
                   </div>
-                  <div className="text-gray-600">{testimonials[activeIndex].role}</div>
-                  <div className="text-sm text-gray-500">{testimonials[activeIndex].location}</div>
+                  <div className="text-slate-400">{testimonials[activeIndex].role}</div>
+                  <div className="text-sm text-slate-500">{testimonials[activeIndex].location}</div>
 
                   {/* Rating */}
                   <div className="flex gap-0.5 mt-4">
@@ -154,7 +154,7 @@ export function LandingSocialProof() {
                   </div>
 
                   {/* Highlight Badge */}
-                  <div className="mt-4 px-4 py-2 bg-brand-blue/10 text-brand-blue rounded-full text-sm font-medium">
+                  <div className="mt-4 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-medium border border-emerald-500/30">
                     {testimonials[activeIndex].highlight}
                   </div>
                 </div>
@@ -162,11 +162,11 @@ export function LandingSocialProof() {
 
               {/* Quote - Right */}
               <div className="md:col-span-2">
-                <blockquote className="text-xl md:text-2xl text-gray-800 leading-relaxed font-medium">
+                <blockquote className="text-xl md:text-2xl text-slate-200 leading-relaxed font-medium">
                   &ldquo;{testimonials[activeIndex].quote}&rdquo;
                 </blockquote>
                 <div className="mt-6 flex items-center gap-2">
-                  <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                  <span className="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-sm">
                     {testimonials[activeIndex].sport}
                   </span>
                 </div>
@@ -177,7 +177,7 @@ export function LandingSocialProof() {
           {/* Navigation Arrows */}
           <button
             onClick={goToPrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 hover:shadow-xl transition-all"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 w-12 h-12 bg-slate-800 rounded-full border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-600 transition-all"
             aria-label="Previous testimonial"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -185,7 +185,7 @@ export function LandingSocialProof() {
 
           <button
             onClick={goToNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 hover:shadow-xl transition-all"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 w-12 h-12 bg-slate-800 rounded-full border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-600 transition-all"
             aria-label="Next testimonial"
           >
             <ChevronRight className="w-6 h-6" />
@@ -198,10 +198,10 @@ export function LandingSocialProof() {
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={cn(
-                  "w-2 h-2 rounded-full transition-all",
+                  "h-2 rounded-full transition-all",
                   index === activeIndex
-                    ? "w-8 bg-brand-blue"
-                    : "bg-gray-300 hover:bg-gray-400"
+                    ? "w-8 bg-gradient-to-r from-emerald-400 to-cyan-500"
+                    : "w-2 bg-slate-600 hover:bg-slate-500"
                 )}
                 aria-label={`Go to testimonial ${index + 1}`}
               />
@@ -214,13 +214,13 @@ export function LandingSocialProof() {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="text-center p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+              className="text-center p-6 bg-slate-800/50 rounded-2xl border border-slate-700/50 hover:border-slate-600 transition-colors"
             >
-              <div className="text-3xl md:text-4xl font-bold text-brand-blue mb-1">
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent mb-1">
                 {stat.value}
               </div>
-              <div className="font-medium text-gray-900">{stat.label}</div>
-              <div className="text-xs text-gray-500">{stat.sublabel}</div>
+              <div className="font-medium text-white">{stat.label}</div>
+              <div className="text-xs text-slate-500">{stat.sublabel}</div>
             </div>
           ))}
         </div>

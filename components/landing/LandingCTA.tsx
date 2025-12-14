@@ -1,23 +1,32 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowRight, Sparkles } from "lucide-react"
+import { ArrowRight, Sparkles, Check } from "lucide-react"
 
 export function LandingCTA() {
   return (
     <section className="w-full py-20 md:py-28 relative overflow-hidden">
-      {/* Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-blue via-purple-600 to-brand-green" />
+      {/* Background image with overlay - finish line / achievement theme */}
+      <div className="absolute inset-0">
+        <img
+          src="https://images.pexels.com/photos/1199590/pexels-photo-1199590.jpeg?auto=compress&cs=tinysrgb&w=1920"
+          alt="Athletes celebrating"
+          className="w-full h-full object-cover opacity-20"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-950/90 to-slate-950" />
+      </div>
 
-      {/* Pattern Overlay */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+      {/* Gradient glow effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 right-1/4 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[120px]" />
       </div>
 
       <div className="container relative px-4 md:px-6 mx-auto max-w-7xl">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full text-emerald-400 text-sm font-medium border border-white/10">
             <Sparkles className="w-4 h-4" />
             Limited time: Get 3 months Pro for free
           </div>
@@ -25,11 +34,13 @@ export function LandingCTA() {
           {/* Heading */}
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
             Ready to level up
-            <span className="block">your fitness journey?</span>
+            <span className="block bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
+              your fitness journey?
+            </span>
           </h2>
 
           {/* Subheading */}
-          <p className="text-xl text-white/90 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
             Join 50,000+ athletes who are tracking, competing, and improving with EverGo
           </p>
 
@@ -38,7 +49,7 @@ export function LandingCTA() {
             <Button
               asChild
               size="lg"
-              className="bg-white text-brand-blue hover:bg-gray-100 text-lg px-10 py-7 h-auto shadow-2xl hover:shadow-3xl transition-all"
+              className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 text-lg px-10 py-7 h-auto font-semibold shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all hover:scale-[1.02]"
             >
               <Link href="/register" className="flex items-center gap-2">
                 Start Free Today
@@ -49,7 +60,7 @@ export function LandingCTA() {
               asChild
               variant="outline"
               size="lg"
-              className="bg-transparent border-2 border-white text-white hover:bg-white/10 text-lg px-10 py-7 h-auto"
+              className="bg-transparent border-2 border-slate-600 text-white hover:bg-white/5 hover:border-slate-500 text-lg px-10 py-7 h-auto"
             >
               <Link href="/login">
                 Log In
@@ -58,23 +69,23 @@ export function LandingCTA() {
           </div>
 
           {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center gap-6 pt-8 text-sm text-white/80">
+          <div className="flex flex-wrap justify-center gap-6 pt-8 text-sm text-slate-400">
             <div className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
+              <div className="w-5 h-5 rounded-full bg-emerald-500/30 flex items-center justify-center">
+                <Check className="w-3 h-3 text-emerald-400" />
+              </div>
               <span>No credit card required</span>
             </div>
             <div className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
+              <div className="w-5 h-5 rounded-full bg-emerald-500/30 flex items-center justify-center">
+                <Check className="w-3 h-3 text-emerald-400" />
+              </div>
               <span>Free forever plan</span>
             </div>
             <div className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
+              <div className="w-5 h-5 rounded-full bg-emerald-500/30 flex items-center justify-center">
+                <Check className="w-3 h-3 text-emerald-400" />
+              </div>
               <span>Cancel anytime</span>
             </div>
           </div>
