@@ -26,13 +26,13 @@ export function LandingCTA() {
       <div className="container relative px-4 md:px-6 mx-auto max-w-7xl">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full text-emerald-400 text-sm font-medium border border-white/10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full text-emerald-400 text-sm font-medium border border-slate-200">
             <Sparkles className="w-4 h-4" />
             Limited time: Get 3 months Pro for free
           </div>
 
           {/* Heading */}
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-50">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900">
             Ready to level up
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
               your fitness journey?
@@ -40,7 +40,7 @@ export function LandingCTA() {
           </h2>
 
           {/* Subheading */}
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-500 max-w-2xl mx-auto">
             Join 50,000+ athletes who are tracking, competing, and improving with EverGo
           </p>
 
@@ -49,7 +49,7 @@ export function LandingCTA() {
             <Button
               asChild
               size="lg"
-              className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 text-lg px-10 py-7 h-auto font-semibold shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all hover:scale-[1.02]"
+              className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 text-lg px-10 py-7 h-auto font-semibold shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20 transition-all hover:scale-[1.02]"
             >
               <Link href="/register" className="flex items-center gap-2">
                 Start Free Today
@@ -60,7 +60,7 @@ export function LandingCTA() {
               asChild
               variant="outline"
               size="lg"
-              className="bg-transparent border-2 border-slate-700 text-slate-50 hover:bg-white/5 hover:border-slate-600 text-lg px-10 py-7 h-auto"
+              className="bg-transparent border-2 border-slate-700 text-slate-900 hover:bg-white/5 hover:border-slate-600 text-lg px-10 py-7 h-auto"
             >
               <Link href="/login">
                 Log In
@@ -69,7 +69,7 @@ export function LandingCTA() {
           </div>
 
           {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center gap-6 pt-8 text-sm text-slate-400">
+          <div className="flex flex-wrap justify-center gap-6 pt-8 text-sm text-slate-500">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-emerald-500/30 flex items-center justify-center">
                 <Check className="w-3 h-3 text-emerald-400" />

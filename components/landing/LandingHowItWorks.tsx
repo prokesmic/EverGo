@@ -60,14 +60,14 @@ const steps = [
 // Mockup screens for each step
 function ProfileMockup() {
   return (
-    <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 w-full max-w-sm mx-auto border border-white/10">
+    <div className="bg-white shadow-sm rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-200">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-2xl font-bold text-slate-950">
           A
         </div>
         <div>
-          <div className="font-bold text-white text-lg">Alex Runner</div>
-          <div className="text-sm text-slate-400">Intermediate Athlete</div>
+          <div className="font-bold text-slate-900 text-lg">Alex Runner</div>
+          <div className="text-sm text-slate-500">Intermediate Athlete</div>
         </div>
       </div>
       <div className="flex flex-wrap gap-2 mb-4">
@@ -80,7 +80,7 @@ function ProfileMockup() {
           </span>
         ))}
       </div>
-      <div className="flex items-center gap-2 text-slate-400 text-sm">
+      <div className="flex items-center gap-2 text-slate-500 text-sm">
         <MapPin className="w-4 h-4" />
         <span>Prague, Czech Republic</span>
       </div>
@@ -90,26 +90,26 @@ function ProfileMockup() {
 
 function ActivityMockup() {
   return (
-    <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 w-full max-w-sm mx-auto border border-white/10">
+    <div className="bg-white shadow-sm rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-200">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
-          <Activity className="w-4 h-4 text-white" />
+          <Activity className="w-4 h-4 text-slate-900" />
         </div>
-        <span className="font-semibold text-white">Morning Run</span>
-        <span className="ml-auto text-xs text-slate-400">Just now</span>
+        <span className="font-semibold text-slate-900">Morning Run</span>
+        <span className="ml-auto text-xs text-slate-500">Just now</span>
       </div>
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="text-center">
-          <div className="text-2xl font-bold text-white">10.2</div>
-          <div className="text-xs text-slate-400">km</div>
+          <div className="text-2xl font-bold text-slate-900">10.2</div>
+          <div className="text-xs text-slate-500">km</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-white">52:34</div>
-          <div className="text-xs text-slate-400">time</div>
+          <div className="text-2xl font-bold text-slate-900">52:34</div>
+          <div className="text-xs text-slate-500">time</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-white">5:09</div>
-          <div className="text-xs text-slate-400">/km</div>
+          <div className="text-2xl font-bold text-slate-900">5:09</div>
+          <div className="text-xs text-slate-500">/km</div>
         </div>
       </div>
       {/* Mini map mockup */}
@@ -140,11 +140,11 @@ function ActivityMockup() {
 
 function RankingMockup() {
   return (
-    <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 w-full max-w-sm mx-auto border border-white/10">
+    <div className="bg-white shadow-sm rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-200">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Globe className="w-5 h-5 text-cyan-400" />
-          <span className="font-semibold text-white">Prague Rankings</span>
+          <span className="font-semibold text-slate-900">Prague Rankings</span>
         </div>
         <span className="text-emerald-400 text-sm font-medium flex items-center gap-1">
           <Zap className="w-3 h-3" />
@@ -154,15 +154,15 @@ function RankingMockup() {
       <div className="flex items-center justify-center py-6">
         <div className="relative">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-            <span className="text-4xl font-bold text-white">#12</span>
+            <span className="text-4xl font-bold text-slate-900">#12</span>
           </div>
           <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
-            <Trophy className="w-4 h-4 text-white" />
+            <Trophy className="w-4 h-4 text-slate-900" />
           </div>
         </div>
       </div>
-      <div className="text-center text-sm text-slate-400">
-        out of <span className="text-white font-medium">1,420</span> athletes
+      <div className="text-center text-sm text-slate-500">
+        out of <span className="text-slate-900 font-medium">1,420</span> athletes
       </div>
     </div>
   )
@@ -170,22 +170,22 @@ function RankingMockup() {
 
 function CommunityMockup() {
   return (
-    <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 w-full max-w-sm mx-auto border border-white/10">
+    <div className="bg-white shadow-sm rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-200">
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center p-3 bg-purple-500/20 rounded-xl border border-purple-500/30">
           <Users className="w-6 h-6 text-purple-400 mx-auto mb-1" />
-          <div className="text-xl font-bold text-white">12</div>
-          <div className="text-xs text-slate-400">Partners</div>
+          <div className="text-xl font-bold text-slate-900">12</div>
+          <div className="text-xs text-slate-500">Partners</div>
         </div>
         <div className="text-center p-3 bg-cyan-500/20 rounded-xl border border-cyan-500/30">
           <Trophy className="w-6 h-6 text-cyan-400 mx-auto mb-1" />
-          <div className="text-xl font-bold text-white">3</div>
-          <div className="text-xs text-slate-400">Teams</div>
+          <div className="text-xl font-bold text-slate-900">3</div>
+          <div className="text-xs text-slate-500">Teams</div>
         </div>
         <div className="text-center p-3 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
           <Zap className="w-6 h-6 text-emerald-400 mx-auto mb-1" />
-          <div className="text-xl font-bold text-white">248</div>
-          <div className="text-xs text-slate-400">Followers</div>
+          <div className="text-xl font-bold text-slate-900">248</div>
+          <div className="text-xs text-slate-500">Followers</div>
         </div>
       </div>
       <div className="flex justify-center -space-x-3">
@@ -251,17 +251,17 @@ export function LandingHowItWorks() {
   }
 
   return (
-    <section ref={sectionRef} className="w-full py-20 md:py-28 bg-[#0f172a]/60">
+    <section ref={sectionRef} className="w-full py-20 md:py-28 bg-white">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-cyan-400 text-sm font-medium mb-4 border border-white/10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-cyan-400 text-sm font-medium mb-4 border border-slate-200">
             <span>Simple to start</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-50 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
             Get started in minutes
           </h2>
-          <p className="text-lg text-slate-400">
+          <p className="text-lg text-slate-500">
             No complex setup. No learning curve. Just sign up and start tracking.
           </p>
         </div>
@@ -283,7 +283,7 @@ export function LandingHowItWorks() {
                     className={cn(
                       "w-full text-left p-6 rounded-2xl transition-all duration-300 cursor-pointer",
                       isActive
-                        ? "backdrop-blur-md bg-slate-900/40 border-l-4 border-emerald-400 shadow-lg border border-white/10"
+                        ? "bg-white shadow-sm border-l-4 border-emerald-400 shadow-lg border border-slate-200"
                         : "bg-slate-900/20 hover:bg-slate-900/30 border-l-4 border-transparent"
                     )}
                   >
@@ -292,8 +292,8 @@ export function LandingHowItWorks() {
                         className={cn(
                           "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
                           isActive
-                            ? "bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20"
-                            : "bg-slate-800 text-slate-400"
+                            ? "bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/10"
+                            : "bg-slate-800 text-slate-500"
                         )}
                       >
                         <Icon className="w-6 h-6" />
@@ -304,7 +304,7 @@ export function LandingHowItWorks() {
                           <h3
                             className={cn(
                               "font-semibold transition-colors",
-                              isActive ? "text-slate-50" : "text-slate-400"
+                              isActive ? "text-slate-900" : "text-slate-500"
                             )}
                           >
                             {step.title}
@@ -322,7 +322,7 @@ export function LandingHowItWorks() {
                         <p
                           className={cn(
                             "text-sm transition-colors",
-                            isActive ? "text-slate-300" : "text-slate-500"
+                            isActive ? "text-slate-300" : "text-slate-9000"
                           )}
                         >
                           {step.description}
@@ -386,14 +386,14 @@ export function LandingHowItWorks() {
           <Button
             asChild
             size="lg"
-            className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold px-8 py-6 h-auto shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all hover:scale-[1.02]"
+            className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold px-8 py-6 h-auto shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20 transition-all hover:scale-[1.02]"
           >
             <Link href="/register" className="flex items-center gap-2">
               Start Your Journey Free
               <ChevronRight className="w-5 h-5" />
             </Link>
           </Button>
-          <p className="text-sm text-slate-500 mt-3">No credit card required</p>
+          <p className="text-sm text-slate-9000 mt-3">No credit card required</p>
         </div>
       </div>
     </section>

@@ -151,7 +151,7 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
         {data.note && (
           <span className={cn(
             "text-xs font-medium",
-            isEvergo ? "text-emerald-400" : "text-slate-400"
+            isEvergo ? "text-emerald-400" : "text-slate-500"
           )}>
             {data.note}
           </span>
@@ -164,7 +164,7 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
     return (
       <div className="flex flex-col items-center gap-1">
         <div className="w-8 h-8 rounded-full bg-slate-700/50 flex items-center justify-center">
-          <X className="w-5 h-5 text-slate-500" />
+          <X className="w-5 h-5 text-slate-9000" />
         </div>
       </div>
     )
@@ -176,7 +176,7 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
         <Minus className="w-5 h-5 text-amber-400" />
       </div>
       {data.note && (
-        <span className="text-xs text-slate-500">{data.note}</span>
+        <span className="text-xs text-slate-9000">{data.note}</span>
       )}
     </div>
   )
@@ -184,7 +184,7 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
 
 export function LandingComparison() {
   return (
-    <section className="w-full py-20 md:py-28 bg-[#020617]">
+    <section className="w-full py-20 md:py-28 bg-slate-50">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -192,20 +192,20 @@ export function LandingComparison() {
             <Trophy className="w-4 h-4" />
             <span>See the difference</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-50 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
             Why athletes choose EverGo
           </h2>
-          <p className="text-lg text-slate-400">
+          <p className="text-lg text-slate-500">
             We combine the best features from all platforms, plus unique innovations you won&apos;t find anywhere else
           </p>
         </div>
 
         {/* Comparison Table */}
         <div className="max-w-5xl mx-auto">
-          <div className="backdrop-blur-md bg-slate-900/40 rounded-3xl border border-white/10 overflow-hidden">
+          <div className="bg-white shadow-sm rounded-3xl border border-slate-200 overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-4 gap-4 p-6 bg-[#0f172a]/60 border-b border-slate-800">
-              <div className="font-semibold text-slate-500 text-sm uppercase tracking-wide">
+            <div className="grid grid-cols-4 gap-4 p-6 bg-white border-b border-slate-800">
+              <div className="font-semibold text-slate-9000 text-sm uppercase tracking-wide">
                 Feature
               </div>
               {competitors.map((comp) => (
@@ -223,23 +223,23 @@ export function LandingComparison() {
                   )}
                   <div className={cn(
                     "flex flex-col items-center gap-2 p-3 rounded-xl",
-                    comp.highlight && "bg-cyan-400/10 backdrop-blur-sm border-2 border-cyan-500/50 shadow-xl shadow-cyan-500/20"
+                    comp.highlight && "bg-cyan-400/10 backdrop-blur-sm border-2 border-cyan-500/50 shadow-xl shadow-cyan-500/10"
                   )}>
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold",
                       comp.highlight
                         ? "bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950"
-                        : "bg-slate-700 text-slate-400"
+                        : "bg-slate-700 text-slate-500"
                     )}>
                       {comp.logo}
                     </div>
                     <span className={cn(
                       "font-semibold",
-                      comp.highlight ? "text-white" : "text-slate-400"
+                      comp.highlight ? "text-white" : "text-slate-500"
                     )}>
                       {comp.name}
                     </span>
-                    <span className="text-xs text-slate-500">{comp.tagline}</span>
+                    <span className="text-xs text-slate-9000">{comp.tagline}</span>
                   </div>
                 </div>
               ))}
@@ -270,7 +270,7 @@ export function LandingComparison() {
                     <div>
                       <span className="font-medium text-white">{feature.name}</span>
                       {feature.tooltip && (
-                        <p className="text-xs text-slate-500 mt-0.5">{feature.tooltip}</p>
+                        <p className="text-xs text-slate-9000 mt-0.5">{feature.tooltip}</p>
                       )}
                     </div>
                     <div className="flex justify-center">
@@ -291,7 +291,7 @@ export function LandingComparison() {
             <div className="grid grid-cols-4 gap-4 p-6 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border-t border-slate-800">
               <div />
               <div className="flex justify-center">
-                <Button asChild className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40">
+                <Button asChild className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20">
                   <Link href="/register" className="flex items-center gap-2">
                     Start Free
                     <ArrowRight className="w-4 h-4" />
@@ -299,10 +299,10 @@ export function LandingComparison() {
                 </Button>
               </div>
               <div className="flex justify-center items-center">
-                <span className="text-sm text-slate-500">$11.99/mo</span>
+                <span className="text-sm text-slate-9000">$11.99/mo</span>
               </div>
               <div className="flex justify-center items-center">
-                <span className="text-sm text-slate-500">Free</span>
+                <span className="text-sm text-slate-9000">Free</span>
               </div>
             </div>
           </div>
@@ -310,7 +310,7 @@ export function LandingComparison() {
 
         {/* Bottom Note */}
         <div className="text-center mt-8">
-          <p className="text-sm text-slate-500 italic">
+          <p className="text-sm text-slate-9000 italic">
             * Comparison based on free tiers as of December 2025
           </p>
         </div>

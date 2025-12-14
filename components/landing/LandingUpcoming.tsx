@@ -42,21 +42,21 @@ const statusLabels = {
 
 export function LandingUpcoming() {
   return (
-    <section className="w-full py-20 md:py-28 bg-[#0f172a]/60 text-white overflow-hidden">
+    <section className="w-full py-20 md:py-28 bg-white text-white overflow-hidden">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-white text-sm font-medium mb-4 border border-white/10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-white text-sm font-medium mb-4 border border-slate-200">
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span>What&apos;s Next</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-50 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
             The future of
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
               EverGo
             </span>
           </h2>
-          <p className="text-lg text-slate-400">
+          <p className="text-lg text-slate-500">
             We&apos;re constantly building new features to help you achieve your fitness goals
           </p>
         </div>
@@ -70,7 +70,7 @@ export function LandingUpcoming() {
             return (
               <div
                 key={index}
-                className="group relative backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 border border-white/10 hover:border-white/20 transition-all"
+                className="group relative bg-white shadow-sm rounded-2xl p-6 border border-slate-200 hover:border-white/20 transition-all"
               >
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4">
@@ -88,8 +88,8 @@ export function LandingUpcoming() {
                 </div>
 
                 {/* Content */}
-                <h3 className="text-xl font-bold text-slate-50 mb-2">{feature.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{feature.description}</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{feature.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{feature.description}</p>
               </div>
             )
           })}
@@ -97,18 +97,18 @@ export function LandingUpcoming() {
 
         {/* Newsletter CTA */}
         <div className="mt-16 max-w-xl mx-auto text-center">
-          <h3 className="text-xl font-semibold text-slate-50 mb-4">Get notified about new features</h3>
+          <h3 className="text-xl font-semibold text-slate-900 mb-4">Get notified about new features</h3>
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-xl backdrop-blur-md bg-slate-900/40 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+              className="flex-1 px-4 py-3 rounded-xl bg-white shadow-sm border border-slate-200 text-white placeholder:text-slate-9000 focus:outline-none focus:border-cyan-500 transition-colors"
             />
-            <button className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-xl font-semibold text-slate-950 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all">
+            <button className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-xl font-semibold text-slate-950 shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20 transition-all">
               Notify Me
             </button>
           </div>
-          <p className="text-xs text-slate-500 mt-3">
+          <p className="text-xs text-slate-9000 mt-3">
             No spam. Unsubscribe anytime.
           </p>
         </div>

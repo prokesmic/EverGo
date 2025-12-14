@@ -49,16 +49,15 @@ const socialLinks = [
 
 export function LandingFooter() {
   return (
-    <footer className="w-full bg-[#020617] border-t border-slate-800">
+    <footer className="w-full bg-slate-900 border-t border-slate-800">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Footer Content */}
         <div className="py-12 md:py-16 grid grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 font-bold text-xl mb-4">
-              <span className="text-2xl">⚡</span>
-              <span className="bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
-                EverGo
+              <span className="text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
+                ⚡EverGo
               </span>
             </Link>
             <p className="text-sm text-slate-400 mb-6">
@@ -75,7 +74,7 @@ export function LandingFooter() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg backdrop-blur-md bg-slate-900/40 text-slate-400 hover:bg-slate-900/60 hover:text-white transition-colors border border-white/10"
+                    className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors border border-slate-700"
                     aria-label={social.label}
                   >
                     <Icon className="w-5 h-5" />
@@ -88,7 +87,7 @@ export function LandingFooter() {
           {/* Link Columns */}
           {Object.values(footerLinks).map((section) => (
             <div key={section.title}>
-              <h3 className="font-semibold text-sm mb-4 text-slate-50">
+              <h3 className="font-semibold text-sm mb-4 text-white">
                 {section.title}
               </h3>
               <ul className="space-y-3">

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowRight, Play, Zap, TrendingUp, Users } from "lucide-react"
+import { ArrowRight, Play, Zap, TrendingUp, Users, Activity } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
 export function LandingHero() {
@@ -16,8 +16,8 @@ export function LandingHero() {
       const rect = mockupRef.current.getBoundingClientRect()
       const centerX = rect.left + rect.width / 2
       const centerY = rect.top + rect.height / 2
-      const x = (e.clientX - centerX) / 25
-      const y = (e.clientY - centerY) / 25
+      const x = (e.clientX - centerX) / 30
+      const y = (e.clientY - centerY) / 30
       setMousePosition({ x, y })
     }
 
@@ -32,24 +32,24 @@ export function LandingHero() {
           {/* Left Column - Content */}
           <div className="flex-1 flex flex-col space-y-8 text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/30 backdrop-blur-sm text-xs font-bold uppercase tracking-wider text-cyan-400 w-fit mx-auto lg:mx-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white shadow-sm text-xs font-bold uppercase tracking-wider text-slate-600 w-fit mx-auto lg:mx-0">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
               Now available in 150+ countries
             </div>
 
             {/* Main Headline */}
             <div className="space-y-4">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-white">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-slate-900">
                 Track any sport.
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-600">
                   Compete globally.
                 </span>
               </h1>
-              <p className="text-lg text-slate-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-lg text-slate-500 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
                 The multi-sport social network where athletes track activities, climb rankings, and connect with training partners worldwide.
               </p>
             </div>
@@ -59,7 +59,7 @@ export function LandingHero() {
               <Button
                 asChild
                 size="lg"
-                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full text-white font-bold text-lg bg-gradient-to-r from-emerald-500 to-cyan-600 hover:shadow-lg hover:shadow-cyan-500/40 transition-all transform hover:scale-[1.02]"
+                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full text-white font-bold text-lg bg-slate-900 hover:bg-slate-800 shadow-xl hover:shadow-2xl transition-all transform hover:scale-[1.02]"
               >
                 <Link href="/register" className="flex items-center gap-2">
                   Get Started Free <ArrowRight className="w-5 h-5" />
@@ -69,10 +69,10 @@ export function LandingHero() {
                 asChild
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full font-bold text-lg border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
+                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full font-bold text-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-sm"
               >
                 <Link href="#demo" className="flex items-center gap-2">
-                  <Play className="w-4 h-4" fill="currentColor" /> Watch Demo
+                  <Play className="w-4 h-4 fill-slate-600" /> Watch Demo
                 </Link>
               </Button>
             </div>
@@ -83,10 +83,10 @@ export function LandingHero() {
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className="w-10 h-10 rounded-full border-2 border-[#020617] bg-slate-800 overflow-hidden"
+                    className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 shadow-sm overflow-hidden"
                   >
                     <img
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 20}`}
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 45}`}
                       alt="User"
                       className="w-full h-full"
                     />
@@ -94,10 +94,10 @@ export function LandingHero() {
                 ))}
               </div>
               <div className="text-left">
-                <p className="text-white font-bold">50K+ athletes</p>
-                <div className="flex items-center gap-1 text-emerald-400 text-xs font-bold">
-                  <span className="text-yellow-400">★★★★★</span>
-                  <span className="text-slate-500 font-normal">from 12K+ reviews</span>
+                <p className="text-slate-900 font-bold">50K+ athletes</p>
+                <div className="flex items-center gap-1 text-emerald-500 text-xs font-bold">
+                  <span className="text-amber-400">★★★★★</span>
+                  <span className="text-slate-400 font-normal">from 12K+ reviews</span>
                 </div>
               </div>
             </div>
@@ -105,74 +105,83 @@ export function LandingHero() {
 
           {/* Right Column - Dashboard Mockup */}
           <div className="flex-1 w-full max-w-lg lg:max-w-none relative group hidden lg:block">
-            {/* Glow behind card */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-cyan-500/20 rounded-full blur-[100px] -z-10 group-hover:bg-cyan-500/30 transition-all duration-700" />
+            {/* Soft Glow behind card */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-emerald-100 to-cyan-100 rounded-full blur-[80px] -z-10 opacity-70" />
 
-            {/* Main Glass Card */}
+            {/* Main Glass Card (White Theme) */}
             <div
               ref={mockupRef}
-              className="relative bg-[#0f172a]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl transition-transform duration-500 hover:scale-[1.02]"
+              className="relative bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] transition-transform duration-500 hover:scale-[1.02] ring-1 ring-slate-100"
               style={{
                 transform: `rotateY(${mousePosition.x}deg) rotateX(${-mousePosition.y}deg)`,
                 transition: 'transform 0.1s ease-out',
               }}
             >
               {/* Browser Header */}
-              <div className="flex items-center gap-2 mb-6 opacity-50">
-                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                <div className="ml-4 px-3 py-1 rounded-full bg-black/20 text-[10px] font-mono text-slate-400">
-                  evergo.app/home
+              <div className="flex items-center gap-2 mb-6 opacity-30">
+                <div className="w-3 h-3 rounded-full bg-slate-900" />
+                <div className="w-3 h-3 rounded-full bg-slate-900" />
+                <div className="w-3 h-3 rounded-full bg-slate-900" />
+                <div className="ml-4 px-3 py-1 rounded-full bg-slate-100 text-[10px] font-mono text-slate-400 font-bold">
+                  evergo.app
                 </div>
               </div>
 
-              {/* Main Stat Card */}
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 mb-6 text-white shadow-lg relative overflow-hidden">
-                <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+              {/* Highlight Stat Card */}
+              <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-6 mb-6 text-white shadow-xl relative overflow-hidden group-hover:shadow-2xl transition-all">
+                <div className="absolute right-0 top-0 w-40 h-40 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
                 <div className="flex justify-between items-start relative z-10">
-                  <div>
-                    <div className="w-12 h-12 rounded-full bg-white/20 mb-4 animate-pulse" />
-                    <div className="h-4 w-24 bg-white/20 rounded mb-2" />
+                  <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+                    <Activity className="text-emerald-400 w-6 h-6" />
                   </div>
                   <div className="text-right">
-                    <h3 className="text-3xl font-bold">142.5 km</h3>
-                    <p className="text-emerald-100 text-sm">this week</p>
+                    <h3 className="text-4xl font-bold tracking-tight">
+                      142.5 <span className="text-lg text-slate-400 font-medium">km</span>
+                    </h3>
+                    <p className="text-emerald-400 text-sm font-bold mt-1">▲ 12% vs last week</p>
                   </div>
+                </div>
+
+                {/* Mini Graph Line */}
+                <div className="mt-6 flex items-end gap-1 h-8 opacity-50">
+                  {[40, 70, 45, 90, 60, 80, 50, 95].map((h, i) => (
+                    <div key={i} className="w-full bg-white rounded-t-sm" style={{ height: `${h}%` }} />
+                  ))}
                 </div>
               </div>
 
               {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="p-4 rounded-xl bg-slate-800/50 border border-white/5">
-                  <Zap className="w-6 h-6 text-orange-400 mx-auto mb-2" />
-                  <div className="text-lg font-bold text-white">14</div>
-                  <div className="text-xs text-slate-400">Streak</div>
+                <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                  <Zap className="w-6 h-6 text-orange-500 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-slate-900">14</div>
+                  <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Streak</div>
                 </div>
-                <div className="p-4 rounded-xl bg-slate-800/50 border border-white/5 relative">
-                  <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full animate-ping" />
-                  <TrendingUp className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
-                  <div className="text-lg font-bold text-white">#12</div>
-                  <div className="text-xs text-slate-400">Rank</div>
+                <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-8 h-8 bg-cyan-50 rounded-bl-2xl" />
+                  <TrendingUp className="w-6 h-6 text-cyan-600 mx-auto mb-2 relative z-10" />
+                  <div className="text-xl font-bold text-slate-900 relative z-10">#12</div>
+                  <div className="text-xs text-slate-400 font-bold uppercase tracking-wider relative z-10">Rank</div>
                 </div>
-                <div className="p-4 rounded-xl bg-slate-800/50 border border-white/5">
-                  <Users className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-                  <div className="text-lg font-bold text-white">328</div>
-                  <div className="text-xs text-slate-400">Following</div>
+                <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                  <Users className="w-6 h-6 text-purple-500 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-slate-900">328</div>
+                  <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Friends</div>
                 </div>
               </div>
 
               {/* Floating Notification */}
               <div
-                className="absolute -right-4 bottom-8 bg-[#1e293b] border border-slate-700 p-3 rounded-xl shadow-xl flex items-center gap-3 animate-bounce"
-                style={{ animationDuration: '3s' }}
+                className="absolute -right-8 bottom-12 bg-white border border-slate-100 p-4 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center gap-4 animate-bounce z-20"
+                style={{ animationDuration: '4s' }}
               >
-                <div className="bg-emerald-500/20 p-2 rounded-lg">
-                  <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                  <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Rank Up!</p>
-                  <p className="text-[10px] text-slate-400">You are now #12 in Prague</p>
+                  <p className="text-sm font-bold text-slate-900">New Record!</p>
+                  <p className="text-xs text-slate-500 font-medium">10k run in 48:20</p>
                 </div>
               </div>
             </div>
@@ -181,7 +190,7 @@ export function LandingHero() {
       </div>
 
       {/* Bottom gradient fade to next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#020617] to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-50 to-transparent" />
     </section>
   )
 }
