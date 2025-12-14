@@ -60,7 +60,7 @@ const steps = [
 // Mockup screens for each step
 function ProfileMockup() {
   return (
-    <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-700/50">
+    <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 w-full max-w-sm mx-auto border border-white/10">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-2xl font-bold text-slate-950">
           A
@@ -90,7 +90,7 @@ function ProfileMockup() {
 
 function ActivityMockup() {
   return (
-    <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-700/50">
+    <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 w-full max-w-sm mx-auto border border-white/10">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
           <Activity className="w-4 h-4 text-white" />
@@ -140,7 +140,7 @@ function ActivityMockup() {
 
 function RankingMockup() {
   return (
-    <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-700/50">
+    <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 w-full max-w-sm mx-auto border border-white/10">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Globe className="w-5 h-5 text-cyan-400" />
@@ -170,7 +170,7 @@ function RankingMockup() {
 
 function CommunityMockup() {
   return (
-    <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm mx-auto border border-slate-700/50">
+    <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 w-full max-w-sm mx-auto border border-white/10">
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center p-3 bg-purple-500/20 rounded-xl border border-purple-500/30">
           <Users className="w-6 h-6 text-purple-400 mx-auto mb-1" />
@@ -251,14 +251,14 @@ export function LandingHowItWorks() {
   }
 
   return (
-    <section ref={sectionRef} className="w-full py-20 md:py-28 bg-slate-900">
+    <section ref={sectionRef} className="w-full py-20 md:py-28 bg-[#0f172a]/60">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-cyan-400 text-sm font-medium mb-4 border border-white/10">
             <span>Simple to start</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-50 mb-4">
             Get started in minutes
           </h2>
           <p className="text-lg text-slate-400">
@@ -283,8 +283,8 @@ export function LandingHowItWorks() {
                     className={cn(
                       "w-full text-left p-6 rounded-2xl transition-all duration-300 cursor-pointer",
                       isActive
-                        ? "bg-slate-800 border-l-4 border-emerald-400 shadow-lg"
-                        : "bg-slate-800/30 hover:bg-slate-800/50 border-l-4 border-transparent"
+                        ? "backdrop-blur-md bg-slate-900/40 border-l-4 border-emerald-400 shadow-lg border border-white/10"
+                        : "bg-slate-900/20 hover:bg-slate-900/30 border-l-4 border-transparent"
                     )}
                   >
                     <div className="flex items-start gap-4">
@@ -292,8 +292,8 @@ export function LandingHowItWorks() {
                         className={cn(
                           "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
                           isActive
-                            ? "bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950"
-                            : "bg-slate-700 text-slate-400"
+                            ? "bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20"
+                            : "bg-slate-800 text-slate-400"
                         )}
                       >
                         <Icon className="w-6 h-6" />
@@ -304,7 +304,7 @@ export function LandingHowItWorks() {
                           <h3
                             className={cn(
                               "font-semibold transition-colors",
-                              isActive ? "text-white" : "text-slate-400"
+                              isActive ? "text-slate-50" : "text-slate-400"
                             )}
                           >
                             {step.title}
@@ -386,7 +386,7 @@ export function LandingHowItWorks() {
           <Button
             asChild
             size="lg"
-            className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold px-8 py-6 h-auto shadow-lg shadow-cyan-500/25 hover:shadow-xl hover:shadow-cyan-500/40 transition-all hover:scale-[1.02]"
+            className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold px-8 py-6 h-auto shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all hover:scale-[1.02]"
           >
             <Link href="/register" className="flex items-center gap-2">
               Start Your Journey Free

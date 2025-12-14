@@ -49,7 +49,7 @@ const socialLinks = [
 
 export function LandingFooter() {
   return (
-    <footer className="w-full bg-slate-950 border-t border-slate-800">
+    <footer className="w-full bg-[#020617] border-t border-slate-800">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Footer Content */}
         <div className="py-12 md:py-16 grid grid-cols-2 md:grid-cols-5 gap-8">
@@ -75,7 +75,7 @@ export function LandingFooter() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border border-slate-700/50"
+                    className="p-2 rounded-lg backdrop-blur-md bg-slate-900/40 text-slate-400 hover:bg-slate-900/60 hover:text-white transition-colors border border-white/10"
                     aria-label={social.label}
                   >
                     <Icon className="w-5 h-5" />
@@ -88,7 +88,7 @@ export function LandingFooter() {
           {/* Link Columns */}
           {Object.values(footerLinks).map((section) => (
             <div key={section.title}>
-              <h3 className="font-semibold text-sm mb-4 text-white">
+              <h3 className="font-semibold text-sm mb-4 text-slate-50">
                 {section.title}
               </h3>
               <ul className="space-y-3">

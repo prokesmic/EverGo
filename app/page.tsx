@@ -9,10 +9,10 @@ import { LandingFooter } from "@/components/landing/LandingFooter"
 import { LandingUpcoming } from "@/components/landing/LandingUpcoming"
 import { CommandPalette } from "@/components/landing/CommandPalette"
 
-// Static landing page - Dark mode first design
+// Static landing page - Deep Ocean theme
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-950">
+    <div className="flex flex-col min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-[#020617]">
       <LandingHeader />
       <CommandPalette />
       <main className="flex-1">

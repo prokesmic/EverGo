@@ -43,7 +43,7 @@ export function LandingHeader() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           isScrolled
-            ? "bg-slate-950/70 backdrop-blur-md shadow-lg shadow-black/10 border-b border-white/5"
+            ? "bg-[#020617]/80 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/10"
             : "bg-transparent"
         )}
       >
@@ -96,7 +96,7 @@ export function LandingHeader() {
             <Button
               asChild
               size="sm"
-              className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/30 transition-all hover:shadow-cyan-500/50"
+              className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/20 transition-all hover:shadow-cyan-500/40"
             >
               <Link href="/register">Sign Up Free</Link>
             </Button>
@@ -125,7 +125,7 @@ export function LandingHeader() {
               : "max-h-0 opacity-0"
           )}
         >
-          <nav className="px-4 py-4 space-y-2 bg-slate-950/95 backdrop-blur-lg border-t border-white/5">
+          <nav className="px-4 py-4 space-y-2 bg-[#020617]/95 backdrop-blur-lg border-t border-white/10">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -147,7 +147,7 @@ export function LandingHeader() {
               </Link>
               <Button
                 asChild
-                className="w-full bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/30"
+                className="w-full bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40"
               >
                 <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
                   Sign Up Free

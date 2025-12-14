@@ -42,7 +42,7 @@ const statusLabels = {
 
 export function LandingUpcoming() {
   return (
-    <section className="w-full py-20 md:py-28 bg-slate-900 text-white overflow-hidden">
+    <section className="w-full py-20 md:py-28 bg-[#0f172a]/60 text-white overflow-hidden">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -50,9 +50,9 @@ export function LandingUpcoming() {
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span>What&apos;s Next</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-50 mb-4">
             The future of
-            <span className="block bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
               EverGo
             </span>
           </h2>
@@ -70,7 +70,7 @@ export function LandingUpcoming() {
             return (
               <div
                 key={index}
-                className="group relative bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-slate-600 transition-all hover:bg-slate-800"
+                className="group relative backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 border border-white/10 hover:border-white/20 transition-all"
               >
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4">
@@ -88,7 +88,7 @@ export function LandingUpcoming() {
                 </div>
 
                 {/* Content */}
-                <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                <h3 className="text-xl font-bold text-slate-50 mb-2">{feature.title}</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">{feature.description}</p>
               </div>
             )
@@ -97,14 +97,14 @@ export function LandingUpcoming() {
 
         {/* Newsletter CTA */}
         <div className="mt-16 max-w-xl mx-auto text-center">
-          <h3 className="text-xl font-semibold mb-4">Get notified about new features</h3>
+          <h3 className="text-xl font-semibold text-slate-50 mb-4">Get notified about new features</h3>
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+              className="flex-1 px-4 py-3 rounded-xl backdrop-blur-md bg-slate-900/40 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
             />
-            <button className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-xl font-semibold text-slate-950 hover:shadow-lg hover:shadow-cyan-500/25 transition-all">
+            <button className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-xl font-semibold text-slate-950 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all">
               Notify Me
             </button>
           </div>

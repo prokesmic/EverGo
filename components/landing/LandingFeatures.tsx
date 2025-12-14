@@ -158,7 +158,7 @@ function OrbitingLogos() {
 
 export function LandingFeatures() {
   return (
-    <section className="w-full py-20 md:py-28 bg-slate-950 overflow-hidden">
+    <section className="w-full py-20 md:py-28 bg-[#020617] overflow-hidden">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -166,9 +166,9 @@ export function LandingFeatures() {
             <Sparkles className="w-4 h-4" />
             <span>Powerful features</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-50 mb-4">
             Everything you need to
-            <span className="block bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
               level up your fitness
             </span>
           </h2>
@@ -180,13 +180,13 @@ export function LandingFeatures() {
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
           {/* Card 1: Analytics - Large, spans 2 rows */}
-          <div className="md:row-span-2 bg-slate-900 rounded-2xl p-6 border border-slate-700/50 flex flex-col">
+          <div className="md:row-span-2 backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 border border-white/10 flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-white">Smart Analytics</h3>
+                <h3 className="font-bold text-slate-50">Smart Analytics</h3>
                 <p className="text-xs text-slate-400">Real-time performance tracking</p>
               </div>
             </div>
@@ -210,24 +210,24 @@ export function LandingFeatures() {
           </div>
 
           {/* Card 2: 25+ Sports - Square */}
-          <div className="bg-slate-900 rounded-2xl p-6 border border-slate-700/50 flex flex-col items-center justify-center text-center">
-            <div className="text-6xl font-extrabold bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent mb-4">
+          <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 border border-white/10 flex flex-col items-center justify-center text-center">
+            <div className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500 mb-4">
               25+
             </div>
-            <h3 className="font-bold text-white mb-2">Sports Supported</h3>
+            <h3 className="font-bold text-slate-50 mb-2">Sports Supported</h3>
             <div className="mt-4">
               <RotatingSportsIcons />
             </div>
           </div>
 
           {/* Card 3: Sync Everywhere - Square */}
-          <div className="bg-slate-900 rounded-2xl p-6 border border-slate-700/50 relative overflow-hidden">
+          <div className="backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 border border-white/10 relative overflow-hidden">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-white">Sync Everywhere</h3>
+                <h3 className="font-bold text-slate-50">Sync Everywhere</h3>
                 <p className="text-xs text-slate-400">Auto-import from your devices</p>
               </div>
             </div>
@@ -237,10 +237,10 @@ export function LandingFeatures() {
           </div>
 
           {/* Card 4: Rankings - Horizontal span 2 */}
-          <div className="md:col-span-2 bg-slate-900 rounded-2xl p-6 border border-slate-700/50">
+          <div className="md:col-span-2 backdrop-blur-md bg-slate-900/40 rounded-2xl p-6 border border-white/10">
             <div className="flex flex-col md:flex-row md:items-center gap-6">
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-white mb-2">Real Rankings</h3>
+                <h3 className="text-xl font-bold text-slate-50 mb-2">Real Rankings</h3>
                 <p className="text-slate-400 text-sm mb-4">
                   Compete at every level - from your local club to the global stage
                 </p>
@@ -251,7 +251,7 @@ export function LandingFeatures() {
                       className={`px-3 py-1.5 rounded-full text-xs font-medium ${
                         i === 0
                           ? "bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950"
-                          : "bg-slate-800 text-slate-400 border border-slate-700"
+                          : "bg-slate-900/50 text-slate-400 border border-slate-800"
                       }`}
                     >
                       {level}
@@ -269,8 +269,8 @@ export function LandingFeatures() {
                     key={user.rank}
                     className={`text-center p-3 rounded-xl ${
                       user.highlight
-                        ? "bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30"
-                        : "bg-slate-800"
+                        ? "backdrop-blur-md bg-cyan-500/10 border border-cyan-500/50"
+                        : "backdrop-blur-md bg-slate-900/40 border border-white/10"
                     }`}
                   >
                     <div

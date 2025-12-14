@@ -26,7 +26,7 @@ export function LandingHero() {
   }, [])
 
   return (
-    <section className="relative w-full min-h-screen flex items-center overflow-hidden bg-slate-950">
+    <section className="relative w-full min-h-screen flex items-center overflow-hidden bg-[#020617]">
       {/* Subtle grid pattern */}
       <div
         className="absolute inset-0 opacity-[0.03]"
@@ -57,10 +57,10 @@ export function LandingHero() {
 
             {/* Main Headline with gradient */}
             <div className="space-y-4">
-              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-white leading-[1.05]">
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-slate-50 leading-[1.05]">
                 Track any sport.
                 <br />
-                <span className="bg-gradient-to-r from-cyan-400 to-indigo-600 bg-clip-text text-transparent">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
                   Compete globally.
                 </span>
               </h1>
@@ -75,7 +75,7 @@ export function LandingHero() {
               <Button
                 asChild
                 size="lg"
-                className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 text-base font-semibold px-8 py-6 h-auto shadow-xl shadow-cyan-500/25 hover:shadow-2xl hover:shadow-cyan-500/40 transition-all hover:scale-[1.05]"
+                className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 text-base font-semibold px-8 py-6 h-auto shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all hover:scale-[1.05]"
               >
                 <Link href="/register" className="flex items-center gap-2">
                   Get Started Free
@@ -114,7 +114,7 @@ export function LandingHero() {
                     />
                   ))}
                 </div>
-                <div className="text-white">
+                <div className="text-slate-50">
                   <div className="font-semibold text-sm">50K+ athletes</div>
                   <div className="text-xs text-slate-500">joined this month</div>
                 </div>
@@ -126,7 +126,7 @@ export function LandingHero() {
                     <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <div className="text-white">
+                <div className="text-slate-50">
                   <div className="font-semibold text-sm">4.9 rating</div>
                   <div className="text-xs text-slate-500">from 12K+ reviews</div>
                 </div>
@@ -148,9 +148,9 @@ export function LandingHero() {
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 blur-3xl scale-110 rounded-3xl" />
 
               {/* Main mockup frame */}
-              <div className="relative bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-700/50">
+              <div className="relative backdrop-blur-md bg-slate-900/40 rounded-3xl shadow-2xl overflow-hidden border border-white/10">
                 {/* Browser bar */}
-                <div className="bg-slate-800 px-4 py-3 flex items-center gap-2 border-b border-slate-700">
+                <div className="bg-[#0f172a]/60 px-4 py-3 flex items-center gap-2 border-b border-slate-800">
                   <div className="flex gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-red-500" />
                     <div className="w-3 h-3 rounded-full bg-yellow-500" />
@@ -164,7 +164,7 @@ export function LandingHero() {
                 </div>
 
                 {/* App content mockup */}
-                <div className="p-4 bg-slate-900">
+                <div className="p-4 bg-slate-900/50">
                   {/* Profile header mockup */}
                   <div className="bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-xl p-4 mb-4">
                     <div className="flex items-center gap-3">
@@ -187,7 +187,7 @@ export function LandingHero() {
                       { icon: Trophy, label: "Rank", value: "#12", color: "text-yellow-400" },
                       { icon: Users, label: "Following", value: "328", color: "text-cyan-400" },
                     ].map((stat, i) => (
-                      <div key={i} className="bg-slate-800 rounded-xl p-3 border border-slate-700/50">
+                      <div key={i} className="backdrop-blur-md bg-slate-900/40 rounded-xl p-3 border border-white/10">
                         <stat.icon className={`w-5 h-5 ${stat.color} mb-1`} />
                         <div className="font-bold text-white">{stat.value}</div>
                         <div className="text-xs text-slate-500">{stat.label}</div>
@@ -198,7 +198,7 @@ export function LandingHero() {
                   {/* Activity feed mockup */}
                   <div className="space-y-3">
                     {[1, 2].map((i) => (
-                      <div key={i} className="bg-slate-800 rounded-xl p-4 border border-slate-700/50">
+                      <div key={i} className="backdrop-blur-md bg-slate-900/40 rounded-xl p-4 border border-white/10">
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded-full bg-slate-700" />
                           <div className="flex-1">
@@ -214,7 +214,7 @@ export function LandingHero() {
               </div>
 
               {/* Floating notification cards */}
-              <div className="absolute -left-16 top-1/4 bg-slate-800 rounded-xl p-3 shadow-lg border border-slate-700/50 animate-float">
+              <div className="absolute -left-16 top-1/4 backdrop-blur-md bg-slate-900/40 rounded-xl p-3 shadow-lg border border-white/10 animate-float">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
                     <Trophy className="w-4 h-4 text-white" />
@@ -226,7 +226,7 @@ export function LandingHero() {
                 </div>
               </div>
 
-              <div className="absolute -right-8 bottom-1/3 bg-slate-800 rounded-xl p-3 shadow-lg border border-slate-700/50 animate-float animation-delay-2000">
+              <div className="absolute -right-8 bottom-1/3 backdrop-blur-md bg-slate-900/40 rounded-xl p-3 shadow-lg border border-white/10 animate-float animation-delay-2000">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
                     <Zap className="w-4 h-4 text-white" />
@@ -243,7 +243,7 @@ export function LandingHero() {
       </div>
 
       {/* Bottom gradient fade to next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-950 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#020617] to-transparent" />
     </section>
   )
 }

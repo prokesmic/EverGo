@@ -14,7 +14,7 @@ export function LandingCTA() {
           alt="Athletes celebrating"
           className="w-full h-full object-cover opacity-20"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-950/90 to-slate-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020617] via-[#020617]/90 to-[#020617]" />
       </div>
 
       {/* Gradient glow effects */}
@@ -32,9 +32,9 @@ export function LandingCTA() {
           </div>
 
           {/* Heading */}
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-50">
             Ready to level up
-            <span className="block bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
               your fitness journey?
             </span>
           </h2>
@@ -49,7 +49,7 @@ export function LandingCTA() {
             <Button
               asChild
               size="lg"
-              className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 text-lg px-10 py-7 h-auto font-semibold shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all hover:scale-[1.02]"
+              className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 text-lg px-10 py-7 h-auto font-semibold shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all hover:scale-[1.02]"
             >
               <Link href="/register" className="flex items-center gap-2">
                 Start Free Today
@@ -60,7 +60,7 @@ export function LandingCTA() {
               asChild
               variant="outline"
               size="lg"
-              className="bg-transparent border-2 border-slate-600 text-white hover:bg-white/5 hover:border-slate-500 text-lg px-10 py-7 h-auto"
+              className="bg-transparent border-2 border-slate-700 text-slate-50 hover:bg-white/5 hover:border-slate-600 text-lg px-10 py-7 h-auto"
             >
               <Link href="/login">
                 Log In

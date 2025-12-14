@@ -184,7 +184,7 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
 
 export function LandingComparison() {
   return (
-    <section className="w-full py-20 md:py-28 bg-slate-950">
+    <section className="w-full py-20 md:py-28 bg-[#020617]">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -192,7 +192,7 @@ export function LandingComparison() {
             <Trophy className="w-4 h-4" />
             <span>See the difference</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-50 mb-4">
             Why athletes choose EverGo
           </h2>
           <p className="text-lg text-slate-400">
@@ -202,9 +202,9 @@ export function LandingComparison() {
 
         {/* Comparison Table */}
         <div className="max-w-5xl mx-auto">
-          <div className="bg-slate-900 rounded-3xl border border-slate-700/50 overflow-hidden">
+          <div className="backdrop-blur-md bg-slate-900/40 rounded-3xl border border-white/10 overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-4 gap-4 p-6 bg-slate-800/50 border-b border-slate-700/50">
+            <div className="grid grid-cols-4 gap-4 p-6 bg-[#0f172a]/60 border-b border-slate-800">
               <div className="font-semibold text-slate-500 text-sm uppercase tracking-wide">
                 Feature
               </div>
@@ -249,7 +249,7 @@ export function LandingComparison() {
             {comparison.map((category, categoryIndex) => (
               <div key={category.category}>
                 {/* Category Header */}
-                <div className="px-6 py-3 bg-slate-800/30 border-b border-slate-700/30">
+                <div className="px-6 py-3 bg-[#0f172a]/40 border-b border-slate-800">
                   <span className="text-sm font-semibold text-slate-300">
                     {category.category}
                   </span>
@@ -288,10 +288,10 @@ export function LandingComparison() {
             ))}
 
             {/* CTA Row */}
-            <div className="grid grid-cols-4 gap-4 p-6 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border-t border-slate-700/50">
+            <div className="grid grid-cols-4 gap-4 p-6 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border-t border-slate-800">
               <div />
               <div className="flex justify-center">
-                <Button asChild className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/30">
+                <Button asChild className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40">
                   <Link href="/register" className="flex items-center gap-2">
                     Start Free
                     <ArrowRight className="w-4 h-4" />
