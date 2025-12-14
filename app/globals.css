@@ -90,33 +90,33 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 
-  /* --- Design System: Color System --- */
+  /* --- Design System: Aurora Color Scheme --- */
 
-  /* Primary Brand Colors */
-  --primary: #0078D4;
-  --primary-dark: #005A9E;
-  --primary-light: #4BA0E0;
+  /* Primary Brand Colors - Sky/Indigo gradient */
+  --primary: #6366F1;
+  --primary-dark: #4F46E5;
+  --primary-light: #818CF8;
 
-  /* Accent Colors */
-  --accent: #00A651;
-  --accent-dark: #008C45;
+  /* Accent Colors - Emerald */
+  --accent: #10B981;
+  --accent-dark: #059669;
 
-  /* Backgrounds */
-  --bg-page: #E8E8E8;
+  /* Backgrounds - Light Aurora */
+  --bg-page: #F8FAFC;
   --bg-card: #FFFFFF;
-  --bg-input: #F5F5F5;
+  --bg-input: #F1F5F9;
 
   /* Text Colors */
-  --text-primary: #1A1A1A;
-  --text-secondary: #666666;
-  --text-muted: #999999;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
   --text-inverse: #FFFFFF;
 
   /* Borders */
-  --border-light: #E5E5E5;
-  --border-medium: #CCCCCC;
+  --border-light: #E2E8F0;
+  --border-medium: #CBD5E1;
 
   /* Status Colors */
   --success: #22C55E;
@@ -154,13 +154,13 @@
   --space-16: 64px;
 
   /* Legacy / Shadcn Mappings (Keep for compatibility) */
-  --brand-blue: #0078D4;
-  --brand-blue-dark: #005A9E;
-  --brand-green: #00A651;
-  --brand-green-dark: #008C45;
-  --ranking-gold: #FFD700;
-  --ranking-silver: #C0C0C0;
-  --ranking-bronze: #CD7F32;
+  --brand-blue: #6366F1;
+  --brand-blue-dark: #4F46E5;
+  --brand-green: #10B981;
+  --brand-green-dark: #059669;
+  --ranking-gold: #F59E0B;
+  --ranking-silver: #94A3B8;
+  --ranking-bronze: #D97706;
 
   --background: var(--bg-page);
   --foreground: var(--text-primary);
@@ -173,10 +173,10 @@
 
   --primary-foreground: var(--text-inverse);
 
-  --secondary: #F0F0F0;
+  --secondary: #EEF2FF;
   --secondary-foreground: var(--text-primary);
 
-  --muted: #F0F0F0;
+  --muted: #F1F5F9;
   --muted-foreground: var(--text-secondary);
 
   --accent-foreground: var(--text-inverse);
@@ -188,17 +188,17 @@
   --input: var(--bg-input);
   --ring: var(--primary);
 
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: #6366F1;
+  --chart-2: #0EA5E9;
+  --chart-3: #10B981;
+  --chart-4: #F59E0B;
+  --chart-5: #EC4899;
 
   --sidebar: var(--bg-card);
   --sidebar-foreground: var(--text-primary);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--text-inverse);
-  --sidebar-accent: #F0F0F0;
+  --sidebar-accent: #EEF2FF;
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--border-light);
   --sidebar-ring: var(--primary);
@@ -289,48 +289,48 @@
 }
 
 .dark {
-  --background: #121212;
-  --foreground: #E0E0E0;
+  --background: #0F172A;
+  --foreground: #E2E8F0;
 
-  --card: #1E1E1E;
-  --card-foreground: #E0E0E0;
+  --card: #1E293B;
+  --card-foreground: #E2E8F0;
 
-  --popover: #1E1E1E;
-  --popover-foreground: #E0E0E0;
+  --popover: #1E293B;
+  --popover-foreground: #E2E8F0;
 
-  --primary: #0078D4;
-  --primary-foreground: #FFFFFF;
+  --primary: #818CF8;
+  --primary-foreground: #0F172A;
 
-  --secondary: #2D2D2D;
-  --secondary-foreground: #E0E0E0;
+  --secondary: #334155;
+  --secondary-foreground: #E2E8F0;
 
-  --muted: #2D2D2D;
-  --muted-foreground: #A0A0A0;
+  --muted: #334155;
+  --muted-foreground: #94A3B8;
 
-  --accent: #00A651;
-  --accent-foreground: #FFFFFF;
+  --accent: #34D399;
+  --accent-foreground: #0F172A;
 
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: #FFFFFF;
 
-  --border: #333333;
-  --input: #333333;
-  --ring: #0078D4;
+  --border: #334155;
+  --input: #334155;
+  --ring: #818CF8;
 
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: #818CF8;
+  --chart-2: #38BDF8;
+  --chart-3: #34D399;
+  --chart-4: #FBBF24;
+  --chart-5: #F472B6;
 
-  --sidebar: #1E1E1E;
-  --sidebar-foreground: #E0E0E0;
-  --sidebar-primary: #0078D4;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #2D2D2D;
-  --sidebar-accent-foreground: #E0E0E0;
-  --sidebar-border: #333333;
-  --sidebar-ring: #0078D4;
+  --sidebar: #1E293B;
+  --sidebar-foreground: #E2E8F0;
+  --sidebar-primary: #818CF8;
+  --sidebar-primary-foreground: #0F172A;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #E2E8F0;
+  --sidebar-border: #334155;
+  --sidebar-ring: #818CF8;
 }
 
 @layer base {
@@ -815,15 +815,15 @@
   @apply flex items-center gap-2 flex-wrap;
 }
 
-/* XP/Level Badge */
+/* XP/Level Badge - Aurora Style */
 .xp-badge {
   @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold;
-  @apply bg-gradient-to-r from-amber-500 to-orange-500 text-white;
+  @apply bg-gradient-to-r from-sky-500 to-indigo-500 text-white;
 }
 
 .level-badge {
   @apply inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold;
-  @apply bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg;
+  @apply bg-gradient-to-br from-indigo-500 to-emerald-500 text-white shadow-lg shadow-indigo-500/20;
 }
 
 /* Leaderboard Row Styles */
@@ -891,9 +891,9 @@
   @apply opacity-100;
 }
 
-/* Gradient Text */
+/* Gradient Text - Aurora Style */
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400;
 }
 
 /* Focus Ring Enhancement */

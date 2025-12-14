@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSession } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 import { PageGrid } from "@/components/layout/page-grid"
@@ -26,7 +26,8 @@ const scopeOptions = [
     { id: 'club', label: 'Club', icon: Users },
 ]
 
-export function RankingsClient({ sports }: RankingsClientProps) {
+// Inner component that uses useSearchParams
+function RankingsContent({ sports }: RankingsClientProps) {
     const { data: session } = useSession()
     const searchParams = useSearchParams()
 
@@ -354,5 +355,26 @@ export function RankingsClient({ sports }: RankingsClientProps) {
                 </div>
             </PageGrid>
         </div>
+    )
+}
+
+// Loading fallback for Suspense
+function RankingsLoadingFallback() {
+    return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="animate-pulse flex flex-col items-center gap-2">
+                <Trophy className="h-8 w-8 opacity-50 text-muted-foreground" />
+                <span className="text-muted-foreground">Loading rankings...</span>
+            </div>
+        </div>
+    )
+}
+
+// Exported wrapper component with Suspense boundary
+export function RankingsClient({ sports }: RankingsClientProps) {
+    return (
+        <Suspense fallback={<RankingsLoadingFallback />}>
+            <RankingsContent sports={sports} />
+        </Suspense>
     )
 }
