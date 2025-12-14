@@ -908,3 +908,143 @@
     radial-gradient(circle at 100% 0%, #ECFDF3 0, transparent 55%),
     linear-gradient(180deg, #F9FAFF 0%, #EEF2FF 55%, #E0F2FE 100%);
 }
+
+/* ==============================
+   EverGo Aurora Design System
+   ============================== */
+
+/* Aurora Card Styles */
+.eg-card {
+  @apply bg-white border border-slate-200 rounded-3xl;
+  box-shadow: 0 24px 60px rgba(15,23,42,0.10);
+}
+
+.eg-card-soft {
+  @apply bg-slate-50 border border-slate-200 rounded-2xl;
+  box-shadow: 0 18px 45px rgba(15,23,42,0.08);
+}
+
+/* Aurora Chip/Badge */
+.eg-chip {
+  @apply inline-flex items-center gap-2 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-semibold px-3 py-1 uppercase tracking-[0.16em];
+}
+
+/* Aurora Number Formatting */
+.eg-number {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Aurora Button Styles */
+.eg-btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold text-white;
+  background: linear-gradient(to right, #38BDF8, #6366F1, #22C55E);
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s ease;
+}
+
+.eg-btn-primary:hover {
+  box-shadow: 0 14px 40px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+}
+
+.eg-btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold border border-slate-200 bg-white/80 text-slate-800 hover:bg-slate-50 transition;
+}
+
+/* Aurora Readiness Ring Gradient */
+.aurora-ring-gradient {
+  stroke: url(#egAurora);
+}
+
+/* Aurora Info Strip */
+.eg-info-strip {
+  @apply flex items-center gap-6 text-sm text-slate-600;
+}
+
+.eg-info-strip .divider {
+  @apply h-10 w-px bg-slate-200;
+}
+
+/* Aurora Section Chip */
+.eg-section-chip {
+  @apply inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-indigo-600 text-sm font-medium border border-indigo-100 shadow-sm;
+}
+
+/* Aurora Widget Header */
+.eg-widget-header {
+  @apply flex items-center justify-between mb-4;
+}
+
+.eg-widget-title {
+  @apply text-xs font-semibold uppercase tracking-[0.16em] text-slate-500;
+}
+
+.eg-widget-value {
+  @apply text-3xl font-bold text-slate-900;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Aurora Trend Badge */
+.eg-trend-up {
+  @apply inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full;
+}
+
+.eg-trend-down {
+  @apply inline-flex items-center gap-1 text-xs text-red-500 bg-red-50 px-2 py-1 rounded-full;
+}
+
+/* Aurora Stat Box */
+.eg-stat-box {
+  @apply bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1;
+}
+
+.eg-stat-label {
+  @apply text-xs text-slate-500;
+}
+
+.eg-stat-value {
+  @apply text-xl font-semibold text-slate-900;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Aurora Navigation */
+.eg-nav-link {
+  @apply relative transition-colors text-slate-600 hover:text-slate-900;
+}
+
+.eg-nav-link.active {
+  @apply text-slate-900;
+}
+
+.eg-nav-link.active::after {
+  content: '';
+  @apply absolute -bottom-1 left-0 w-full h-0.5 rounded-full;
+  background: linear-gradient(to right, #38BDF8, #6366F1, #22C55E);
+}
+
+/* Aurora Icon Box */
+.eg-icon-box {
+  @apply h-12 w-12 rounded-2xl flex items-center justify-center;
+}
+
+.eg-icon-box-sky {
+  @apply h-12 w-12 rounded-2xl flex items-center justify-center bg-sky-100 text-sky-600;
+}
+
+.eg-icon-box-indigo {
+  @apply h-9 w-9 rounded-2xl flex items-center justify-center bg-indigo-100 text-indigo-600;
+}
+
+.eg-icon-box-amber {
+  @apply h-9 w-9 rounded-2xl flex items-center justify-center bg-amber-100 text-amber-600;
+}
+
+.eg-icon-box-emerald {
+  @apply h-9 w-9 rounded-2xl flex items-center justify-center bg-emerald-100 text-emerald-600;
+}
+
+/* Aurora Live Indicator */
+.eg-live-dot {
+  @apply h-2 w-2 rounded-full bg-emerald-500 animate-pulse;
+}

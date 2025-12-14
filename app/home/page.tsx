@@ -15,6 +15,10 @@ import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
 import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestions-wrapper"
 import { TodaySummaryCard } from "@/components/widgets/today-summary-card"
+import { AuroraReadinessWidget } from "@/components/widgets/aurora-readiness-widget"
+import { AuroraRivalWidget } from "@/components/widgets/aurora-rival-widget"
+import { AuroraRankingDeltaWidget } from "@/components/widgets/aurora-ranking-delta-widget"
+import { AuroraAiCoachWidget } from "@/components/widgets/aurora-ai-coach-widget"
 
 export const dynamic = 'force-dynamic'
 
@@ -177,8 +181,43 @@ export default async function HomePage() {
             { scope: "GLOBAL", rank: 142, totalParticipants: 5000, trend: "down", trendValue: 3 }
         ] as any[]
 
+        // Aurora widget data
+        const auroraStats = {
+            sportIndex: 742,
+            sportIndexTrend: 38,
+            totalDuration: Math.round(weeklyTime * 60), // convert to seconds
+            totalActivities: weeklyActivities.length,
+            streakDays: currentStreak || 14
+        }
+
+        const auroraRankingInsights = {
+            globalRank: 142,
+            globalRankChange: -3,
+            cityRank: 12,
+            cityRankChange: -2,
+            countryRank: 89,
+            countryRankChange: -5
+        }
+
         return (
             <div className="min-h-screen bg-background pb-20 md:pb-0">
+                <div className="max-w-6xl mx-auto px-6 pt-6">
+                    {/* Aurora Widgets Section */}
+                    <section className="space-y-6 mb-6">
+                        {/* Top Row: Readiness + AI Coach */}
+                        <div className="grid md:grid-cols-[1.2fr,1fr] gap-6">
+                            <AuroraReadinessWidget stats={auroraStats} />
+                            <AuroraAiCoachWidget stats={auroraStats} />
+                        </div>
+
+                        {/* Second Row: Rival + Ranking Delta */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <AuroraRivalWidget userId={user.id} />
+                            <AuroraRankingDeltaWidget insights={auroraRankingInsights} />
+                        </div>
+                    </section>
+                </div>
+
                 <div className="max-w-[1400px] mx-auto px-4 pt-4">
                     <DashboardHero
                         name={user.displayName || "Athlete"}

@@ -227,10 +227,31 @@ function RankingsContent({ sports }: RankingsClientProps) {
 
     return (
         <div className="min-h-screen bg-background pb-20 md:pb-0">
+            {/* Aurora Header */}
+            <div className="hero-gradient border-b border-slate-200">
+                <div className="max-w-6xl mx-auto px-6 py-8">
+                    <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+                        <div>
+                            <p className="eg-chip mb-2">
+                                <span className="eg-live-dot" />
+                                Real-time rankings
+                            </p>
+                            <h1 className="text-3xl font-bold text-slate-900">
+                                Where you stand today
+                            </h1>
+                            <p className="text-sm text-slate-600 mt-1 max-w-xl">
+                                Compare your Sport Index globally, nationally, in your city, and within your teams.
+                            </p>
+                        </div>
+                    </div>
+                    {filterBar}
+                </div>
+            </div>
+
             <PageSubheader
-                title="Rankings"
-                subtitle="See who's topping the leaderboards"
-                filters={filterBar}
+                title=""
+                subtitle=""
+                filters={null}
             />
 
             <PageGrid leftSidebar={leftSidebar} rightSidebar={rightSidebar}>
