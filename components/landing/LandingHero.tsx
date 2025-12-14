@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowRight, Play, Star, Zap, Trophy, Users } from "lucide-react"
+import { ArrowRight, Play, Zap, TrendingUp, Users } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
 export function LandingHero() {
@@ -26,215 +26,153 @@ export function LandingHero() {
   }, [])
 
   return (
-    <section className="relative w-full min-h-screen flex items-center overflow-hidden bg-[#020617]">
-      {/* Subtle grid pattern */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      />
-
-      {/* Animated gradient blobs */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-[10%] left-[5%] w-[600px] h-[600px] bg-emerald-500/10 rounded-full mix-blend-screen filter blur-[120px] animate-blob" />
-        <div className="absolute top-[30%] right-[10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full mix-blend-screen filter blur-[120px] animate-blob animation-delay-2000" />
-        <div className="absolute bottom-[10%] left-[40%] w-[400px] h-[400px] bg-indigo-500/10 rounded-full mix-blend-screen filter blur-[120px] animate-blob animation-delay-4000" />
-      </div>
-
-      <div className="container relative px-4 md:px-6 py-20 md:py-32 mx-auto max-w-7xl">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section className="relative w-full min-h-screen flex items-center overflow-hidden">
+      <div className="container relative px-4 md:px-6 py-20 pt-32 lg:pt-48 pb-20 mx-auto max-w-7xl">
+        <div className="flex flex-col lg:flex-row items-center gap-16">
           {/* Left Column - Content */}
-          <div className="flex flex-col space-y-8 text-center lg:text-left mx-auto lg:mx-0 max-w-2xl lg:max-w-none">
+          <div className="flex-1 flex flex-col space-y-8 text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full text-white text-sm font-medium w-fit mx-auto lg:mx-0 border border-white/10">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/30 backdrop-blur-sm text-xs font-bold uppercase tracking-wider text-cyan-400 w-fit mx-auto lg:mx-0">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
               </span>
-              <span>Now available in 150+ countries</span>
+              Now available in 150+ countries
             </div>
 
-            {/* Main Headline with gradient */}
+            {/* Main Headline */}
             <div className="space-y-4">
-              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-slate-50 leading-[1.05]">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-white">
                 Track any sport.
                 <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
                   Compete globally.
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-slate-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-lg text-slate-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 The multi-sport social network where athletes track activities, climb rankings, and connect with training partners worldwide.
               </p>
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              {/* Main CTA with gradient and scale hover */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start pt-2">
               <Button
                 asChild
                 size="lg"
-                className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 text-base font-semibold px-8 py-6 h-auto shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all hover:scale-[1.05]"
+                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full text-white font-bold text-lg bg-gradient-to-r from-emerald-500 to-cyan-600 hover:shadow-lg hover:shadow-cyan-500/40 transition-all transform hover:scale-[1.02]"
               >
                 <Link href="/register" className="flex items-center gap-2">
-                  Get Started Free
-                  <ArrowRight className="w-4 h-4" />
+                  Get Started Free <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
-
-              {/* Secondary CTA - Ghost with inner glow */}
               <Button
                 asChild
-                variant="ghost"
+                variant="outline"
                 size="lg"
-                className="border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 text-base font-medium px-8 py-6 h-auto group"
+                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full font-bold text-lg border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
               >
                 <Link href="#demo" className="flex items-center gap-2">
-                  <span className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center group-hover:bg-cyan-500/30 transition-colors">
-                    <Play className="w-4 h-4 ml-0.5" />
-                  </span>
-                  Watch Demo
+                  <Play className="w-4 h-4" fill="currentColor" /> Watch Demo
                 </Link>
               </Button>
             </div>
 
-            {/* Social Proof Stats */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-8 pt-4">
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-600 border-2 border-slate-950"
-                      style={{
-                        backgroundImage: `url(https://i.pravatar.cc/100?img=${i + 10})`,
-                        backgroundSize: 'cover',
-                      }}
+            {/* Social Proof */}
+            <div className="pt-4 flex items-center justify-center lg:justify-start gap-4">
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="w-10 h-10 rounded-full border-2 border-[#020617] bg-slate-800 overflow-hidden"
+                  >
+                    <img
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 20}`}
+                      alt="User"
+                      className="w-full h-full"
                     />
-                  ))}
-                </div>
-                <div className="text-slate-50">
-                  <div className="font-semibold text-sm">50K+ athletes</div>
-                  <div className="text-xs text-slate-500">joined this month</div>
-                </div>
+                  </div>
+                ))}
               </div>
-
-              <div className="flex items-center gap-2">
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <div className="text-slate-50">
-                  <div className="font-semibold text-sm">4.9 rating</div>
-                  <div className="text-xs text-slate-500">from 12K+ reviews</div>
+              <div className="text-left">
+                <p className="text-white font-bold">50K+ athletes</p>
+                <div className="flex items-center gap-1 text-emerald-400 text-xs font-bold">
+                  <span className="text-yellow-400">★★★★★</span>
+                  <span className="text-slate-500 font-normal">from 12K+ reviews</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - 3D Parallax Phone Mockup */}
-          <div className="relative hidden lg:block">
+          {/* Right Column - Dashboard Mockup */}
+          <div className="flex-1 w-full max-w-lg lg:max-w-none relative group hidden lg:block">
+            {/* Glow behind card */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-cyan-500/20 rounded-full blur-[100px] -z-10 group-hover:bg-cyan-500/30 transition-all duration-700" />
+
+            {/* Main Glass Card */}
             <div
               ref={mockupRef}
-              className="relative perspective-1000"
+              className="relative bg-[#0f172a]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl transition-transform duration-500 hover:scale-[1.02]"
               style={{
                 transform: `rotateY(${mousePosition.x}deg) rotateX(${-mousePosition.y}deg)`,
                 transition: 'transform 0.1s ease-out',
               }}
             >
-              {/* Glow effect behind mockup */}
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 blur-3xl scale-110 rounded-3xl" />
-
-              {/* Main mockup frame */}
-              <div className="relative backdrop-blur-md bg-slate-900/40 rounded-3xl shadow-2xl overflow-hidden border border-white/10">
-                {/* Browser bar */}
-                <div className="bg-[#0f172a]/60 px-4 py-3 flex items-center gap-2 border-b border-slate-800">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                    <div className="w-3 h-3 rounded-full bg-green-500" />
-                  </div>
-                  <div className="flex-1 flex justify-center">
-                    <div className="bg-slate-700 rounded-lg px-4 py-1 text-xs text-slate-400 border border-slate-600">
-                      evergo.app/home
-                    </div>
-                  </div>
+              {/* Browser Header */}
+              <div className="flex items-center gap-2 mb-6 opacity-50">
+                <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                <div className="ml-4 px-3 py-1 rounded-full bg-black/20 text-[10px] font-mono text-slate-400">
+                  evergo.app/home
                 </div>
+              </div>
 
-                {/* App content mockup */}
-                <div className="p-4 bg-slate-900/50">
-                  {/* Profile header mockup */}
-                  <div className="bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-xl p-4 mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/30" />
-                      <div className="flex-1">
-                        <div className="h-4 bg-white/40 rounded w-32 mb-2" />
-                        <div className="h-3 bg-white/20 rounded w-24" />
-                      </div>
-                      <div className="text-right">
-                        <div className="text-white font-bold text-2xl">142.5 km</div>
-                        <div className="text-white/70 text-xs">this week</div>
-                      </div>
-                    </div>
+              {/* Main Stat Card */}
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 mb-6 text-white shadow-lg relative overflow-hidden">
+                <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                <div className="flex justify-between items-start relative z-10">
+                  <div>
+                    <div className="w-12 h-12 rounded-full bg-white/20 mb-4 animate-pulse" />
+                    <div className="h-4 w-24 bg-white/20 rounded mb-2" />
                   </div>
-
-                  {/* Stats cards mockup */}
-                  <div className="grid grid-cols-3 gap-3 mb-4">
-                    {[
-                      { icon: Zap, label: "Streak", value: "14 days", color: "text-orange-400" },
-                      { icon: Trophy, label: "Rank", value: "#12", color: "text-yellow-400" },
-                      { icon: Users, label: "Following", value: "328", color: "text-cyan-400" },
-                    ].map((stat, i) => (
-                      <div key={i} className="backdrop-blur-md bg-slate-900/40 rounded-xl p-3 border border-white/10">
-                        <stat.icon className={`w-5 h-5 ${stat.color} mb-1`} />
-                        <div className="font-bold text-white">{stat.value}</div>
-                        <div className="text-xs text-slate-500">{stat.label}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Activity feed mockup */}
-                  <div className="space-y-3">
-                    {[1, 2].map((i) => (
-                      <div key={i} className="backdrop-blur-md bg-slate-900/40 rounded-xl p-4 border border-white/10">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-full bg-slate-700" />
-                          <div className="flex-1">
-                            <div className="h-3 bg-slate-700 rounded w-24 mb-2" />
-                            <div className="h-2 bg-slate-700/50 rounded w-full mb-1" />
-                            <div className="h-2 bg-slate-700/50 rounded w-3/4" />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="text-right">
+                    <h3 className="text-3xl font-bold">142.5 km</h3>
+                    <p className="text-emerald-100 text-sm">this week</p>
                   </div>
                 </div>
               </div>
 
-              {/* Floating notification cards */}
-              <div className="absolute -left-16 top-1/4 backdrop-blur-md bg-slate-900/40 rounded-xl p-3 shadow-lg border border-white/10 animate-float">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                    <Trophy className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-white">New Achievement!</div>
-                    <div className="text-[10px] text-slate-400">100km Club unlocked</div>
-                  </div>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="p-4 rounded-xl bg-slate-800/50 border border-white/5">
+                  <Zap className="w-6 h-6 text-orange-400 mx-auto mb-2" />
+                  <div className="text-lg font-bold text-white">14</div>
+                  <div className="text-xs text-slate-400">Streak</div>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-800/50 border border-white/5 relative">
+                  <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full animate-ping" />
+                  <TrendingUp className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
+                  <div className="text-lg font-bold text-white">#12</div>
+                  <div className="text-xs text-slate-400">Rank</div>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-800/50 border border-white/5">
+                  <Users className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+                  <div className="text-lg font-bold text-white">328</div>
+                  <div className="text-xs text-slate-400">Following</div>
                 </div>
               </div>
 
-              <div className="absolute -right-8 bottom-1/3 backdrop-blur-md bg-slate-900/40 rounded-xl p-3 shadow-lg border border-white/10 animate-float animation-delay-2000">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-white">Rank Up!</div>
-                    <div className="text-[10px] text-slate-400">You&apos;re now #12 in Prague</div>
-                  </div>
+              {/* Floating Notification */}
+              <div
+                className="absolute -right-4 bottom-8 bg-[#1e293b] border border-slate-700 p-3 rounded-xl shadow-xl flex items-center gap-3 animate-bounce"
+                style={{ animationDuration: '3s' }}
+              >
+                <div className="bg-emerald-500/20 p-2 rounded-lg">
+                  <TrendingUp className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">Rank Up!</p>
+                  <p className="text-[10px] text-slate-400">You are now #12 in Prague</p>
                 </div>
               </div>
             </div>

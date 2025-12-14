@@ -12,10 +12,16 @@ import { CommandPalette } from "@/components/landing/CommandPalette"
 // Static landing page - Deep Ocean theme
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#020617] to-[#020617]">
+    <div className="flex flex-col min-h-screen bg-[#020617] text-slate-50 selection:bg-cyan-500/30 overflow-x-hidden relative">
+      {/* Background Gradient Mesh - Fixed position */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[20%] w-[40%] h-[40%] bg-blue-900/20 rounded-full blur-[120px]" />
+        <div className="absolute top-[10%] right-[10%] w-[30%] h-[30%] bg-cyan-900/20 rounded-full blur-[120px]" />
+      </div>
+
       <LandingHeader />
       <CommandPalette />
-      <main className="flex-1">
+      <main className="flex-1 relative z-10">
         <LandingHero />
         <section id="features">
           <LandingFeatures />

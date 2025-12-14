@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Search, Command } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navLinks = [
@@ -41,31 +41,30 @@ export function LandingHeader() {
     <>
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
           isScrolled
-            ? "bg-[#020617]/80 backdrop-blur-md shadow-lg shadow-black/20 border-b border-white/10"
-            : "bg-transparent"
+            ? "bg-[#020617]/80 backdrop-blur-md border-white/10 py-4"
+            : "bg-transparent border-transparent py-6"
         )}
       >
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           {/* Logo with gradient */}
           <Link
             href="/"
-            className="flex items-center gap-2 font-bold text-xl tracking-tight"
+            className="flex items-center gap-2 cursor-pointer"
           >
-            <span className="text-2xl">⚡</span>
-            <span className="bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
-              EverGo
+            <span className="text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
+              ⚡EverGo
             </span>
           </Link>
 
           {/* Center Navigation - Desktop */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 text-sm font-medium rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                className="hover:text-cyan-400 transition-colors"
               >
                 {link.label}
               </a>
@@ -73,21 +72,10 @@ export function LandingHeader() {
           </nav>
 
           {/* Right Side Actions - Desktop */}
-          <div className="hidden md:flex items-center gap-3">
-            {/* Search Pill with kbd */}
-            <button
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors border border-white/10"
-            >
-              <Search className="w-4 h-4" />
-              <span className="hidden lg:inline">Search</span>
-              <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded bg-white/10 text-slate-400">
-                <Command className="w-3 h-3" />K
-              </kbd>
-            </button>
-
+          <div className="hidden md:flex items-center gap-4">
             <Link
               href="/login"
-              className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors"
+              className="text-slate-300 hover:text-white font-medium text-sm transition-colors"
             >
               Log in
             </Link>
@@ -96,7 +84,7 @@ export function LandingHeader() {
             <Button
               asChild
               size="sm"
-              className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/20 transition-all hover:shadow-cyan-500/40"
+              className="px-5 py-2.5 rounded-full text-white font-bold text-sm bg-gradient-to-r from-emerald-500 to-cyan-600 hover:shadow-lg hover:shadow-cyan-500/25 transition-all transform hover:scale-105"
             >
               <Link href="/register">Sign Up Free</Link>
             </Button>
@@ -147,7 +135,7 @@ export function LandingHeader() {
               </Link>
               <Button
                 asChild
-                className="w-full bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40"
+                className="w-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-bold hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
               >
                 <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
                   Sign Up Free
