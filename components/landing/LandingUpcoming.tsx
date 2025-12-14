@@ -42,17 +42,17 @@ const statusLabels = {
 
 export function LandingUpcoming() {
   return (
-    <section className="w-full py-20 md:py-28 bg-white text-white overflow-hidden">
+    <section className="w-full py-20 md:py-28 bg-indigo-50/40 overflow-hidden">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-white text-sm font-medium mb-4 border border-slate-200">
-            <Sparkles className="w-4 h-4 text-amber-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-amber-600 text-sm font-medium mb-4 border border-amber-100 shadow-sm">
+            <Sparkles className="w-4 h-4 text-amber-500" />
             <span>What&apos;s Next</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
             The future of
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400">
               EverGo
             </span>
           </h2>
@@ -70,7 +70,7 @@ export function LandingUpcoming() {
             return (
               <div
                 key={index}
-                className="group relative bg-white shadow-sm rounded-2xl p-6 border border-slate-200 hover:border-white/20 transition-all"
+                className="group relative bg-white rounded-3xl p-6 border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] hover:border-indigo-200 transition-all"
               >
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4">
@@ -102,13 +102,13 @@ export function LandingUpcoming() {
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-xl bg-white shadow-sm border border-slate-200 text-white placeholder:text-slate-9000 focus:outline-none focus:border-cyan-500 transition-colors"
+              className="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors shadow-sm"
             />
-            <button className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-xl font-semibold text-slate-950 shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20 transition-all">
+            <button className="px-6 py-3 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 rounded-xl font-semibold text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all">
               Notify Me
             </button>
           </div>
-          <p className="text-xs text-slate-9000 mt-3">
+          <p className="text-xs text-slate-500 mt-3">
             No spam. Unsubscribe anytime.
           </p>
         </div>

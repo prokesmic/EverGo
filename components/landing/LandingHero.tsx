@@ -26,7 +26,7 @@ export function LandingHero() {
   }, [])
 
   return (
-    <section className="relative w-full min-h-screen flex items-center overflow-hidden">
+    <section className="relative w-full min-h-screen flex items-center overflow-hidden hero-gradient">
       <div className="container relative px-4 md:px-6 py-20 pt-32 lg:pt-48 pb-20 mx-auto max-w-7xl">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           {/* Left Column - Content */}
@@ -45,7 +45,7 @@ export function LandingHero() {
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-slate-900">
                 Track any sport.
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-600">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400">
                   Compete globally.
                 </span>
               </h1>
@@ -59,7 +59,7 @@ export function LandingHero() {
               <Button
                 asChild
                 size="lg"
-                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full text-white font-bold text-lg bg-slate-900 hover:bg-slate-800 shadow-xl hover:shadow-2xl transition-all transform hover:scale-[1.02]"
+                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full text-white font-bold text-lg bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 shadow-xl shadow-indigo-500/20 hover:shadow-2xl hover:shadow-indigo-500/30 transition-all transform hover:scale-[1.02]"
               >
                 <Link href="/register" className="flex items-center gap-2">
                   Get Started Free <ArrowRight className="w-5 h-5" />
@@ -69,7 +69,7 @@ export function LandingHero() {
                 asChild
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full font-bold text-lg border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-sm"
+                className="w-full sm:w-auto px-8 py-6 h-auto rounded-full font-bold text-lg border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-sm"
               >
                 <Link href="#demo" className="flex items-center gap-2">
                   <Play className="w-4 h-4 fill-slate-600" /> Watch Demo
@@ -106,12 +106,12 @@ export function LandingHero() {
           {/* Right Column - Dashboard Mockup */}
           <div className="flex-1 w-full max-w-lg lg:max-w-none relative group hidden lg:block">
             {/* Soft Glow behind card */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-emerald-100 to-cyan-100 rounded-full blur-[80px] -z-10 opacity-70" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-sky-100 via-indigo-100 to-emerald-100 rounded-full blur-[80px] -z-10 opacity-70" />
 
-            {/* Main Glass Card (White Theme) */}
+            {/* Main Glass Card (Aurora Theme) */}
             <div
               ref={mockupRef}
-              className="relative bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] transition-transform duration-500 hover:scale-[1.02] ring-1 ring-slate-100"
+              className="relative bg-white rounded-3xl p-6 border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition-transform duration-500 hover:scale-[1.02]"
               style={{
                 transform: `rotateY(${mousePosition.x}deg) rotateX(${-mousePosition.y}deg)`,
                 transition: 'transform 0.1s ease-out',
@@ -128,23 +128,23 @@ export function LandingHero() {
               </div>
 
               {/* Highlight Stat Card */}
-              <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-6 mb-6 text-white shadow-xl relative overflow-hidden group-hover:shadow-2xl transition-all">
-                <div className="absolute right-0 top-0 w-40 h-40 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="bg-gradient-to-r from-indigo-600 to-sky-500 rounded-2xl p-6 mb-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group-hover:shadow-2xl transition-all">
+                <div className="absolute right-0 top-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
                 <div className="flex justify-between items-start relative z-10">
-                  <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
-                    <Activity className="text-emerald-400 w-6 h-6" />
+                  <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                    <Activity className="text-white w-6 h-6" />
                   </div>
                   <div className="text-right">
                     <h3 className="text-4xl font-bold tracking-tight">
-                      142.5 <span className="text-lg text-slate-400 font-medium">km</span>
+                      142.5 <span className="text-lg text-white/70 font-medium">km</span>
                     </h3>
-                    <p className="text-emerald-400 text-sm font-bold mt-1">▲ 12% vs last week</p>
+                    <p className="text-emerald-300 text-sm font-bold mt-1">▲ 12% vs last week</p>
                   </div>
                 </div>
 
                 {/* Mini Graph Line */}
-                <div className="mt-6 flex items-end gap-1 h-8 opacity-50">
+                <div className="mt-6 flex items-end gap-1 h-8 opacity-60">
                   {[40, 70, 45, 90, 60, 80, 50, 95].map((h, i) => (
                     <div key={i} className="w-full bg-white rounded-t-sm" style={{ height: `${h}%` }} />
                   ))}
@@ -159,8 +159,8 @@ export function LandingHero() {
                   <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Streak</div>
                 </div>
                 <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-8 h-8 bg-cyan-50 rounded-bl-2xl" />
-                  <TrendingUp className="w-6 h-6 text-cyan-600 mx-auto mb-2 relative z-10" />
+                  <div className="absolute top-0 right-0 w-8 h-8 bg-indigo-50 rounded-bl-2xl" />
+                  <TrendingUp className="w-6 h-6 text-indigo-600 mx-auto mb-2 relative z-10" />
                   <div className="text-xl font-bold text-slate-900 relative z-10">#12</div>
                   <div className="text-xs text-slate-400 font-bold uppercase tracking-wider relative z-10">Rank</div>
                 </div>
@@ -173,10 +173,10 @@ export function LandingHero() {
 
               {/* Floating Notification */}
               <div
-                className="absolute -right-8 bottom-12 bg-white border border-slate-100 p-4 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] flex items-center gap-4 animate-bounce z-20"
+                className="absolute -right-8 bottom-12 bg-white border border-slate-200 p-4 rounded-2xl shadow-[0_18px_45px_rgba(15,23,42,0.08)] flex items-center gap-4 animate-bounce z-20"
                 style={{ animationDuration: '4s' }}
               >
-                <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
                   <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
@@ -190,7 +190,7 @@ export function LandingHero() {
       </div>
 
       {/* Bottom gradient fade to next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-50 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
     </section>
   )
 }

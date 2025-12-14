@@ -144,14 +144,14 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
       <div className="flex flex-col items-center gap-1">
         <div className={cn(
           "w-8 h-8 rounded-full flex items-center justify-center",
-          isEvergo ? "bg-emerald-500/30" : "bg-emerald-500/20"
+          isEvergo ? "bg-emerald-100" : "bg-emerald-50"
         )}>
-          <Check className={cn("w-5 h-5", isEvergo ? "text-emerald-400" : "text-emerald-500")} />
+          <Check className={cn("w-5 h-5", isEvergo ? "text-emerald-600" : "text-emerald-500")} />
         </div>
         {data.note && (
           <span className={cn(
             "text-xs font-medium",
-            isEvergo ? "text-emerald-400" : "text-slate-500"
+            isEvergo ? "text-emerald-600" : "text-slate-500"
           )}>
             {data.note}
           </span>
@@ -163,8 +163,8 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
   if (data.value === false) {
     return (
       <div className="flex flex-col items-center gap-1">
-        <div className="w-8 h-8 rounded-full bg-slate-700/50 flex items-center justify-center">
-          <X className="w-5 h-5 text-slate-9000" />
+        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+          <X className="w-5 h-5 text-slate-400" />
         </div>
       </div>
     )
@@ -172,11 +172,11 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
-        <Minus className="w-5 h-5 text-amber-400" />
+      <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+        <Minus className="w-5 h-5 text-amber-500" />
       </div>
       {data.note && (
-        <span className="text-xs text-slate-9000">{data.note}</span>
+        <span className="text-xs text-slate-500">{data.note}</span>
       )}
     </div>
   )
@@ -184,11 +184,11 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
 
 export function LandingComparison() {
   return (
-    <section className="w-full py-20 md:py-28 bg-slate-50">
+    <section className="w-full py-20 md:py-28 bg-indigo-50/40">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 rounded-full text-amber-400 text-sm font-medium mb-4 border border-amber-500/30">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-amber-600 text-sm font-medium mb-4 border border-amber-100 shadow-sm">
             <Trophy className="w-4 h-4" />
             <span>See the difference</span>
           </div>
@@ -202,9 +202,9 @@ export function LandingComparison() {
 
         {/* Comparison Table */}
         <div className="max-w-5xl mx-auto">
-          <div className="bg-white shadow-sm rounded-3xl border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-4 gap-4 p-6 bg-white border-b border-slate-800">
+            <div className="grid grid-cols-4 gap-4 p-6 bg-white border-b border-slate-200">
               <div className="font-semibold text-slate-9000 text-sm uppercase tracking-wide">
                 Feature
               </div>
@@ -217,29 +217,29 @@ export function LandingComparison() {
                   )}
                 >
                   {comp.highlight && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 text-[10px] font-bold rounded-full whitespace-nowrap">
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white text-[10px] font-bold rounded-full whitespace-nowrap">
                       BEST CHOICE
                     </div>
                   )}
                   <div className={cn(
                     "flex flex-col items-center gap-2 p-3 rounded-xl",
-                    comp.highlight && "bg-cyan-400/10 backdrop-blur-sm border-2 border-cyan-500/50 shadow-xl shadow-cyan-500/10"
+                    comp.highlight && "bg-indigo-50 border-2 border-indigo-200 shadow-lg shadow-indigo-500/10"
                   )}>
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold",
                       comp.highlight
-                        ? "bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950"
-                        : "bg-slate-700 text-slate-500"
+                        ? "bg-gradient-to-br from-sky-500 via-indigo-500 to-emerald-400 text-white"
+                        : "bg-slate-100 text-slate-500"
                     )}>
                       {comp.logo}
                     </div>
                     <span className={cn(
                       "font-semibold",
-                      comp.highlight ? "text-white" : "text-slate-500"
+                      comp.highlight ? "text-indigo-600" : "text-slate-600"
                     )}>
                       {comp.name}
                     </span>
-                    <span className="text-xs text-slate-9000">{comp.tagline}</span>
+                    <span className="text-xs text-slate-400">{comp.tagline}</span>
                   </div>
                 </div>
               ))}
@@ -249,8 +249,8 @@ export function LandingComparison() {
             {comparison.map((category, categoryIndex) => (
               <div key={category.category}>
                 {/* Category Header */}
-                <div className="px-6 py-3 bg-[#0f172a]/40 border-b border-slate-800">
-                  <span className="text-sm font-semibold text-slate-300">
+                <div className="px-6 py-3 bg-slate-50 border-b border-slate-200">
+                  <span className="text-sm font-semibold text-slate-700">
                     {category.category}
                   </span>
                 </div>
@@ -261,16 +261,16 @@ export function LandingComparison() {
                     key={feature.name}
                     className={cn(
                       "grid grid-cols-4 gap-4 px-6 py-4 items-center",
-                      featureIndex < category.features.length - 1 && "border-b border-slate-800",
+                      featureIndex < category.features.length - 1 && "border-b border-slate-100",
                       categoryIndex === comparison.length - 1 &&
                         featureIndex === category.features.length - 1 &&
                         "border-b-0"
                     )}
                   >
                     <div>
-                      <span className="font-medium text-white">{feature.name}</span>
+                      <span className="font-medium text-slate-900">{feature.name}</span>
                       {feature.tooltip && (
-                        <p className="text-xs text-slate-9000 mt-0.5">{feature.tooltip}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{feature.tooltip}</p>
                       )}
                     </div>
                     <div className="flex justify-center">
@@ -288,10 +288,10 @@ export function LandingComparison() {
             ))}
 
             {/* CTA Row */}
-            <div className="grid grid-cols-4 gap-4 p-6 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border-t border-slate-800">
+            <div className="grid grid-cols-4 gap-4 p-6 bg-gradient-to-r from-indigo-50 to-sky-50 border-t border-slate-200">
               <div />
               <div className="flex justify-center">
-                <Button asChild className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold hover:opacity-90 shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20">
+                <Button asChild className="bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white font-semibold hover:opacity-90 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30">
                   <Link href="/register" className="flex items-center gap-2">
                     Start Free
                     <ArrowRight className="w-4 h-4" />
@@ -299,10 +299,10 @@ export function LandingComparison() {
                 </Button>
               </div>
               <div className="flex justify-center items-center">
-                <span className="text-sm text-slate-9000">$11.99/mo</span>
+                <span className="text-sm text-slate-500">$11.99/mo</span>
               </div>
               <div className="flex justify-center items-center">
-                <span className="text-sm text-slate-9000">Free</span>
+                <span className="text-sm text-slate-500">Free</span>
               </div>
             </div>
           </div>
@@ -310,7 +310,7 @@ export function LandingComparison() {
 
         {/* Bottom Note */}
         <div className="text-center mt-8">
-          <p className="text-sm text-slate-9000 italic">
+          <p className="text-sm text-slate-500 italic">
             * Comparison based on free tiers as of December 2025
           </p>
         </div>

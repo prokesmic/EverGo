@@ -158,17 +158,17 @@ function OrbitingLogos() {
 
 export function LandingFeatures() {
   return (
-    <section className="w-full py-20 md:py-28 bg-white overflow-hidden">
+    <section className="w-full py-20 md:py-28 bg-indigo-50/40 overflow-hidden">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full text-emerald-600 text-sm font-medium mb-4 border border-emerald-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-indigo-600 text-sm font-medium mb-4 border border-indigo-100 shadow-sm">
             <Sparkles className="w-4 h-4" />
             <span>Powerful features</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
             Everything you need to
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-600">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400">
               level up your fitness
             </span>
           </h2>
@@ -180,7 +180,7 @@ export function LandingFeatures() {
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
           {/* Card 1: Analytics - Large, spans 2 rows */}
-          <div className="md:row-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col">
+          <div className="md:row-span-2 bg-white rounded-3xl p-6 border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
@@ -210,8 +210,8 @@ export function LandingFeatures() {
           </div>
 
           {/* Card 2: 25+ Sports - Square */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
-            <div className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-600 mb-4">
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] flex flex-col items-center justify-center text-center">
+            <div className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 mb-4">
               25+
             </div>
             <h3 className="font-bold text-slate-900 mb-2">Sports Supported</h3>
@@ -221,7 +221,7 @@ export function LandingFeatures() {
           </div>
 
           {/* Card 3: Sync Everywhere - Square */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] relative overflow-hidden">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white" />
@@ -237,7 +237,7 @@ export function LandingFeatures() {
           </div>
 
           {/* Card 4: Rankings - Horizontal span 2 */}
-          <div className="md:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+          <div className="md:col-span-2 bg-white rounded-3xl p-6 border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
             <div className="flex flex-col md:flex-row md:items-center gap-6">
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Real Rankings</h3>
@@ -250,7 +250,7 @@ export function LandingFeatures() {
                       key={level}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium ${
                         i === 0
-                          ? "bg-gradient-to-r from-emerald-500 to-cyan-600 text-white"
+                          ? "bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white"
                           : "bg-slate-100 text-slate-600 border border-slate-200"
                       }`}
                     >
@@ -269,7 +269,7 @@ export function LandingFeatures() {
                     key={user.rank}
                     className={`text-center p-3 rounded-xl ${
                       user.highlight
-                        ? "bg-cyan-50 border border-cyan-200"
+                        ? "bg-indigo-50 border border-indigo-200"
                         : "bg-slate-50 border border-slate-200"
                     }`}
                   >
@@ -278,7 +278,7 @@ export function LandingFeatures() {
                     >
                       {user.rank}
                     </div>
-                    <div className={`text-sm font-medium ${user.highlight ? "text-cyan-600" : "text-slate-900"}`}>
+                    <div className={`text-sm font-medium ${user.highlight ? "text-indigo-600" : "text-slate-900"}`}>
                       {user.name}
                     </div>
                     <div className="text-xs text-slate-500">{user.points} pts</div>

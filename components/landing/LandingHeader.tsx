@@ -43,8 +43,8 @@ export function LandingHeader() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
           isScrolled
-            ? "bg-white/80 backdrop-blur-md border-slate-200 py-4 shadow-sm"
-            : "bg-transparent border-transparent py-6"
+            ? "bg-white/80 backdrop-blur-xl border-slate-200 py-4 shadow-sm"
+            : "bg-white/60 backdrop-blur-xl border-slate-200/50 py-5"
         )}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
@@ -53,27 +53,32 @@ export function LandingHeader() {
             href="/"
             className="flex items-center gap-2 cursor-pointer group"
           >
-            <span className="text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-600">
+            <span className="text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400">
               ⚡EverGo
             </span>
           </Link>
 
           {/* Center Navigation - Desktop */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-500">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="hover:text-cyan-600 transition-colors relative group"
+                className="hover:text-indigo-600 transition-colors relative group"
               >
                 {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-500 transition-all group-hover:w-full" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-500 to-indigo-500 transition-all group-hover:w-full" />
               </a>
             ))}
           </nav>
 
           {/* Right Side Actions - Desktop */}
           <div className="hidden md:flex items-center gap-4">
+            {/* Beta Badge */}
+            <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600 border border-indigo-100">
+              New • Global beta
+            </span>
+
             <Link
               href="/login"
               className="text-slate-600 hover:text-slate-900 font-bold text-sm transition-colors"
@@ -81,11 +86,11 @@ export function LandingHeader() {
               Log in
             </Link>
 
-            {/* Primary CTA with gradient and glow */}
+            {/* Primary CTA with Aurora gradient */}
             <Button
               asChild
               size="sm"
-              className="px-5 py-2.5 rounded-full text-white font-bold text-sm bg-gradient-to-r from-emerald-500 to-cyan-600 shadow-md shadow-cyan-500/20 hover:shadow-xl hover:shadow-cyan-500/30 transition-all transform hover:scale-105"
+              className="px-5 py-2.5 rounded-full text-white font-bold text-sm bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 shadow-md shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30 transition-all transform hover:scale-105"
             >
               <Link href="/register">Sign Up Free</Link>
             </Button>
@@ -114,13 +119,13 @@ export function LandingHeader() {
               : "max-h-0 opacity-0"
           )}
         >
-          <nav className="px-4 py-4 space-y-2 bg-white/95 backdrop-blur-lg border-t border-slate-200">
+          <nav className="px-4 py-4 space-y-2 bg-white/95 backdrop-blur-xl border-t border-slate-200">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-4 py-3 rounded-lg font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                className="block px-4 py-3 rounded-lg font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
               >
                 {link.label}
               </a>
@@ -136,7 +141,7 @@ export function LandingHeader() {
               </Link>
               <Button
                 asChild
-                className="w-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-bold shadow-md shadow-cyan-500/20 hover:shadow-xl hover:shadow-cyan-500/30 transition-all"
+                className="w-full rounded-full bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white font-bold shadow-md shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30 transition-all"
               >
                 <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
                   Sign Up Free

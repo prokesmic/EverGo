@@ -105,7 +105,7 @@ export function LandingSocialProof() {
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-white text-sm font-medium mb-4 border border-slate-200">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full text-indigo-600 text-sm font-medium mb-4 border border-indigo-100">
             <div className="flex gap-0.5">
               {[1, 2, 3, 4, 5].map((i) => (
                 <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -124,27 +124,27 @@ export function LandingSocialProof() {
         {/* Testimonials Carousel */}
         <div className="relative max-w-5xl mx-auto">
           {/* Main Testimonial Card */}
-          <div className="relative bg-white shadow-sm rounded-3xl border border-slate-200 p-8 md:p-12 overflow-hidden">
+          <div className="relative bg-white rounded-3xl border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] p-8 md:p-12 overflow-hidden">
             {/* Quote Icon */}
-            <Quote className="absolute top-6 right-6 w-16 h-16 text-slate-700/50" />
+            <Quote className="absolute top-6 right-6 w-16 h-16 text-indigo-100" />
 
             {/* Testimonial Content */}
             <div className="relative grid md:grid-cols-3 gap-8 items-center">
               {/* Author Info - Left */}
               <div className="md:col-span-1">
                 <div className="flex flex-col items-center text-center">
-                  <Avatar className="h-24 w-24 border-4 border-slate-800 shadow-lg mb-4">
+                  <Avatar className="h-24 w-24 border-4 border-white shadow-lg mb-4">
                     <AvatarImage src={testimonials[activeIndex].avatar} />
-                    <AvatarFallback className="text-2xl bg-slate-700 text-white">
+                    <AvatarFallback className="text-2xl bg-indigo-100 text-indigo-600">
                       {testimonials[activeIndex].name[0]}
                     </AvatarFallback>
                   </Avatar>
 
-                  <div className="font-bold text-xl text-white">
+                  <div className="font-bold text-xl text-slate-900">
                     {testimonials[activeIndex].name}
                   </div>
                   <div className="text-slate-500">{testimonials[activeIndex].role}</div>
-                  <div className="text-sm text-slate-9000">{testimonials[activeIndex].location}</div>
+                  <div className="text-sm text-slate-400">{testimonials[activeIndex].location}</div>
 
                   {/* Rating */}
                   <div className="flex gap-0.5 mt-4">
@@ -154,7 +154,7 @@ export function LandingSocialProof() {
                   </div>
 
                   {/* Highlight Badge */}
-                  <div className="mt-4 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-medium border border-emerald-500/30">
+                  <div className="mt-4 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-sm font-medium border border-indigo-100">
                     {testimonials[activeIndex].highlight}
                   </div>
                 </div>
@@ -162,11 +162,11 @@ export function LandingSocialProof() {
 
               {/* Quote - Right */}
               <div className="md:col-span-2">
-                <blockquote className="text-xl md:text-2xl text-slate-200 leading-relaxed font-medium">
+                <blockquote className="text-xl md:text-2xl text-slate-700 leading-relaxed font-medium">
                   &ldquo;{testimonials[activeIndex].quote}&rdquo;
                 </blockquote>
                 <div className="mt-6 flex items-center gap-2">
-                  <span className="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-sm">
+                  <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm">
                     {testimonials[activeIndex].sport}
                   </span>
                 </div>
@@ -177,7 +177,7 @@ export function LandingSocialProof() {
           {/* Navigation Arrows */}
           <button
             onClick={goToPrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 w-12 h-12 bg-white shadow-sm rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:text-white hover:border-white/20 transition-all"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 w-12 h-12 bg-white shadow-lg rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all"
             aria-label="Previous testimonial"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -185,7 +185,7 @@ export function LandingSocialProof() {
 
           <button
             onClick={goToNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 w-12 h-12 bg-white shadow-sm rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:text-white hover:border-white/20 transition-all"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 w-12 h-12 bg-white shadow-lg rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all"
             aria-label="Next testimonial"
           >
             <ChevronRight className="w-6 h-6" />
@@ -200,8 +200,8 @@ export function LandingSocialProof() {
                 className={cn(
                   "h-2 rounded-full transition-all",
                   index === activeIndex
-                    ? "w-8 bg-gradient-to-r from-emerald-400 to-cyan-500"
-                    : "w-2 bg-slate-600 hover:bg-slate-500"
+                    ? "w-8 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400"
+                    : "w-2 bg-slate-300 hover:bg-slate-400"
                 )}
                 aria-label={`Go to testimonial ${index + 1}`}
               />
@@ -214,13 +214,13 @@ export function LandingSocialProof() {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="text-center p-6 bg-white shadow-sm rounded-2xl border border-slate-200 hover:border-white/20 transition-colors"
+              className="text-center p-6 bg-white rounded-2xl border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] hover:border-indigo-200 transition-colors"
             >
-              <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500 mb-1">
+              <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 mb-1">
                 {stat.value}
               </div>
               <div className="font-medium text-slate-900">{stat.label}</div>
-              <div className="text-xs text-slate-9000">{stat.sublabel}</div>
+              <div className="text-xs text-slate-500">{stat.sublabel}</div>
             </div>
           ))}
         </div>

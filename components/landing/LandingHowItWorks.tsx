@@ -255,7 +255,7 @@ export function LandingHowItWorks() {
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-cyan-400 text-sm font-medium mb-4 border border-slate-200">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full text-indigo-600 text-sm font-medium mb-4 border border-indigo-100">
             <span>Simple to start</span>
           </div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
@@ -283,8 +283,8 @@ export function LandingHowItWorks() {
                     className={cn(
                       "w-full text-left p-6 rounded-2xl transition-all duration-300 cursor-pointer",
                       isActive
-                        ? "bg-white shadow-sm border-l-4 border-emerald-400 shadow-lg border border-slate-200"
-                        : "bg-slate-900/20 hover:bg-slate-900/30 border-l-4 border-transparent"
+                        ? "bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)] border-l-4 border-indigo-500 border border-slate-200"
+                        : "bg-slate-50 hover:bg-slate-100 border-l-4 border-transparent border border-slate-100"
                     )}
                   >
                     <div className="flex items-start gap-4">
@@ -292,8 +292,8 @@ export function LandingHowItWorks() {
                         className={cn(
                           "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
                           isActive
-                            ? "bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/10"
-                            : "bg-slate-800 text-slate-500"
+                            ? "bg-gradient-to-br from-sky-500 via-indigo-500 to-emerald-400 text-white shadow-lg shadow-indigo-500/20"
+                            : "bg-slate-200 text-slate-500"
                         )}
                       >
                         <Icon className="w-6 h-6" />
@@ -313,8 +313,8 @@ export function LandingHowItWorks() {
                             className={cn(
                               "w-5 h-5 transition-all",
                               isActive
-                                ? "text-emerald-400 rotate-90"
-                                : "text-slate-600"
+                                ? "text-indigo-500 rotate-90"
+                                : "text-slate-400"
                             )}
                           />
                         </div>
@@ -322,7 +322,7 @@ export function LandingHowItWorks() {
                         <p
                           className={cn(
                             "text-sm transition-colors",
-                            isActive ? "text-slate-300" : "text-slate-9000"
+                            isActive ? "text-slate-500" : "text-slate-400"
                           )}
                         >
                           {step.description}
@@ -333,9 +333,9 @@ export function LandingHowItWorks() {
                             {step.details.map((detail, i) => (
                               <li
                                 key={i}
-                                className="flex items-center gap-2 text-sm text-slate-300"
+                                className="flex items-center gap-2 text-sm text-slate-600"
                               >
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                                 {detail}
                               </li>
                             ))}
@@ -353,7 +353,7 @@ export function LandingHowItWorks() {
               <div className="sticky top-1/4">
                 <div className="relative">
                   {/* Background glow */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-3xl blur-xl" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-sky-100 via-indigo-100 to-emerald-100 rounded-3xl blur-xl opacity-70" />
 
                   {/* Mockup container */}
                   <div className="relative transition-all duration-500">
@@ -369,8 +369,8 @@ export function LandingHowItWorks() {
                         className={cn(
                           "h-2 rounded-full transition-all duration-300",
                           index === activeStep
-                            ? "w-8 bg-gradient-to-r from-emerald-400 to-cyan-500"
-                            : "w-2 bg-slate-600 hover:bg-slate-500"
+                            ? "w-8 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400"
+                            : "w-2 bg-slate-300 hover:bg-slate-400"
                         )}
                       />
                     ))}
@@ -386,14 +386,14 @@ export function LandingHowItWorks() {
           <Button
             asChild
             size="lg"
-            className="bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-semibold px-8 py-6 h-auto shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20 transition-all hover:scale-[1.02]"
+            className="bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white font-semibold px-8 py-6 h-auto shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all hover:scale-[1.02]"
           >
             <Link href="/register" className="flex items-center gap-2">
               Start Your Journey Free
               <ChevronRight className="w-5 h-5" />
             </Link>
           </Button>
-          <p className="text-sm text-slate-9000 mt-3">No credit card required</p>
+          <p className="text-sm text-slate-500 mt-3">No credit card required</p>
         </div>
       </div>
     </section>

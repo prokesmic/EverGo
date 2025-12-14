@@ -49,18 +49,18 @@ const socialLinks = [
 
 export function LandingFooter() {
   return (
-    <footer className="w-full bg-slate-900 border-t border-slate-800">
+    <footer className="w-full bg-slate-50 border-t border-slate-200">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         {/* Main Footer Content */}
         <div className="py-12 md:py-16 grid grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 font-bold text-xl mb-4">
-              <span className="text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">
+              <span className="text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400">
                 ⚡EverGo
               </span>
             </Link>
-            <p className="text-sm text-slate-400 mb-6">
+            <p className="text-sm text-slate-500 mb-6">
               The global network for sports. Track, compete, connect.
             </p>
 
@@ -74,7 +74,7 @@ export function LandingFooter() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white transition-colors border border-slate-700"
+                    className="p-2 rounded-lg bg-white text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border border-slate-200"
                     aria-label={social.label}
                   >
                     <Icon className="w-5 h-5" />
@@ -87,7 +87,7 @@ export function LandingFooter() {
           {/* Link Columns */}
           {Object.values(footerLinks).map((section) => (
             <div key={section.title}>
-              <h3 className="font-semibold text-sm mb-4 text-white">
+              <h3 className="font-semibold text-sm mb-4 text-slate-900">
                 {section.title}
               </h3>
               <ul className="space-y-3">
@@ -95,7 +95,7 @@ export function LandingFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-slate-400 hover:text-white transition-colors"
+                      className="text-sm text-slate-500 hover:text-indigo-600 transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -107,15 +107,15 @@ export function LandingFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="py-6 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="py-6 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-slate-500">
             &copy; {new Date().getFullYear()} EverGo. All rights reserved.
           </p>
 
           <div className="flex items-center gap-4 text-sm text-slate-500">
             <span>Made with passion for athletes</span>
-            <span className="text-slate-700">|</span>
-            <a href="#" className="hover:text-white transition-colors">
+            <span className="text-slate-300">|</span>
+            <a href="#" className="hover:text-indigo-600 transition-colors">
               English
             </a>
           </div>
