@@ -92,20 +92,20 @@
 :root {
   --radius: 0.625rem;
 
-  /* --- Design System: Aurora Color Scheme --- */
+  /* --- Design System: Vapor/Platinum Color Scheme --- */
 
-  /* Primary Brand Colors - Sky/Indigo gradient */
-  --primary: #6366F1;
-  --primary-dark: #4F46E5;
-  --primary-light: #818CF8;
+  /* Primary Brand Colors - Orange (International Orange) */
+  --primary: #F97316;
+  --primary-dark: #EA580C;
+  --primary-light: #FB923C;
 
-  /* Accent Colors - Emerald */
+  /* Accent Colors - Emerald (for progress/energy) */
   --accent: #10B981;
   --accent-dark: #059669;
 
-  /* Backgrounds - Light Aurora */
+  /* Backgrounds - Platinum/Off-white (NO pure white!) */
   --bg-page: #F8FAFC;
-  --bg-card: #FFFFFF;
+  --bg-card: rgba(255, 255, 255, 0.8);
   --bg-input: #F1F5F9;
 
   /* Text Colors */
@@ -901,19 +901,215 @@
   @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
 }
 
-/* Aurora Landing Page Gradient */
+/* Vapor Landing Page Gradient */
 .hero-gradient {
   background:
-    radial-gradient(circle at 0% 0%, #E0F2FE 0, transparent 55%),
-    radial-gradient(circle at 100% 0%, #ECFDF3 0, transparent 55%),
-    linear-gradient(180deg, #F9FAFF 0%, #EEF2FF 55%, #E0F2FE 100%);
+    radial-gradient(circle at 0% 0%, #FFF7ED 0, transparent 55%),
+    radial-gradient(circle at 100% 0%, #ECFDF5 0, transparent 55%),
+    linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 55%, #E2E8F0 100%);
 }
 
 /* ==============================
-   EverGo Aurora Design System
+   EverGo Vapor Design System
+   Athletic · Frosted · Aggressive
    ============================== */
 
-/* Aurora Card Styles */
+/* --- Vapor Canvas System --- */
+/* The Golden Rule: Avoid pure #ffffff backgrounds */
+
+.vapor-canvas {
+  @apply bg-slate-50;
+}
+
+.vapor-section {
+  @apply bg-zinc-100;
+}
+
+/* --- Vapor Frosted Glass Cards --- */
+.vapor-card {
+  @apply bg-white/80 backdrop-blur-md border border-slate-200/60 rounded-3xl;
+  box-shadow:
+    0 4px 24px rgba(15, 23, 42, 0.08),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.vapor-card-solid {
+  @apply bg-white border border-slate-200 rounded-3xl;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.10);
+}
+
+.vapor-card-elevated {
+  @apply bg-white/90 backdrop-blur-lg border border-slate-200/50 rounded-3xl;
+  box-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.12),
+    0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+/* --- Vapor Action Colors (International Orange) --- */
+.vapor-action {
+  @apply bg-orange-500 text-white hover:bg-orange-600 transition-colors;
+}
+
+.vapor-action-subtle {
+  @apply bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors;
+}
+
+.vapor-action-outline {
+  @apply border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white transition-all;
+}
+
+/* --- Vapor Progress/Energy Colors --- */
+.vapor-energy {
+  @apply bg-emerald-500;
+}
+
+.vapor-energy-glow {
+  @apply bg-emerald-500;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+/* --- Vapor Typography (Slate Palette) --- */
+.vapor-text-primary {
+  @apply text-slate-900;
+}
+
+.vapor-text-secondary {
+  @apply text-slate-600;
+}
+
+.vapor-text-muted {
+  @apply text-slate-400;
+}
+
+.vapor-text-accent {
+  @apply text-orange-500;
+}
+
+/* --- Vapor Pulse Animation (for live indicators) --- */
+@keyframes vaporPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(249, 115, 22, 0);
+  }
+}
+
+.vapor-pulse {
+  animation: vaporPulse 2s ease-in-out infinite;
+}
+
+.vapor-pulse-ring {
+  @apply absolute inset-0 rounded-full border-2 border-orange-500;
+  animation: vaporPulse 2s ease-in-out infinite;
+}
+
+/* --- Vapor Ghost Empty State --- */
+.vapor-ghost {
+  @apply relative overflow-hidden bg-slate-100 rounded-2xl;
+}
+
+.vapor-ghost::before {
+  content: '';
+  @apply absolute inset-0 opacity-[0.03];
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M0 50 Q25 30 50 50 T100 50' fill='none' stroke='%23000' stroke-width='0.5'/%3E%3Cpath d='M0 60 Q25 40 50 60 T100 60' fill='none' stroke='%23000' stroke-width='0.5'/%3E%3Cpath d='M0 70 Q25 50 50 70 T100 70' fill='none' stroke='%23000' stroke-width='0.5'/%3E%3Cpath d='M0 40 Q25 20 50 40 T100 40' fill='none' stroke='%23000' stroke-width='0.5'/%3E%3Cpath d='M0 30 Q25 10 50 30 T100 30' fill='none' stroke='%23000' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 100px 100px;
+}
+
+.vapor-ghost-text {
+  @apply text-slate-400 text-center py-12 px-6 relative z-10;
+}
+
+/* --- Vapor Gradient Backgrounds --- */
+.vapor-gradient-warm {
+  background: linear-gradient(135deg, #FFF7ED 0%, #FEF3C7 50%, #ECFDF5 100%);
+}
+
+.vapor-gradient-cool {
+  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+}
+
+.vapor-gradient-action {
+  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+}
+
+/* --- Vapor Button Styles --- */
+.vapor-btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold;
+  @apply bg-orange-500 text-white hover:bg-orange-600;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.3);
+  transition: all 0.2s ease;
+}
+
+.vapor-btn-primary:hover {
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
+  transform: translateY(-2px);
+}
+
+.vapor-btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold;
+  @apply border border-slate-200 bg-white/80 backdrop-blur-sm text-slate-800 hover:bg-slate-50;
+  transition: all 0.2s ease;
+}
+
+/* --- Vapor Chip/Badge --- */
+.vapor-chip {
+  @apply inline-flex items-center gap-2 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold px-3 py-1 uppercase tracking-[0.12em];
+}
+
+.vapor-chip-active {
+  @apply inline-flex items-center gap-2 rounded-full bg-orange-100 text-orange-700 text-[11px] font-semibold px-3 py-1 uppercase tracking-[0.12em];
+}
+
+.vapor-chip-live {
+  @apply inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-semibold px-3 py-1 uppercase tracking-[0.12em];
+}
+
+/* --- Vapor Battle Bar Styles --- */
+.vapor-battle-bar {
+  @apply relative h-3 rounded-full overflow-hidden bg-slate-200;
+}
+
+.vapor-battle-fill-left {
+  @apply absolute left-0 top-0 h-full bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-500;
+}
+
+.vapor-battle-fill-right {
+  @apply absolute right-0 top-0 h-full bg-gradient-to-l from-indigo-500 to-indigo-400 transition-all duration-500;
+}
+
+.vapor-battle-center {
+  @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-slate-300 z-10;
+}
+
+/* --- Vapor Rivalry Card Styles --- */
+.vapor-rivalry-card {
+  @apply bg-white/80 backdrop-blur-md border border-slate-200/60 rounded-3xl p-4;
+  background: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
+  box-shadow:
+    0 4px 24px rgba(15, 23, 42, 0.08),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.vapor-rivalry-vs {
+  @apply text-2xl font-black text-slate-300 tracking-tighter;
+}
+
+/* --- Vapor Stories Rail Styles --- */
+.vapor-story-ring {
+  @apply rounded-full p-[3px];
+  background: linear-gradient(135deg, #F97316 0%, #EA580C 50%, #DC2626 100%);
+}
+
+.vapor-story-ring-inactive {
+  @apply rounded-full p-[3px] bg-slate-200;
+}
+
+.vapor-story-avatar {
+  @apply rounded-full border-2 border-white;
+}
+
+/* Legacy: Aurora Card Styles (kept for compatibility) */
 .eg-card {
   @apply bg-white border border-slate-200 rounded-3xl;
   box-shadow: 0 24px 60px rgba(15,23,42,0.10);

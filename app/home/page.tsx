@@ -19,6 +19,9 @@ import { AuroraReadinessWidget } from "@/components/widgets/aurora-readiness-wid
 import { AuroraRivalWidget } from "@/components/widgets/aurora-rival-widget"
 import { AuroraRankingDeltaWidget } from "@/components/widgets/aurora-ranking-delta-widget"
 import { AuroraAiCoachWidget } from "@/components/widgets/aurora-ai-coach-widget"
+import { PulseRail } from "@/components/vapor/PulseRail"
+import { BattleBarDemo } from "@/components/vapor/BattleBar"
+import { ActiveRivalryCard } from "@/components/vapor/ActiveRivalryCard"
 
 export const dynamic = 'force-dynamic'
 
@@ -200,9 +203,16 @@ export default async function HomePage() {
         }
 
         return (
-            <div className="min-h-screen bg-background pb-20 md:pb-0">
+            <div className="min-h-screen vapor-canvas pb-20 md:pb-0">
+                {/* Vapor PulseRail - Stories-style friend activity header */}
+                <div className="border-b border-slate-200/60 bg-white/60 backdrop-blur-sm">
+                    <div className="max-w-6xl mx-auto">
+                        <PulseRail />
+                    </div>
+                </div>
+
                 <div className="max-w-6xl mx-auto px-6 pt-6">
-                    {/* Aurora Widgets Section */}
+                    {/* Vapor Widgets Section */}
                     <section className="space-y-6 mb-6">
                         {/* Top Row: Readiness + AI Coach */}
                         <div className="grid md:grid-cols-[1.2fr,1fr] gap-6">
@@ -210,7 +220,13 @@ export default async function HomePage() {
                             <AuroraAiCoachWidget stats={auroraStats} />
                         </div>
 
-                        {/* Second Row: Rival + Ranking Delta */}
+                        {/* Second Row: Active Rivalry + Battle Bar */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <ActiveRivalryCard />
+                            <BattleBarDemo />
+                        </div>
+
+                        {/* Third Row: Ranking Delta */}
                         <div className="grid md:grid-cols-2 gap-6">
                             <AuroraRivalWidget userId={user.id} />
                             <AuroraRankingDeltaWidget insights={auroraRankingInsights} />
