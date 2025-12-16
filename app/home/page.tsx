@@ -6,10 +6,7 @@ import { WelcomeHero } from "@/components/dashboard/WelcomeHero"
 import { PulseRail } from "@/components/vapor/PulseRail"
 import { ActiveRivalryCard } from "@/components/vapor/ActiveRivalryCard"
 import { BattleBarDemo } from "@/components/vapor/BattleBar"
-import { AuroraRankingDeltaWidget } from "@/components/widgets/aurora-ranking-delta-widget"
-import { ActivitiesSummaryWidget } from "@/components/widgets/activities-summary-widget"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
-import { TeamsWidget } from "@/components/widgets/teams-widget"
 import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
 import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestions-wrapper"
 import { CreatePostBox } from "@/components/feed/create-post-box"
@@ -51,92 +48,46 @@ export default async function HomePage() {
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-    const [weeklyActivities, userTeams] = await Promise.all([
-      prisma.activity.findMany({
-        where: {
-          userId: user.id,
-          activityDate: { gte: sevenDaysAgo }
-        },
-        include: {
-          discipline: {
-            include: { sport: true }
-          }
-        },
-        take: 50
-      }),
-      prisma.teamMember.findMany({
-        where: { userId: user.id },
-        include: {
-          team: {
-            include: {
-              sport: true,
-              _count: { select: { members: true } }
-            }
-          }
-        },
-        take: 3
-      })
-    ])
+    const weeklyActivities = await prisma.activity.findMany({
+      where: {
+        userId: user.id,
+        activityDate: { gte: sevenDaysAgo }
+      },
+      include: {
+        discipline: {
+          include: { sport: true }
+        }
+      },
+      take: 50
+    })
 
-    // Calculate Weekly Stats
+    // Calculate Weekly Stats for Hero
     let weeklyDistance = 0
     let weeklyTime = 0
-    let weeklyCalories = 0
-    const sportStats: Record<string, { distance: number, time: number, color: string }> = {}
+    const sportStats: Record<string, { distance: number }> = {}
 
     weeklyActivities.forEach((activity: any) => {
       weeklyDistance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
       weeklyTime += activity.durationSeconds ? activity.durationSeconds / 60 : 0
-      weeklyCalories += activity.caloriesBurned || 0
 
       const sportName = activity.discipline?.sport?.name?.toLowerCase() || 'other'
       if (!sportStats[sportName]) {
-        let color = "bg-brand-blue text-white"
-        if (sportName === "running") color = "bg-brand-green text-white"
-        if (sportName === "cycling") color = "bg-yellow-500 text-black"
-        if (sportName === "swimming") color = "bg-cyan-500 text-white"
-        sportStats[sportName] = { distance: 0, time: 0, color }
+        sportStats[sportName] = { distance: 0 }
       }
       sportStats[sportName].distance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
-      sportStats[sportName].time += activity.durationSeconds ? activity.durationSeconds / 60 : 0
     })
 
-    const activityBreakdown = Object.entries(sportStats).map(([sport, stats]) => ({
-      sport,
-      distance: stats.distance,
-      percentage: weeklyDistance > 0 ? (stats.distance / weeklyDistance) * 100 : 0,
-      color: stats.color
-    })).sort((a, b) => b.distance - a.distance)
+    // Determine primary sport by distance
+    const sortedSports = Object.entries(sportStats).sort((a, b) => b[1].distance - a[1].distance)
+    const primarySport = sortedSports.length > 0 ? sortedSports[0][0] : "running"
 
-    const primarySport = activityBreakdown.length > 0 ? activityBreakdown[0].sport : "running"
-
-    // Format teams for widget
-    const formattedTeams = userTeams.map((tm: any) => ({
-      id: tm.team.id,
-      name: tm.team.name,
-      sport: tm.team.sport?.name || 'Sports',
-      members: tm.team._count?.members || 0,
-      nextTraining: "Tue 18:00",
-      image: tm.team.logoUrl || "",
-      initials: tm.team.name.substring(0, 2).toUpperCase(),
-      color: "bg-blue-100 text-blue-600"
-    }))
-
-    // Ranking insights
-    const rankingInsights = {
-      globalRank: userStats?.globalRank || 142,
-      globalRankChange: -3,
-      cityRank: userStats?.cityRank || 12,
-      cityRankChange: -2,
-      countryRank: userStats?.countryRank || 89,
-      countryRankChange: -5
-    }
 
     return (
       <main className="min-h-screen bg-slate-50 pb-20 md:pb-0">
         {/* ============================================
             SECTION 1: THE ANCHOR - Welcome Hero
             Full-width, dark background, primary CTA
+            Contains: Stats + Log Activity CTA
         ============================================ */}
         <WelcomeHero
           name={user.displayName || "Athlete"}
@@ -155,7 +106,7 @@ export default async function HomePage() {
 
         {/* ============================================
             SECTION 2: THE PULSE - Friend Activity Rail
-            Stories-style horizontal scroll
+            Stories-style horizontal scroll (The Hook)
         ============================================ */}
         <div className="border-b border-slate-200/60 bg-white/80 backdrop-blur-sm">
           <div className="max-w-6xl mx-auto">
@@ -164,64 +115,41 @@ export default async function HomePage() {
         </div>
 
         {/* ============================================
-            SECTION 3: MOTIVATION ZONE
-            Rivalry + Ranking widgets in a grid
+            SECTION 3: MAIN CONTENT GRID
+            12-column grid: Main (8) + Sidebar (4)
+            Time Horizon Flow: Motivation → Action → Planning
         ============================================ */}
-        <div className="max-w-6xl mx-auto px-4 md:px-6 pt-6">
-          <section className="space-y-6">
-            {/* Row 1: Rivalry Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <ActiveRivalryCard />
-              <BattleBarDemo />
-            </div>
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
 
-            {/* Row 2: Ranking Delta + Upcoming Events */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <AuroraRankingDeltaWidget insights={rankingInsights} />
-              <PartnerFinderWidget />
-            </div>
-          </section>
-        </div>
+            {/* MAIN COLUMN (Span 8) - Motivation & Competition */}
+            <div className="lg:col-span-8 space-y-6">
 
-        {/* ============================================
-            SECTION 4: DEEP DATA
-            Summary widgets + Social feed
-        ============================================ */}
-        <div className="max-w-6xl mx-auto px-4 md:px-6 pt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-            {/* Main Column: Feed */}
-            <div className="space-y-6 order-2 lg:order-1">
+              {/* Competition Zone - Motivation First */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ActiveRivalryCard />
+                <BattleBarDemo />
+              </div>
+
+              {/* Consumption Zone - Social Feed */}
               <CreatePostBox userImage={user.avatarUrl || undefined} />
               <Feed />
             </div>
 
-            {/* Sidebar: Widgets (hidden on mobile, below fold) */}
-            <aside className="space-y-4 order-1 lg:order-2">
-              {/* Weekly Summary */}
-              <ActivitiesSummaryWidget
-                totalDistance={weeklyDistance}
-                totalTime={weeklyTime}
-                totalCalories={weeklyCalories}
-                breakdown={activityBreakdown}
-              />
+            {/* SIDEBAR (Span 4) - Planning & Future */}
+            <aside className="lg:col-span-4 space-y-4">
+              {/* 1. Upcoming Events (Immediate Future) */}
+              <CalendarWidget />
 
-              {/* Calendar */}
-              <div className="hidden md:block">
-                <CalendarWidget />
-              </div>
+              {/* 2. Partner Finder (Social Planning) */}
+              <PartnerFinderWidget />
 
-              {/* Teams */}
-              {formattedTeams.length > 0 && (
-                <div className="hidden md:block">
-                  <TeamsWidget teams={formattedTeams} />
-                </div>
-              )}
-
-              {/* Follow Suggestions */}
+              {/* 3. Follow Suggestions (Discovery) */}
               <div className="hidden lg:block">
                 <FollowSuggestionsWrapper />
               </div>
             </aside>
+
           </div>
         </div>
       </main>

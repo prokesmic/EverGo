@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { ActivityPostCard } from "./activity-post-card"
-import { EmptyState } from "@/components/ui/empty-state"
+import { SuggestedAthletesCarousel } from "./suggested-athletes-carousel"
 import { ActivityCardSkeleton } from "@/components/ui/skeleton"
-import { Loader2, Plus } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 interface FeedProps {
     type?: "all" | "friends" | "following"
@@ -73,38 +73,9 @@ export function Feed({ type = "all", refreshTrigger }: FeedProps) {
     }
 
     if (posts.length === 0) {
-        const emptyMessages = {
-            all: {
-                title: "No posts yet",
-                description: "Be the first to share your activity! Log a workout to get started.",
-            },
-            friends: {
-                title: "No friend posts",
-                description: "Your friends haven't posted yet, or you haven't added any friends. Start following athletes!",
-            },
-            following: {
-                title: "No posts from athletes you follow",
-                description: "Follow more athletes to see their activities in your feed.",
-            },
-        }
-
-        const message = emptyMessages[type]
-
-        return (
-            <EmptyState
-                icon="📭"
-                title={message.title}
-                description={message.description}
-                action={{
-                    label: "Log Activity",
-                    onClick: () => router.push("/activity/create"),
-                }}
-                secondaryAction={{
-                    label: "Find Athletes",
-                    href: "/search",
-                }}
-            />
-        )
+        // Show SuggestedAthletesCarousel instead of generic empty state
+        // This drives engagement by helping users build their network
+        return <SuggestedAthletesCarousel />
     }
 
     return (
