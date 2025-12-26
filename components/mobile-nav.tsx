@@ -19,7 +19,7 @@ export function MobileNav() {
     { href: "/home", label: "Home", icon: Home },
     { href: "/leaderboard", label: "Rankings", icon: Trophy },
     { href: "/challenges", label: "Challenges", icon: Target },
-    { href: session ? `/profile/${session.user?.username || session.user?.name?.toLowerCase().replace(/\s+/g, '') || 'me'}` : "/login", label: "Profile", icon: User },
+    { href: session ? `/profile/${session.user?.username || 'me'}` : "/login", label: "Profile", icon: User },
   ]
 
   const isActive = (href: string) => {

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { ProfileHeader } from "@/components/profile/profile-header"
@@ -24,15 +24,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     const session = await getServerSession(authOptions)
     const { username } = await params
 
+    // Handle "me" route - redirect to current user's profile
+    if (username === 'me') {
+        if (!session?.user?.email) {
+            redirect('/login')
+        }
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { username: true }
+        })
+        if (currentUser?.username) {
+            redirect(`/profile/${currentUser.username}`)
+        }
+    }
+
     // Fetch user data with all necessary relations
-    // Use findFirst with insensitive mode to handle capitalization differences
-    const user = await prisma.user.findFirst({
+    // Try to find by username first, then by ID as fallback
+    let user = await prisma.user.findFirst({
         where: {
             username: {
                 equals: username,
-                // SQLite doesn't strictly support mode: 'insensitive' in all Prisma versions/configs, 
-                // but it's good practice for Postgres. For SQLite, it's often default case-insensitive.
-                // We'll try exact match first, if that fails, we could try fallback, but let's stick to standard findFirst for now.
             }
         },
         include: {
@@ -82,6 +93,59 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             },
         },
     })
+
+    // If not found by username, try by user ID as fallback (for old links)
+    if (!user) {
+        user = await prisma.user.findFirst({
+            where: { id: username },
+            include: {
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        activities: true,
+                    },
+                },
+                sports: {
+                    include: {
+                        sport: true,
+                    },
+                },
+                activities: {
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                    include: {
+                        user: true,
+                        discipline: {
+                            include: {
+                                sport: true,
+                            },
+                        },
+                    },
+                },
+                personalRecords: {
+                    orderBy: {
+                        achievedAt: "desc",
+                    },
+                    include: {
+                        discipline: {
+                            include: {
+                                sport: true,
+                            },
+                        },
+                    },
+                },
+                followers: {
+                    where: {
+                        follower: {
+                            email: session?.user?.email || "",
+                        },
+                    },
+                },
+            },
+        })
+    }
 
     if (!user) {
         notFound()

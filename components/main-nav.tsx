@@ -128,7 +128,7 @@ export function MainNav() {
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
-                                        <Link href={`/profile/${session.user?.username || session.user?.name?.toLowerCase().replace(/\s+/g, '') || 'me'}`}>
+                                        <Link href={`/profile/${session.user?.username || 'me'}`}>
                                             Profile
                                         </Link>
                                     </DropdownMenuItem>
