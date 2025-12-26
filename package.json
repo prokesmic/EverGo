@@ -23,7 +23,12 @@
     "test:a11y": "playwright test --project=accessibility",
     "test:visual": "playwright test e2e/visual.spec.ts",
     "test:report": "playwright show-report",
-    "test:update-snapshots": "playwright test --update-snapshots"
+    "test:update-snapshots": "playwright test --update-snapshots",
+    "mike": "npx tsx mike/cli.ts",
+    "mike:smoke": "npx tsx mike/cli.ts smoke",
+    "mike:full": "npx tsx mike/cli.ts full --verbose",
+    "mike:discover": "npx tsx mike/cli.ts discover",
+    "mike:help": "npx tsx mike/cli.ts help"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -76,14 +81,18 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
     "@types/web-push": "^3.6.4",
+    "chalk": "^5.6.2",
     "eslint": "^9",
     "eslint-config-next": "16.0.5",
+    "ora": "^9.0.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "uuid": "^13.0.0"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

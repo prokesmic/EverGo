@@ -1,9 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, X, Loader2 } from "lucide-react"
+import { Check, X, Loader2, Crown, Zap, Star, Sparkles, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
+import { GradientHeader } from "@/components/ui/frosted-card"
+import { cn } from "@/lib/utils"
 
 interface Subscription {
     plan: 'FREE' | 'PRO' | 'PRO_ANNUAL'
@@ -58,131 +60,168 @@ export default function SubscriptionPage() {
     }
 
     if (isLoading) {
-        return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+            </div>
+        )
     }
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Subscription</h1>
-            <p className="text-gray-600 mb-8">Unlock the full EverGo experience</p>
+        <div className="min-h-screen bg-slate-50">
+            <div className="container max-w-5xl py-8 px-4 md:px-6">
+                <GradientHeader
+                    icon={<Crown className="w-6 h-6" />}
+                    title="Subscription"
+                    description="Unlock the full EverGo experience"
+                />
 
-            {/* Current Plan */}
-            {subscription && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="font-medium text-blue-800">
-                                Current Plan: {subscription.plan === 'FREE' ? 'Free' : 'Pro'}
+                {/* Current Plan Banner */}
+                {subscription && (
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 mb-8 text-white">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    {subscription.plan === 'FREE' ? (
+                                        <Star className="w-5 h-5" />
+                                    ) : (
+                                        <Crown className="w-5 h-5" />
+                                    )}
+                                    <span className="font-bold text-lg">
+                                        Current Plan: {subscription.plan === 'FREE' ? 'Free' : 'Pro'}
+                                    </span>
+                                </div>
+                                {subscription.plan !== 'FREE' && (
+                                    <div className="text-white/80 text-sm">
+                                        Renews on {format(new Date(subscription.currentPeriodEnd), 'PPP')}
+                                    </div>
+                                )}
                             </div>
                             {subscription.plan !== 'FREE' && (
-                                <div className="text-sm text-blue-600">
-                                    Renews on {format(new Date(subscription.currentPeriodEnd), 'PPP')}
-                                </div>
+                                <Button variant="secondary" className="bg-white/20 hover:bg-white/30 text-white border-0">
+                                    Manage subscription
+                                </Button>
                             )}
                         </div>
-                        {subscription.plan !== 'FREE' && (
-                            <Button variant="link" className="text-blue-600">
-                                Manage subscription
-                            </Button>
-                        )}
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Plans Comparison */}
-            <div className="grid md:grid-cols-2 gap-6">
-                {/* Free Plan */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                    <h2 className="text-xl font-bold text-gray-800 mb-2">Free</h2>
-                    <div className="text-3xl font-bold text-gray-800 mb-4">
-                        $0<span className="text-base font-normal text-gray-500">/month</span>
-                    </div>
+                {/* Plans Comparison */}
+                <div className="grid md:grid-cols-2 gap-6 mb-12">
+                    {/* Free Plan */}
+                    <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-slate-200/50 p-8 shadow-xl">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-slate-100 rounded-xl">
+                                <Star className="w-6 h-6 text-slate-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800">Free</h2>
+                        </div>
 
-                    <ul className="space-y-3 mb-6">
-                        <FeatureItem included>Track up to 3 sports</FeatureItem>
-                        <FeatureItem included>City & Country rankings</FeatureItem>
-                        <FeatureItem included>Join 1 team</FeatureItem>
-                        <FeatureItem included>90-day activity history</FeatureItem>
-                        <FeatureItem included>Badges & challenges</FeatureItem>
-                        <FeatureItem>Global rankings</FeatureItem>
-                        <FeatureItem>Advanced analytics</FeatureItem>
-                        <FeatureItem>Data export</FeatureItem>
-                        <FeatureItem>Ad-free experience</FeatureItem>
-                    </ul>
+                        <div className="mb-6">
+                            <span className="text-5xl font-black text-slate-900">$0</span>
+                            <span className="text-slate-500 text-lg ml-2">/month</span>
+                        </div>
 
-                    <Button
-                        disabled
-                        variant="outline"
-                        className="w-full"
-                    >
-                        {subscription?.plan === 'FREE' ? 'Current Plan' : 'Downgrade'}
-                    </Button>
-                </div>
+                        <ul className="space-y-4 mb-8">
+                            <FeatureItem included>Track up to 3 sports</FeatureItem>
+                            <FeatureItem included>City & Country rankings</FeatureItem>
+                            <FeatureItem included>Join 1 team</FeatureItem>
+                            <FeatureItem included>90-day activity history</FeatureItem>
+                            <FeatureItem included>Badges & challenges</FeatureItem>
+                            <FeatureItem>Global rankings</FeatureItem>
+                            <FeatureItem>Advanced analytics</FeatureItem>
+                            <FeatureItem>Data export</FeatureItem>
+                            <FeatureItem>Ad-free experience</FeatureItem>
+                        </ul>
 
-                {/* Pro Plan */}
-                <div className="bg-white rounded-xl border-2 border-blue-500 p-6 relative">
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-blue-500 text-white text-sm font-medium rounded-full">
-                        Most Popular
-                    </div>
-
-                    <h2 className="text-xl font-bold text-gray-800 mb-2">Pro</h2>
-                    <div className="text-3xl font-bold text-gray-800 mb-1">
-                        $9.99<span className="text-base font-normal text-gray-500">/month</span>
-                    </div>
-                    <div className="text-sm text-green-600 mb-4">
-                        or $79.99/year (save 33%)
-                    </div>
-
-                    <ul className="space-y-3 mb-6">
-                        <FeatureItem included>Unlimited sports</FeatureItem>
-                        <FeatureItem included>All ranking scopes</FeatureItem>
-                        <FeatureItem included>Unlimited teams</FeatureItem>
-                        <FeatureItem included>Full activity history</FeatureItem>
-                        <FeatureItem included>All badges & challenges</FeatureItem>
-                        <FeatureItem included>Global rankings</FeatureItem>
-                        <FeatureItem included>Advanced analytics</FeatureItem>
-                        <FeatureItem included>Data export (CSV, GPX)</FeatureItem>
-                        <FeatureItem included>Ad-free experience</FeatureItem>
-                        <FeatureItem included>Priority support</FeatureItem>
-                    </ul>
-
-                    <div className="space-y-2">
                         <Button
-                            onClick={() => handleUpgrade('PRO')}
-                            disabled={isUpgrading || subscription?.plan === 'PRO'}
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-                        >
-                            {isUpgrading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            {subscription?.plan === 'PRO' ? 'Current Plan' : 'Upgrade Monthly'}
-                        </Button>
-                        <Button
-                            onClick={() => handleUpgrade('PRO_ANNUAL')}
-                            disabled={isUpgrading || subscription?.plan === 'PRO_ANNUAL'}
+                            disabled
                             variant="outline"
-                            className="w-full border-blue-500 text-blue-600 hover:bg-blue-50"
+                            className="w-full h-12 text-lg rounded-xl"
                         >
-                            {subscription?.plan === 'PRO_ANNUAL' ? 'Current Plan' : 'Upgrade Annually (Save 33%)'}
+                            {subscription?.plan === 'FREE' ? 'Current Plan' : 'Downgrade'}
                         </Button>
                     </div>
-                </div>
-            </div>
 
-            {/* FAQ */}
-            <div className="mt-12">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Frequently Asked Questions</h2>
-                <div className="space-y-4">
-                    <FaqItem
-                        question="Can I cancel anytime?"
-                        answer="Yes, you can cancel your subscription at any time. You'll continue to have Pro access until the end of your billing period."
-                    />
-                    <FaqItem
-                        question="Is there a free trial?"
-                        answer="Yes! New users get a 7-day free trial of Pro features. No credit card required."
-                    />
-                    <FaqItem
-                        question="What payment methods do you accept?"
-                        answer="We accept all major credit cards, Apple Pay, and Google Pay through our secure payment processor, Stripe."
-                    />
+                    {/* Pro Plan */}
+                    <div className="relative bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-3xl border-2 border-indigo-500 p-8 shadow-xl">
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-bold rounded-full flex items-center gap-1">
+                            <Sparkles className="w-4 h-4" />
+                            Most Popular
+                        </div>
+
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl">
+                                <Crown className="w-6 h-6 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800">Pro</h2>
+                        </div>
+
+                        <div className="mb-2">
+                            <span className="text-5xl font-black text-slate-900">$9.99</span>
+                            <span className="text-slate-500 text-lg ml-2">/month</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full mb-6">
+                            <Zap className="w-3 h-3" />
+                            or $79.99/year (save 33%)
+                        </div>
+
+                        <ul className="space-y-4 mb-8">
+                            <FeatureItem included>Unlimited sports</FeatureItem>
+                            <FeatureItem included>All ranking scopes</FeatureItem>
+                            <FeatureItem included>Unlimited teams</FeatureItem>
+                            <FeatureItem included>Full activity history</FeatureItem>
+                            <FeatureItem included>All badges & challenges</FeatureItem>
+                            <FeatureItem included>Global rankings</FeatureItem>
+                            <FeatureItem included>Advanced analytics</FeatureItem>
+                            <FeatureItem included>Data export (CSV, GPX)</FeatureItem>
+                            <FeatureItem included>Ad-free experience</FeatureItem>
+                            <FeatureItem included>Priority support</FeatureItem>
+                        </ul>
+
+                        <div className="space-y-3">
+                            <Button
+                                onClick={() => handleUpgrade('PRO')}
+                                disabled={isUpgrading || subscription?.plan === 'PRO'}
+                                className="w-full h-12 text-lg rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold shadow-lg shadow-indigo-500/25"
+                            >
+                                {isUpgrading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+                                {subscription?.plan === 'PRO' ? 'Current Plan' : 'Upgrade Monthly'}
+                                <ChevronRight className="w-5 h-5 ml-2" />
+                            </Button>
+                            <Button
+                                onClick={() => handleUpgrade('PRO_ANNUAL')}
+                                disabled={isUpgrading || subscription?.plan === 'PRO_ANNUAL'}
+                                variant="outline"
+                                className="w-full h-12 text-lg rounded-xl border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-50 font-semibold"
+                            >
+                                {subscription?.plan === 'PRO_ANNUAL' ? 'Current Plan' : 'Upgrade Annually (Save 33%)'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* FAQ */}
+                <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-slate-200/50 p-8 shadow-xl">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-6">Frequently Asked Questions</h2>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <FaqItem
+                            question="Can I cancel anytime?"
+                            answer="Yes, you can cancel your subscription at any time. You'll continue to have Pro access until the end of your billing period."
+                        />
+                        <FaqItem
+                            question="Is there a free trial?"
+                            answer="Yes! New users get a 7-day free trial of Pro features. No credit card required."
+                        />
+                        <FaqItem
+                            question="What payment methods do you accept?"
+                            answer="We accept all major credit cards, Apple Pay, and Google Pay through our secure payment processor, Stripe."
+                        />
+                        <FaqItem
+                            question="Can I switch between monthly and annual?"
+                            answer="Yes, you can switch at any time. We'll prorate your subscription automatically."
+                        />
+                    </div>
                 </div>
             </div>
         </div>
@@ -191,22 +230,29 @@ export default function SubscriptionPage() {
 
 function FeatureItem({ children, included = false }: { children: React.ReactNode, included?: boolean }) {
     return (
-        <li className={`flex items-center gap-2 ${included ? 'text-gray-800' : 'text-gray-400'}`}>
+        <li className={cn(
+            "flex items-center gap-3",
+            included ? "text-slate-800" : "text-slate-400"
+        )}>
             {included ? (
-                <Check className="w-5 h-5 text-green-500" />
+                <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <Check className="w-3 h-3 text-emerald-600" />
+                </div>
             ) : (
-                <X className="w-5 h-5 text-gray-300" />
+                <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
+                    <X className="w-3 h-3 text-slate-400" />
+                </div>
             )}
-            <span>{children}</span>
+            <span className="font-medium">{children}</span>
         </li>
     )
 }
 
 function FaqItem({ question, answer }: { question: string, answer: string }) {
     return (
-        <div className="border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-800 mb-2">{question}</h3>
-            <p className="text-gray-600 text-sm">{answer}</p>
+        <div className="p-5 bg-slate-50 rounded-xl">
+            <h3 className="font-semibold text-slate-800 mb-2">{question}</h3>
+            <p className="text-slate-600 text-sm leading-relaxed">{answer}</p>
         </div>
     )
 }

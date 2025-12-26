@@ -196,6 +196,7 @@ function CommunityMockup() {
             style={{
               backgroundImage: `url(https://i.pravatar.cc/100?img=${i + 20})`,
               backgroundSize: 'cover',
+              backgroundPosition: 'center',
             }}
           />
         ))}

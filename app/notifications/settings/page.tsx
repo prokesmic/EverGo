@@ -1,17 +1,24 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
+import { Loader2, Bell, Heart, TrendingUp, Flame, Trophy, Users, Megaphone, Mail } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { GradientHeader, FrostedSection } from "@/components/ui/frosted-card"
+import { cn } from "@/lib/utils"
+
+const notificationTypes = [
+    { key: "socialEnabled", icon: Heart, label: "Social Activity", description: "Likes, comments, and new followers", color: "text-pink-500" },
+    { key: "rankingEnabled", icon: TrendingUp, label: "Rankings", description: "Rank changes and friend competition", color: "text-blue-500" },
+    { key: "streakEnabled", icon: Flame, label: "Streaks", description: "Streak reminders and milestones", color: "text-orange-500" },
+    { key: "challengeEnabled", icon: Trophy, label: "Challenges", description: "Challenge updates and completions", color: "text-amber-500" },
+    { key: "teamEnabled", icon: Users, label: "Teams", description: "Team invites and activity", color: "text-emerald-500" },
+    { key: "marketingEnabled", icon: Megaphone, label: "Product Updates", description: "New features and special offers", color: "text-purple-500" },
+]
 
 export default function NotificationSettingsPage() {
     const [settings, setSettings] = useState<any>(null)
     const [loading, setLoading] = useState(true)
-    const [saving, setSaving] = useState(false)
     const { toast } = useToast()
 
     useEffect(() => {
@@ -31,7 +38,6 @@ export default function NotificationSettingsPage() {
     }
 
     const updateSetting = async (key: string, value: any) => {
-        // Optimistic update
         setSettings({ ...settings, [key]: value })
 
         try {
@@ -47,122 +53,120 @@ export default function NotificationSettingsPage() {
                 description: "Failed to save settings",
                 variant: "destructive"
             })
-            // Revert on error
             fetchSettings()
         }
     }
 
     if (loading) {
-        return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+            </div>
+        )
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
-            <h1 className="text-2xl font-bold">Notification Settings</h1>
+        <div className="min-h-screen bg-slate-50">
+            <div className="container max-w-3xl py-8 px-4 md:px-6">
+                <GradientHeader
+                    icon={<Bell className="w-6 h-6" />}
+                    title="Notifications"
+                    description="Manage how EverGo keeps you in the loop"
+                />
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Push Notifications</CardTitle>
-                    <CardDescription>Manage your push notification preferences</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <Label>Enable Push Notifications</Label>
-                            <p className="text-sm text-gray-500">Receive notifications on your device</p>
+                <div className="space-y-6">
+                    {/* Master Toggle */}
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white/20 rounded-xl">
+                                    <Bell className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg">Push Notifications</h3>
+                                    <p className="text-white/80 text-sm">Receive notifications on your device</p>
+                                </div>
+                            </div>
+                            <Switch
+                                checked={settings?.pushEnabled}
+                                onCheckedChange={(checked: boolean) => updateSetting("pushEnabled", checked)}
+                                className="data-[state=checked]:bg-white data-[state=checked]:text-indigo-600"
+                            />
                         </div>
-                        <Switch
-                            checked={settings?.pushEnabled}
-                            onCheckedChange={(checked: boolean) => updateSetting("pushEnabled", checked)}
-                        />
                     </div>
-                </CardContent>
-            </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Notification Types</CardTitle>
-                    <CardDescription>Choose what you want to be notified about</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <SettingRow
-                        icon="❤️"
-                        label="Social Activity"
-                        description="Likes, comments, and new followers"
-                        checked={settings?.socialEnabled}
-                        onChange={(checked: boolean) => updateSetting("socialEnabled", checked)}
-                    />
-                    <SettingRow
-                        icon="📈"
-                        label="Rankings"
-                        description="Rank changes and friend competition"
-                        checked={settings?.rankingEnabled}
-                        onChange={(checked: boolean) => updateSetting("rankingEnabled", checked)}
-                    />
-                    <SettingRow
-                        icon="🔥"
-                        label="Streaks"
-                        description="Streak reminders and milestones"
-                        checked={settings?.streakEnabled}
-                        onChange={(checked: boolean) => updateSetting("streakEnabled", checked)}
-                    />
-                    <SettingRow
-                        icon="🏆"
-                        label="Challenges"
-                        description="Challenge updates and completions"
-                        checked={settings?.challengeEnabled}
-                        onChange={(checked: boolean) => updateSetting("challengeEnabled", checked)}
-                    />
-                    <SettingRow
-                        icon="👥"
-                        label="Teams"
-                        description="Team invites and activity"
-                        checked={settings?.teamEnabled}
-                        onChange={(checked: boolean) => updateSetting("teamEnabled", checked)}
-                    />
-                    <SettingRow
-                        icon="📢"
-                        label="Product Updates"
-                        description="New features and special offers"
-                        checked={settings?.marketingEnabled}
-                        onChange={(checked: boolean) => updateSetting("marketingEnabled", checked)}
-                    />
-                </CardContent>
-            </Card>
+                    {/* Notification Types */}
+                    <FrostedSection
+                        title="Notification Types"
+                        description="Choose what you want to be notified about"
+                        className="bg-white/80 backdrop-blur-md rounded-3xl border border-slate-200/50 shadow-xl !p-6"
+                    >
+                        <div className="space-y-1 mt-4">
+                            {notificationTypes.map((type, index) => {
+                                const Icon = type.icon
+                                const isEnabled = settings?.[type.key]
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Weekly Digest</CardTitle>
-                    <CardDescription>Get a summary of your weekly activity</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <Label>Weekly Email Digest</Label>
-                            <p className="text-sm text-gray-500">Receive a summary every Sunday</p>
+                                return (
+                                    <div
+                                        key={type.key}
+                                        className={cn(
+                                            "flex items-center justify-between p-4 rounded-xl transition-colors",
+                                            isEnabled ? "bg-slate-50" : "bg-transparent",
+                                            index !== notificationTypes.length - 1 && "border-b border-slate-100"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={cn(
+                                                "p-2.5 rounded-xl transition-colors",
+                                                isEnabled ? "bg-white shadow-sm" : "bg-slate-100"
+                                            )}>
+                                                <Icon className={cn("w-5 h-5", isEnabled ? type.color : "text-slate-400")} />
+                                            </div>
+                                            <div>
+                                                <h4 className={cn(
+                                                    "font-semibold transition-colors",
+                                                    isEnabled ? "text-slate-900" : "text-slate-500"
+                                                )}>
+                                                    {type.label}
+                                                </h4>
+                                                <p className="text-sm text-slate-500">{type.description}</p>
+                                            </div>
+                                        </div>
+                                        <Switch
+                                            checked={isEnabled}
+                                            onCheckedChange={(checked: boolean) => updateSetting(type.key, checked)}
+                                        />
+                                    </div>
+                                )
+                            })}
                         </div>
-                        <Switch
-                            checked={settings?.weeklyDigestEnabled}
-                            onCheckedChange={(checked: boolean) => updateSetting("weeklyDigestEnabled", checked)}
-                        />
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    )
-}
+                    </FrostedSection>
 
-function SettingRow({ icon, label, description, checked, onChange }: any) {
-    return (
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <span className="text-xl">{icon}</span>
-                <div className="space-y-0.5">
-                    <Label>{label}</Label>
-                    <p className="text-sm text-gray-500">{description}</p>
+                    {/* Weekly Digest */}
+                    <FrostedSection
+                        title="Weekly Digest"
+                        description="Get a summary of your weekly activity"
+                        icon={<Mail className="w-4 h-4 text-cyan-500" />}
+                        className="bg-white/80 backdrop-blur-md rounded-3xl border border-slate-200/50 shadow-xl !p-6"
+                    >
+                        <div className="flex items-center justify-between mt-4 p-4 bg-slate-50 rounded-xl">
+                            <div className="flex items-center gap-4">
+                                <div className="p-2.5 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl">
+                                    <Mail className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-slate-900">Weekly Email Digest</h4>
+                                    <p className="text-sm text-slate-500">Receive a summary every Sunday</p>
+                                </div>
+                            </div>
+                            <Switch
+                                checked={settings?.weeklyDigestEnabled}
+                                onCheckedChange={(checked: boolean) => updateSetting("weeklyDigestEnabled", checked)}
+                            />
+                        </div>
+                    </FrostedSection>
                 </div>
             </div>
-            <Switch checked={checked} onCheckedChange={onChange} />
         </div>
     )
 }
