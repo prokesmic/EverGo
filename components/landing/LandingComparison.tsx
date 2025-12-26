@@ -68,10 +68,10 @@ const comparison: ComparisonCategory[] = [
     category: "Competition & Rankings",
     features: [
       {
-        name: "Global rankings",
-        tooltip: "See your rank among all athletes worldwide",
-        evergo: { value: true, note: "All levels" },
-        strava: { value: "partial", note: "Segments only" },
+        name: "Active Rivalries",
+        tooltip: "1v1 battles with athletes at your level",
+        evergo: { value: true, note: "AI-matched" },
+        strava: { value: false },
         nike: { value: false },
       },
       {
@@ -82,9 +82,10 @@ const comparison: ComparisonCategory[] = [
         nike: { value: false },
       },
       {
-        name: "Club rankings",
-        evergo: { value: true },
-        strava: { value: "partial", note: "Clubs only" },
+        name: "Sport Index score",
+        tooltip: "Universal performance score across all sports",
+        evergo: { value: true, note: "Unique" },
+        strava: { value: false },
         nike: { value: false },
       },
       {
@@ -99,17 +100,17 @@ const comparison: ComparisonCategory[] = [
     category: "Social Features",
     features: [
       {
-        name: "Training partner finder",
-        tooltip: "Match with athletes who share your pace and goals",
-        evergo: { value: true, note: "Smart matching" },
+        name: "Squad Battles",
+        tooltip: "Team vs Team weekly competitions",
+        evergo: { value: true, note: "Team wars" },
         strava: { value: false },
         nike: { value: false },
       },
       {
-        name: "Team challenges",
-        evergo: { value: true },
-        strava: { value: "partial", note: "Clubs" },
-        nike: { value: "partial" },
+        name: "Training partner finder",
+        evergo: { value: true, note: "Smart matching" },
+        strava: { value: false },
+        nike: { value: false },
       },
       {
         name: "Social feed",
@@ -144,14 +145,14 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
       <div className="flex flex-col items-center gap-1">
         <div className={cn(
           "w-8 h-8 rounded-full flex items-center justify-center",
-          isEvergo ? "bg-emerald-100" : "bg-emerald-50"
+          isEvergo ? "bg-orange-100" : "bg-emerald-50"
         )}>
-          <Check className={cn("w-5 h-5", isEvergo ? "text-emerald-600" : "text-emerald-500")} />
+          <Check className={cn("w-5 h-5", isEvergo ? "text-orange-600" : "text-emerald-500")} />
         </div>
         {data.note && (
           <span className={cn(
-            "text-xs font-medium",
-            isEvergo ? "text-emerald-600" : "text-slate-500"
+            "text-xs font-bold",
+            isEvergo ? "text-orange-600" : "text-slate-500"
           )}>
             {data.note}
           </span>
@@ -184,28 +185,28 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
 
 export function LandingComparison() {
   return (
-    <section className="w-full py-20 md:py-28 bg-indigo-50/40">
+    <section className="w-full py-24 bg-slate-50">
       <div className="container px-4 md:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-amber-600 text-sm font-medium mb-4 border border-amber-100 shadow-sm">
-            <Trophy className="w-4 h-4" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 rounded-full text-white text-sm font-bold mb-4">
+            <Trophy className="w-4 h-4 text-orange-500" />
             <span>See the difference</span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
-            Why athletes choose EverGo
+          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+            Why Athletes Choose EverGo
           </h2>
           <p className="text-lg text-slate-500">
-            We combine the best features from all platforms, plus unique innovations you won&apos;t find anywhere else
+            We built what other apps won&apos;t. Real competition. Real rankings.
           </p>
         </div>
 
         {/* Comparison Table */}
         <div className="max-w-5xl mx-auto">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] overflow-hidden">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
             {/* Header */}
             <div className="grid grid-cols-4 gap-4 p-6 bg-white border-b border-slate-200">
-              <div className="font-semibold text-slate-9000 text-sm uppercase tracking-wide">
+              <div className="font-bold text-slate-900 text-sm uppercase tracking-wide">
                 Feature
               </div>
               {competitors.map((comp) => (
@@ -217,25 +218,25 @@ export function LandingComparison() {
                   )}
                 >
                   {comp.highlight && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white text-[10px] font-bold rounded-full whitespace-nowrap">
-                      BEST CHOICE
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-orange-500 to-red-600 text-white text-[10px] font-bold rounded-full whitespace-nowrap">
+                      DOMINATE
                     </div>
                   )}
                   <div className={cn(
                     "flex flex-col items-center gap-2 p-3 rounded-xl",
-                    comp.highlight && "bg-indigo-50 border-2 border-indigo-200 shadow-lg shadow-indigo-500/10"
+                    comp.highlight && "bg-orange-50 border-2 border-orange-200 shadow-lg shadow-orange-500/10"
                   )}>
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold",
                       comp.highlight
-                        ? "bg-gradient-to-br from-sky-500 via-indigo-500 to-emerald-400 text-white"
+                        ? "bg-gradient-to-br from-orange-500 to-red-600 text-white"
                         : "bg-slate-100 text-slate-500"
                     )}>
                       {comp.logo}
                     </div>
                     <span className={cn(
-                      "font-semibold",
-                      comp.highlight ? "text-indigo-600" : "text-slate-600"
+                      "font-bold",
+                      comp.highlight ? "text-orange-600" : "text-slate-600"
                     )}>
                       {comp.name}
                     </span>
@@ -250,7 +251,7 @@ export function LandingComparison() {
               <div key={category.category}>
                 {/* Category Header */}
                 <div className="px-6 py-3 bg-slate-50 border-b border-slate-200">
-                  <span className="text-sm font-semibold text-slate-700">
+                  <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">
                     {category.category}
                   </span>
                 </div>
@@ -288,10 +289,10 @@ export function LandingComparison() {
             ))}
 
             {/* CTA Row */}
-            <div className="grid grid-cols-4 gap-4 p-6 bg-gradient-to-r from-indigo-50 to-sky-50 border-t border-slate-200">
+            <div className="grid grid-cols-4 gap-4 p-6 bg-slate-50 border-t border-slate-200">
               <div />
               <div className="flex justify-center">
-                <Button asChild className="bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white font-semibold hover:opacity-90 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30">
+                <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 rounded-full">
                   <Link href="/register" className="flex items-center gap-2">
                     Start Free
                     <ArrowRight className="w-4 h-4" />

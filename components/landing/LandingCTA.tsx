@@ -2,36 +2,39 @@
 
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowRight, Sparkles, Check } from "lucide-react"
+import { ArrowRight, Zap, Check, Trophy } from "lucide-react"
 
 export function LandingCTA() {
   return (
-    <section className="w-full py-20 md:py-28 relative overflow-hidden hero-gradient">
-      {/* Gradient glow effects */}
+    <section className="w-full py-24 relative overflow-hidden bg-slate-900">
+      {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] bg-sky-200/30 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 right-1/4 w-[600px] h-[600px] bg-indigo-200/30 rounded-full blur-[120px]" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-orange-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-red-500/10 rounded-full blur-[120px]" />
       </div>
+
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
 
       <div className="container relative px-4 md:px-6 mx-auto max-w-7xl">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-indigo-600 text-sm font-medium border border-indigo-100 shadow-sm">
-            <Sparkles className="w-4 h-4" />
-            Limited time: Get 3 months Pro for free
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 rounded-full text-orange-400 text-sm font-bold border border-orange-500/20">
+            <Trophy className="w-4 h-4" />
+            Join the arena
           </div>
 
           {/* Heading */}
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900">
-            Ready to level up
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400">
-              your fitness journey?
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight">
+            Stop tracking.
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">
+              Start winning.
             </span>
           </h2>
 
           {/* Subheading */}
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Join 50,000+ athletes who are tracking, competing, and improving with EverGo
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+            Every day you wait, your rivals get stronger. Jump in now and claim your rank.
           </p>
 
           {/* CTA Buttons */}
@@ -39,18 +42,17 @@ export function LandingCTA() {
             <Button
               asChild
               size="lg"
-              className="bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white text-lg px-10 py-7 h-auto font-semibold shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all hover:scale-[1.02]"
+              className="bg-orange-500 hover:bg-orange-600 text-white text-lg px-12 py-7 h-auto font-bold shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 transition-all hover:scale-[1.02] rounded-full"
             >
               <Link href="/register" className="flex items-center gap-2">
-                Start Free Today
-                <ArrowRight className="w-5 h-5" />
+                Claim Your Rank <ArrowRight className="w-5 h-5" />
               </Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-indigo-200 text-lg px-10 py-7 h-auto shadow-sm"
+              className="bg-transparent border-2 border-slate-700 text-white hover:bg-slate-800 hover:border-slate-600 text-lg px-12 py-7 h-auto font-bold rounded-full"
             >
               <Link href="/login">
                 Log In
@@ -59,24 +61,34 @@ export function LandingCTA() {
           </div>
 
           {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center gap-6 pt-8 text-sm text-slate-600">
+          <div className="flex flex-wrap justify-center gap-6 pt-8 text-sm text-slate-500">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
-                <Check className="w-3 h-3 text-emerald-600" />
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Check className="w-3 h-3 text-emerald-400" />
               </div>
               <span>No credit card required</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
-                <Check className="w-3 h-3 text-emerald-600" />
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Check className="w-3 h-3 text-emerald-400" />
               </div>
               <span>Free forever plan</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
-                <Check className="w-3 h-3 text-emerald-600" />
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Check className="w-3 h-3 text-emerald-400" />
               </div>
-              <span>Cancel anytime</span>
+              <span>Sync in 60 seconds</span>
+            </div>
+          </div>
+
+          {/* Live Activity Indicator */}
+          <div className="pt-8">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-slate-800/50 rounded-full border border-slate-700">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-sm text-slate-400">
+                <span className="text-white font-bold">847</span> athletes battling right now
+              </span>
             </div>
           </div>
         </div>

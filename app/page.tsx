@@ -9,10 +9,10 @@ import { LandingFooter } from "@/components/landing/LandingFooter"
 import { LandingUpcoming } from "@/components/landing/LandingUpcoming"
 import { CommandPalette } from "@/components/landing/CommandPalette"
 
-// Static landing page - Aurora theme (Light with gradient hero)
+// Static landing page - Platinum theme (Aggressive, performance-focused)
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-white text-slate-900 selection:bg-sky-200 overflow-x-hidden relative">
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-orange-200 overflow-x-hidden relative">
 
       <LandingHeader />
       <CommandPalette />
