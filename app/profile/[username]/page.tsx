@@ -22,7 +22,10 @@ interface ProfilePageProps {
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
     const session = await getServerSession(authOptions)
-    const { username } = await params
+    const { username: rawUsername } = await params
+
+    // Decode URL-encoded username (e.g., admin%40evergo.app -> admin@evergo.app)
+    const username = decodeURIComponent(rawUsername)
 
     // Handle "me" route - redirect to current user's profile
     if (username === 'me') {
@@ -31,19 +34,21 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         }
         const currentUser = await prisma.user.findUnique({
             where: { email: session.user.email },
-            select: { username: true }
+            select: { username: true, id: true }
         })
-        if (currentUser?.username) {
-            redirect(`/profile/${currentUser.username}`)
+        if (currentUser) {
+            // Use ID for redirect to avoid URL encoding issues with special characters in username
+            redirect(`/profile/${currentUser.id}`)
         }
     }
 
     // Fetch user data with all necessary relations
-    // Try to find by username first, then by ID as fallback
+    // Try to find by username first, then by ID, then by email as fallback
     let user = await prisma.user.findFirst({
         where: {
             username: {
                 equals: username,
+                mode: 'insensitive',
             }
         },
         include: {
@@ -94,10 +99,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         },
     })
 
-    // If not found by username, try by user ID as fallback (for old links)
+    // If not found by username, try by user ID as fallback (for old links and redirects)
     if (!user) {
         user = await prisma.user.findFirst({
-            where: { id: username },
+            where: {
+                OR: [
+                    { id: username },
+                    // Also check if username matches email (for users with email as username)
+                    { email: { equals: username, mode: 'insensitive' } }
+                ]
+            },
             include: {
                 _count: {
                     select: {
