@@ -24,6 +24,7 @@ import {
 import { ChevronDown, Plus, ArrowLeftRight, Crown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { SportGlyph } from "@/components/sports/SportGlyph"
 
 type Discipline = {
   id: string
@@ -142,7 +143,11 @@ export function SportQuickPicker({
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             )}
           >
-            <span className="text-lg">{sport.sportIcon}</span>
+            <SportGlyph
+              sport={{ name: sport.sportName, category: sport.sportCategory, icon: sport.sportIcon }}
+              size="sm"
+              className="border-0 shadow-none bg-transparent"
+            />
             {sport.sportName}
             {index === 0 && (
               <Crown className="w-3 h-3 text-yellow-400 -ml-1" />
@@ -180,18 +185,18 @@ export function SportQuickPicker({
                         key={sport.id}
                         onClick={() => handleSelectActiveSport(sport)}
                         className={cn(
-                          "w-full flex items-center gap-3 p-2 rounded-lg transition-colors",
+                          "w-full flex items-center gap-3 p-2 rounded-xl transition-colors",
                           selectedSportId === sport.sportId
                             ? "bg-orange-50 border border-orange-200"
                             : "hover:bg-slate-50"
                         )}
                       >
-                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xl">
-                          {sport.sportIcon}
-                        </div>
-                        <span className="font-medium">{sport.sportName}</span>
+                        <SportGlyph
+                          sport={{ name: sport.sportName, category: sport.sportCategory, icon: sport.sportIcon }}
+                        />
+                        <span className="font-medium truncate min-w-0 flex-1">{sport.sportName}</span>
                         {index === 0 && (
-                          <Crown className="w-4 h-4 text-orange-500 ml-auto" />
+                          <Crown className="w-4 h-4 text-orange-500 shrink-0" />
                         )}
                       </button>
                     ))}
@@ -256,22 +261,25 @@ export function SportQuickPicker({
             </DialogDescription>
           </DialogHeader>
 
-          <Command className="rounded-lg border">
-            <CommandInput placeholder="Search sports..." />
-            <CommandList>
+          <Command className="rounded-xl border shadow-sm">
+            <CommandInput placeholder="Search sports..." className="h-11" />
+            <CommandList className="max-h-[300px] overflow-auto">
               <CommandEmpty>No sports found.</CommandEmpty>
               <CommandGroup>
                 {availableSports.map((sport) => (
                   <CommandItem
                     key={sport.id}
                     value={sport.name}
-                    className="cursor-pointer"
+                    data-testid={`quick-sport-${sport.name.toLowerCase().replace(/\s+/g, "-")}`}
+                    className={cn(
+                      "h-12 px-3 rounded-xl flex items-center gap-3",
+                      "cursor-pointer select-none",
+                      "aria-selected:bg-emerald-50 aria-selected:text-foreground"
+                    )}
                   >
-                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xl mr-3">
-                      {sport.icon}
-                    </div>
-                    <span className="flex-1">{sport.name}</span>
-                    <div className="flex gap-1">
+                    <SportGlyph sport={{ name: sport.name, category: sport.category, icon: sport.icon }} />
+                    <span className="flex-1 truncate min-w-0 font-medium text-sm">{sport.name}</span>
+                    <div className="flex gap-1 shrink-0">
                       {canAddMore ? (
                         <Button
                           size="sm"
@@ -331,19 +339,21 @@ export function SportQuickPicker({
               <button
                 key={sport.id}
                 onClick={() => setSportToSwap(sport)}
+                data-testid={`swap-quick-sport-${sport.sportName.toLowerCase().replace(/\s+/g, "-")}`}
                 className={cn(
-                  "w-full flex items-center gap-3 p-3 border rounded-lg transition-colors",
+                  "w-full flex items-center gap-3 p-3 border rounded-xl transition-all",
                   sportToSwap?.id === sport.id
-                    ? "border-orange-500 bg-orange-50"
-                    : "border-slate-200 hover:border-slate-300"
+                    ? "border-orange-500 bg-orange-50 ring-1 ring-orange-200"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                 )}
               >
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-2xl">
-                  {sport.sportIcon}
-                </div>
-                <span className="font-medium">{sport.sportName}</span>
+                <SportGlyph
+                  sport={{ name: sport.sportName, category: sport.sportCategory, icon: sport.sportIcon }}
+                  size="lg"
+                />
+                <span className="font-medium truncate min-w-0 flex-1 text-left">{sport.sportName}</span>
                 {sport.priority === 0 && (
-                  <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full ml-auto">
+                  <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full shrink-0">
                     Primary
                   </span>
                 )}
