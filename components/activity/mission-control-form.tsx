@@ -29,7 +29,10 @@ import {
     Star,
     Trophy,
     Plus,
-    ChevronDown
+    ChevronDown,
+    Medal,
+    X,
+    Check
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,6 +54,8 @@ import { cn } from "@/lib/utils"
 import { createActivity } from "@/app/actions/activity"
 import { toast } from "sonner"
 import { SportGlyph } from "@/components/sports/SportGlyph"
+import { AddPersonalBestDrawer } from "@/components/benchmarks/AddPersonalBestDrawer"
+import { upsertUserPb } from "@/app/actions/benchmarks"
 
 const formSchema = z.object({
     title: z.string().min(1, "Give your activity a name"),
@@ -139,6 +144,11 @@ export function MissionControlForm({
     const [photos, setPhotos] = useState<File[]>([])
     const [sportSearchQuery, setSportSearchQuery] = useState("")
     const [isSportPickerOpen, setIsSportPickerOpen] = useState(false)
+    const [isPbDrawerOpen, setIsPbDrawerOpen] = useState(false)
+    // Achievements: benchmarkId -> value (canonical numeric)
+    const [achievements, setAchievements] = useState<Map<string, number>>(new Map())
+    const [editingAchievementId, setEditingAchievementId] = useState<string | null>(null)
+    const [achievementInputValue, setAchievementInputValue] = useState("")
 
     // Separate active sports from other sports
     const { activeSports, otherSports, filteredOtherSports } = useMemo(() => {
@@ -254,6 +264,88 @@ export function MissionControlForm({
     }
 
     const visibility = form.watch("visibility")
+
+    const handleAddPb = async (data: { benchmarkId: string; value: number; achievedAt: Date }) => {
+        await upsertUserPb({
+            benchmarkId: data.benchmarkId,
+            value: data.value,
+            achievedAtISO: data.achievedAt.toISOString(),
+        })
+    }
+
+    // Parse user input for achievement values (handles time, distance, etc.)
+    const parseAchievementValue = (input: string, benchmark: BenchmarkDef): number | null => {
+        if (!input.trim()) return null
+
+        if (benchmark.measurementType === "TIME") {
+            // Support formats: "1:30:00" (h:m:s), "45:30" (m:s), "30" (seconds)
+            const parts = input.split(":").map(p => parseInt(p.trim()) || 0)
+            if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
+            if (parts.length === 2) return parts[0] * 60 + parts[1]
+            return parseInt(input) || null
+        }
+
+        if (benchmark.measurementType === "DISTANCE") {
+            const value = parseFloat(input)
+            if (isNaN(value)) return null
+            // If unit is km, convert to meters
+            if (benchmark.unit === "km") return value * 1000
+            return value
+        }
+
+        const value = parseFloat(input)
+        return isNaN(value) ? null : value
+    }
+
+    // Format value for display in input field
+    const formatAchievementInput = (value: number, benchmark: BenchmarkDef): string => {
+        if (benchmark.measurementType === "TIME") {
+            const hours = Math.floor(value / 3600)
+            const mins = Math.floor((value % 3600) / 60)
+            const secs = Math.floor(value % 60)
+            if (hours > 0) return `${hours}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+            return `${mins}:${secs.toString().padStart(2, "0")}`
+        }
+        if (benchmark.measurementType === "DISTANCE" && benchmark.unit === "km") {
+            return (value / 1000).toFixed(2)
+        }
+        return value.toString()
+    }
+
+    const handleAddAchievement = (benchmarkId: string) => {
+        const benchmark = sportBenchmarks.find(b => b.id === benchmarkId)
+        if (!benchmark) return
+
+        const value = parseAchievementValue(achievementInputValue, benchmark)
+        if (value === null || value <= 0) {
+            toast.error("Please enter a valid value")
+            return
+        }
+
+        setAchievements(prev => new Map(prev).set(benchmarkId, value))
+        setEditingAchievementId(null)
+        setAchievementInputValue("")
+        toast.success(`${benchmark.name} achievement added!`)
+    }
+
+    const handleRemoveAchievement = (benchmarkId: string) => {
+        setAchievements(prev => {
+            const next = new Map(prev)
+            next.delete(benchmarkId)
+            return next
+        })
+    }
+
+    const handleStartEditAchievement = (benchmarkId: string) => {
+        const existingValue = achievements.get(benchmarkId)
+        const benchmark = sportBenchmarks.find(b => b.id === benchmarkId)
+        if (existingValue && benchmark) {
+            setAchievementInputValue(formatAchievementInput(existingValue, benchmark))
+        } else {
+            setAchievementInputValue("")
+        }
+        setEditingAchievementId(benchmarkId)
+    }
 
     return (
         <Form {...form}>
@@ -544,6 +636,7 @@ export function MissionControlForm({
                                         size="sm"
                                         className="text-amber-700 hover:text-amber-800 hover:bg-amber-100"
                                         data-testid="add-pb-button"
+                                        onClick={() => setIsPbDrawerOpen(true)}
                                     >
                                         <Plus className="w-4 h-4 mr-1" />
                                         Add PB
@@ -759,6 +852,174 @@ export function MissionControlForm({
                                 </FormItem>
                             )}
                         />
+
+                        {/* Achievements Section - Manual benchmark results for this activity */}
+                        {selectedSport && sportBenchmarks.length > 0 && (
+                            <div
+                                className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-5 border border-violet-200 animate-in slide-in-from-top-2 duration-300"
+                                data-testid="achievements-section"
+                            >
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <Medal className="w-5 h-5 text-violet-600" />
+                                        <span className="font-semibold text-slate-800">Activity Achievements</span>
+                                    </div>
+                                    <span className="text-xs text-slate-500">
+                                        Record benchmarks hit during this activity
+                                    </span>
+                                </div>
+
+                                {/* Added achievements list */}
+                                {achievements.size > 0 && (
+                                    <div className="space-y-2 mb-4">
+                                        {Array.from(achievements.entries()).map(([benchmarkId, value]) => {
+                                            const benchmark = sportBenchmarks.find(b => b.id === benchmarkId)
+                                            if (!benchmark) return null
+                                            return (
+                                                <div
+                                                    key={benchmarkId}
+                                                    className="flex items-center justify-between p-3 rounded-xl bg-white border border-violet-100"
+                                                    data-testid={`achievement-${benchmark.slug}`}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
+                                                            <Medal className="w-4 h-4 text-violet-600" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-medium text-slate-800">{benchmark.name}</div>
+                                                            <div className="text-sm text-violet-600 font-semibold">
+                                                                {formatBenchmarkValue(value, benchmark.measurementType, benchmark.unit)}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveAchievement(benchmarkId)}
+                                                        className="p-1 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                        data-testid={`remove-achievement-${benchmark.slug}`}
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* Add achievement UI */}
+                                <div className="space-y-3">
+                                    {editingAchievementId ? (
+                                        <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-violet-200">
+                                            <div className="flex-1">
+                                                <div className="text-xs text-slate-500 mb-1">
+                                                    {sportBenchmarks.find(b => b.id === editingAchievementId)?.name}
+                                                </div>
+                                                <Input
+                                                    type="text"
+                                                    placeholder={
+                                                        sportBenchmarks.find(b => b.id === editingAchievementId)?.measurementType === "TIME"
+                                                            ? "e.g., 45:30 or 1:30:00"
+                                                            : "Enter value"
+                                                    }
+                                                    value={achievementInputValue}
+                                                    onChange={(e) => setAchievementInputValue(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter") {
+                                                            e.preventDefault()
+                                                            handleAddAchievement(editingAchievementId)
+                                                        }
+                                                        if (e.key === "Escape") {
+                                                            setEditingAchievementId(null)
+                                                            setAchievementInputValue("")
+                                                        }
+                                                    }}
+                                                    className="h-9"
+                                                    autoFocus
+                                                    data-testid="achievement-input"
+                                                />
+                                            </div>
+                                            <span className="text-sm text-slate-400 min-w-[40px]">
+                                                {sportBenchmarks.find(b => b.id === editingAchievementId)?.unit}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleAddAchievement(editingAchievementId)}
+                                                className="p-2 rounded-lg bg-violet-500 text-white hover:bg-violet-600 transition-colors"
+                                                data-testid="confirm-achievement"
+                                            >
+                                                <Check className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setEditingAchievementId(null)
+                                                    setAchievementInputValue("")
+                                                }}
+                                                className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                                                data-testid="cancel-achievement"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="w-full justify-start text-violet-600 border-violet-200 hover:bg-violet-50"
+                                                    data-testid="add-achievement-button"
+                                                >
+                                                    <Plus className="w-4 h-4 mr-2" />
+                                                    Add Achievement
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[300px] p-2" align="start">
+                                                <div className="space-y-1 max-h-[250px] overflow-y-auto">
+                                                    {sportBenchmarks
+                                                        .filter(b => !achievements.has(b.id))
+                                                        .map((benchmark) => (
+                                                            <button
+                                                                key={benchmark.id}
+                                                                type="button"
+                                                                onClick={() => handleStartEditAchievement(benchmark.id)}
+                                                                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 text-left transition-colors"
+                                                                data-testid={`select-benchmark-${benchmark.slug}`}
+                                                            >
+                                                                <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                                                                    <Medal className="w-4 h-4 text-violet-600" />
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="font-medium text-slate-800 truncate">{benchmark.name}</div>
+                                                                    <div className="text-xs text-slate-500">
+                                                                        {benchmark.measurementType === "TIME" ? "Time" :
+                                                                         benchmark.measurementType === "DISTANCE" ? "Distance" :
+                                                                         benchmark.measurementType === "SPEED" ? "Speed" :
+                                                                         benchmark.measurementType === "POWER" ? "Power" :
+                                                                         benchmark.unit}
+                                                                    </div>
+                                                                </div>
+                                                            </button>
+                                                        ))}
+                                                    {sportBenchmarks.filter(b => !achievements.has(b.id)).length === 0 && (
+                                                        <div className="text-center text-sm text-slate-500 py-4">
+                                                            All benchmarks added!
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
+                                </div>
+
+                                {achievements.size > 0 && (
+                                    <div className="mt-4 pt-3 border-t border-violet-100 flex items-center gap-2 text-xs text-slate-500">
+                                        <Trophy className="w-3 h-3 text-amber-500" />
+                                        <span>These will be saved with your activity and checked for PBs</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Column - Sidebar (1/3) */}
@@ -914,6 +1175,18 @@ export function MissionControlForm({
                     </Button>
                 </div>
             </form>
+
+            {/* Add PB Drawer */}
+            {selectedSport && (
+                <AddPersonalBestDrawer
+                    open={isPbDrawerOpen}
+                    onOpenChange={setIsPbDrawerOpen}
+                    sportId={selectedSport.id}
+                    sportName={selectedSport.name}
+                    benchmarks={sportBenchmarks}
+                    onSubmit={handleAddPb}
+                />
+            )}
         </Form>
     )
 }

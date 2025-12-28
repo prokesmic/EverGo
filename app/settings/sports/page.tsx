@@ -18,7 +18,16 @@ export default async function SportsSettingsPage() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { id: true },
+    select: {
+      id: true,
+      benchmarkBests: {
+        select: {
+          benchmarkId: true,
+          value: true,
+          achievedAt: true
+        }
+      }
+    },
   })
 
   if (!user) {
@@ -30,6 +39,20 @@ export default async function SportsSettingsPage() {
 
   // Get all available sports
   const allSports = await getAllSports()
+
+  // Fetch benchmark definitions for PB display
+  const benchmarkDefinitions = await prisma.benchmarkDefinition.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      sportId: true,
+      slug: true,
+      name: true,
+      measurementType: true,
+      unit: true,
+      higherIsBetter: true,
+    }
+  })
 
   // Check subscription status
   const subscription = await prisma.subscription.findUnique({
@@ -63,6 +86,8 @@ export default async function SportsSettingsPage() {
           initialData={mySportsData}
           allSports={allSports}
           isPro={isPro}
+          benchmarkDefinitions={benchmarkDefinitions}
+          userBenchmarkBests={user.benchmarkBests}
         />
       </div>
     </div>

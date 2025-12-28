@@ -46,16 +46,38 @@ import {
   Plus,
   Crown,
   Lock,
+  Trophy,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AddSportDialog } from "./AddSportDialog"
 import { toast } from "sonner"
 import { SportGlyph } from "@/components/sports/SportGlyph"
+import { BenchmarkMeasurementType } from "@prisma/client"
+import { AddPersonalBestDrawer } from "@/components/benchmarks/AddPersonalBestDrawer"
+import { upsertUserPb } from "@/app/actions/benchmarks"
+
+interface BenchmarkDef {
+  id: string
+  sportId: string
+  slug: string
+  name: string
+  measurementType: BenchmarkMeasurementType
+  unit: string
+  higherIsBetter: boolean
+}
+
+interface UserBest {
+  benchmarkId: string
+  value: number
+  achievedAt: Date
+}
 
 type Props = {
   initialData: MySportsData
   allSports: SportItem[]
   isPro: boolean
+  benchmarkDefinitions?: BenchmarkDef[]
+  userBenchmarkBests?: UserBest[]
 }
 
 const FREE_TIER_LIMIT = 3
@@ -74,6 +96,8 @@ function SortableSportCard({
   onPause,
   onRemove,
   onUpdateSkill,
+  onManagePBs,
+  hasBenchmarks,
 }: {
   sport: MySport
   isPrimary: boolean
@@ -81,6 +105,8 @@ function SortableSportCard({
   onPause: () => void
   onRemove: () => void
   onUpdateSkill: (level: string | null) => void
+  onManagePBs: () => void
+  hasBenchmarks: boolean
 }) {
   const {
     attributes,
@@ -145,6 +171,12 @@ function SortableSportCard({
             <DropdownMenuItem onClick={onSetPrimary}>
               <Star className="w-4 h-4 mr-2" />
               Set as Primary
+            </DropdownMenuItem>
+          )}
+          {hasBenchmarks && (
+            <DropdownMenuItem onClick={onManagePBs}>
+              <Trophy className="w-4 h-4 mr-2" />
+              Add Personal Best
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
@@ -234,11 +266,38 @@ function PausedSportCard({
   )
 }
 
-export function MySportsManager({ initialData, allSports, isPro }: Props) {
+export function MySportsManager({
+  initialData,
+  allSports,
+  isPro,
+  benchmarkDefinitions = [],
+  userBenchmarkBests = []
+}: Props) {
   const [active, setActive] = useState<MySport[]>(initialData.active)
   const [paused, setPaused] = useState<MySport[]>(initialData.paused)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [pbDrawerOpen, setPbDrawerOpen] = useState(false)
+  const [pbDrawerSportId, setPbDrawerSportId] = useState<string | null>(null)
+
+  // Get benchmarks for a sport
+  const getSportBenchmarks = (sportId: string) => {
+    return benchmarkDefinitions.filter(b => b.sportId === sportId)
+  }
+
+  const handleOpenPbDrawer = (sportId: string) => {
+    setPbDrawerSportId(sportId)
+    setPbDrawerOpen(true)
+  }
+
+  const handleAddPb = async (data: { benchmarkId: string; value: number; achievedAt: Date }) => {
+    await upsertUserPb({
+      benchmarkId: data.benchmarkId,
+      value: data.value,
+      achievedAtISO: data.achievedAt.toISOString(),
+    })
+    toast.success("Personal best saved!")
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -438,6 +497,8 @@ export function MySportsManager({ initialData, allSports, isPro }: Props) {
                     onPause={() => handlePause(sport.id)}
                     onRemove={() => handleRemove(sport.id)}
                     onUpdateSkill={(level) => handleUpdateSkill(sport.id, level)}
+                    onManagePBs={() => handleOpenPbDrawer(sport.sportId)}
+                    hasBenchmarks={getSportBenchmarks(sport.sportId).length > 0}
                   />
                 ))
               )}
@@ -479,6 +540,18 @@ export function MySportsManager({ initialData, allSports, isPro }: Props) {
         canAdd={canAddMore}
         activeSports={active}
       />
+
+      {/* Add PB Drawer */}
+      {pbDrawerSportId && (
+        <AddPersonalBestDrawer
+          open={pbDrawerOpen}
+          onOpenChange={setPbDrawerOpen}
+          sportId={pbDrawerSportId}
+          sportName={active.find(s => s.sportId === pbDrawerSportId)?.sportName || ""}
+          benchmarks={getSportBenchmarks(pbDrawerSportId)}
+          onSubmit={handleAddPb}
+        />
+      )}
     </div>
   )
 }
