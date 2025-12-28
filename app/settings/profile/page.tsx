@@ -35,15 +35,17 @@ export default async function ProfileSettingsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary">Profile Settings</h1>
-        <p className="text-text-muted mt-2">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="p-6 border-b border-slate-100">
+        <h1 className="text-2xl font-bold text-slate-900">Profile Settings</h1>
+        <p className="text-slate-500 mt-1">
           Update your profile information and photos
         </p>
       </div>
 
-      <ProfileSettings user={user} />
+      <div className="p-6">
+        <ProfileSettings user={user} />
+      </div>
     </div>
   )
 }

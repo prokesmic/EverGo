@@ -187,18 +187,26 @@ model Discipline {
   @@unique([sportId, slug])
 }
 
+enum UserSportStatus {
+  ACTIVE
+  PAUSED
+}
+
 model UserSport {
-  id          String    @id @default(cuid())
+  id          String          @id @default(cuid())
   userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   sportId     String
-  sport       Sport     @relation(fields: [sportId], references: [id])
-  isPrimary   Boolean   @default(false)
-  skillLevel  String?   // Enum: SkillLevel
+  sport       Sport           @relation(fields: [sportId], references: [id])
+  status      UserSportStatus @default(ACTIVE)
+  priority    Int?            // ACTIVE sports: 0..n (0 is Primary). PAUSED: null
+  skillLevel  String?         // Enum: SkillLevel
   startedAt   DateTime?
-  createdAt   DateTime  @default(now())
-  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
   @@unique([userId, sportId])
+  @@index([userId, status])
 }
 
 model Activity {

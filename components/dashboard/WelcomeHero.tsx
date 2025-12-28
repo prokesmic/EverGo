@@ -181,7 +181,7 @@ export function WelcomeHero({
               This Week
             </p>
             <Link
-              href="/activity"
+              href="/profile/me"
               className="text-xs text-orange-400 hover:text-orange-300 font-medium flex items-center gap-1 transition-colors"
             >
               View all <ChevronRight className="w-3 h-3" />
