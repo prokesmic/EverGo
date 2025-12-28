@@ -43,7 +43,7 @@ function pickIcon(sport: SportLike): LucideIcon {
   if (cat === "PRECISION") return Target
 
   // Icon name mapping (database stores icon names like "bike", "circle", etc.)
-  if (iconName === "bike" || iconName === "bicycle") return Bike
+  if (iconName === "bike" || iconName === "bicycle" || iconName === "cycling") return Bike
   if (iconName === "footprints" || iconName === "run" || iconName === "running") return Footprints
   if (iconName === "waves" || iconName === "swim" || iconName === "swimming") return Waves
   if (iconName === "dumbbell" || iconName === "weight" || iconName === "strength") return Dumbbell
@@ -51,10 +51,11 @@ function pickIcon(sport: SportLike): LucideIcon {
   if (iconName === "snowflake" || iconName === "snow" || iconName === "winter") return Snowflake
   if (iconName === "shield" || iconName === "combat" || iconName === "boxing") return Shield
   if (iconName === "mountain" || iconName === "hiking" || iconName === "climb") return Mountain
-  if (iconName === "wind" || iconName === "surf" || iconName === "board") return Wind
+  if (iconName === "wind" || iconName === "surf" || iconName === "board" || iconName === "kite" || iconName === "kitesurfing") return Wind
   if (iconName === "trophy" || iconName === "racket" || iconName === "tennis") return Trophy
   if (iconName === "heart" || iconName === "yoga" || iconName === "meditation") return Heart
   if (iconName === "target" || iconName === "archery" || iconName === "shooting") return Target
+  if (iconName === "circle") return Circle
 
   // Slug-based fallbacks
   if (slug.includes("run") || slug.includes("jog") || slug.includes("marathon")) return Footprints

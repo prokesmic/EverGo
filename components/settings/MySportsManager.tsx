@@ -50,6 +50,7 @@ import {
 import { cn } from "@/lib/utils"
 import { AddSportDialog } from "./AddSportDialog"
 import { toast } from "sonner"
+import { SportGlyph } from "@/components/sports/SportGlyph"
 
 type Props = {
   initialData: MySportsData
@@ -99,8 +100,9 @@ function SortableSportCard({
     <div
       ref={setNodeRef}
       style={style}
+      data-testid={`active-sport-${sport.sportName.toLowerCase().replace(/\s+/g, "-")}`}
       className={cn(
-        "flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg",
+        "flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl transition-all",
         isDragging && "opacity-50 shadow-lg",
         isPrimary && "ring-2 ring-orange-500"
       )}
@@ -113,9 +115,10 @@ function SortableSportCard({
         <GripVertical className="w-5 h-5" />
       </button>
 
-      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-2xl">
-        {sport.sportIcon}
-      </div>
+      <SportGlyph
+        sport={{ name: sport.sportName, category: sport.sportCategory, icon: sport.sportIcon }}
+        size="lg"
+      />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -123,7 +126,7 @@ function SortableSportCard({
             {sport.sportName}
           </span>
           {isPrimary && (
-            <Crown className="w-4 h-4 text-orange-500 flex-shrink-0" />
+            <Crown className="w-4 h-4 text-orange-500 shrink-0" />
           )}
         </div>
         {sport.skillLevel && (
@@ -186,13 +189,18 @@ function PausedSportCard({
   canUnpause: boolean
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg opacity-60">
-      <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-2xl">
-        {sport.sportIcon}
-      </div>
+    <div
+      data-testid={`paused-sport-${sport.sportName.toLowerCase().replace(/\s+/g, "-")}`}
+      className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl opacity-60"
+    >
+      <SportGlyph
+        sport={{ name: sport.sportName, category: sport.sportCategory, icon: sport.sportIcon }}
+        size="lg"
+        className="opacity-70"
+      />
 
       <div className="flex-1 min-w-0">
-        <span className="font-medium text-slate-700 truncate">
+        <span className="font-medium text-slate-700 truncate block">
           {sport.sportName}
         </span>
         <span className="block text-xs text-slate-400">Paused</span>
