@@ -1,17 +1,66 @@
 import { prisma } from "@/lib/db"
 import { MissionControlForm } from "@/components/activity/mission-control-form"
 import { Rocket } from "lucide-react"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 export const dynamic = 'force-dynamic'
 
 export default async function CreateActivityPage() {
-    const sports = await prisma.sport.findMany({
+    const session = await getServerSession(authOptions)
+
+    // Fetch all sports
+    const allSports = await prisma.sport.findMany({
         include: {
             disciplines: true,
         },
         orderBy: {
             name: "asc",
         },
+    })
+
+    // Fetch user's active sports (if logged in)
+    let activeSportIds: string[] = []
+    let userBenchmarkBests: { benchmarkId: string; value: number; achievedAt: Date }[] = []
+
+    if (session?.user?.email) {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: {
+                sports: {
+                    where: { status: "ACTIVE" },
+                    select: {
+                        sportId: true
+                    },
+                    orderBy: { priority: "asc" }
+                },
+                benchmarkBests: {
+                    select: {
+                        benchmarkId: true,
+                        value: true,
+                        achievedAt: true
+                    }
+                }
+            }
+        })
+        if (user) {
+            activeSportIds = user.sports.map(s => s.sportId)
+            userBenchmarkBests = user.benchmarkBests
+        }
+    }
+
+    // Fetch benchmark definitions for PB display
+    const benchmarkDefinitions = await prisma.benchmarkDefinition.findMany({
+        where: { isActive: true },
+        select: {
+            id: true,
+            sportId: true,
+            slug: true,
+            name: true,
+            measurementType: true,
+            unit: true,
+            higherIsBetter: true,
+        }
     })
 
     return (
@@ -30,7 +79,12 @@ export default async function CreateActivityPage() {
 
                 {/* Form Container */}
                 <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-slate-200/50 p-6 md:p-8">
-                    <MissionControlForm sports={sports} />
+                    <MissionControlForm
+                        sports={allSports}
+                        activeSportIds={activeSportIds}
+                        benchmarkDefinitions={benchmarkDefinitions}
+                        userBenchmarkBests={userBenchmarkBests}
+                    />
                 </div>
             </div>
         </div>

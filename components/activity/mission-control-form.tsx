@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Sport, Discipline } from "@prisma/client"
+import { Sport, Discipline, BenchmarkMeasurementType } from "@prisma/client"
 import {
     Upload,
     MapPin,
@@ -24,7 +24,12 @@ import {
     Waves,
     Mountain,
     Dumbbell,
-    Heart
+    Heart,
+    Search,
+    Star,
+    Trophy,
+    Plus,
+    ChevronDown
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,15 +42,21 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { createActivity } from "@/app/actions/activity"
 import { toast } from "sonner"
+import { SportGlyph } from "@/components/sports/SportGlyph"
 
 const formSchema = z.object({
     title: z.string().min(1, "Give your activity a name"),
     description: z.string().optional(),
     sportId: z.string().min(1, "Pick your sport"),
-    disciplineId: z.string().min(1, "Choose a discipline"),
+    disciplineId: z.string().optional(),
     activityDate: z.string(),
     activityTime: z.string(),
     durationMinutes: z.string().optional(),
@@ -55,19 +66,21 @@ const formSchema = z.object({
     visibility: z.enum(["PUBLIC", "FOLLOWERS_ONLY", "PRIVATE"]),
 })
 
-// Sport icons mapping
-const sportIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-    "running": Activity,
-    "cycling": Bike,
-    "swimming": Waves,
-    "hiking": Mountain,
-    "gym": Dumbbell,
-    "default": Heart,
+// Benchmark type definition
+type BenchmarkDef = {
+    id: string
+    sportId: string
+    slug: string
+    name: string
+    measurementType: BenchmarkMeasurementType
+    unit: string
+    higherIsBetter: boolean
 }
 
-function getSportIcon(sportName: string): React.ComponentType<{ className?: string }> {
-    const key = sportName.toLowerCase()
-    return sportIcons[key] || sportIcons.default
+type UserBest = {
+    benchmarkId: string
+    value: number
+    achievedAt: Date
 }
 
 // RPE Labels
@@ -84,16 +97,76 @@ const rpeLabels: Record<number, { label: string; color: string }> = {
     10: { label: "All Out!", color: "from-red-600 to-rose-700" },
 }
 
-interface MissionControlFormProps {
-    sports: (Sport & { disciplines: Discipline[] })[]
+// Helper to format benchmark values for display
+function formatBenchmarkValue(value: number, type: BenchmarkMeasurementType, unit: string): string {
+    if (type === "TIME") {
+        // value is in seconds
+        const hours = Math.floor(value / 3600)
+        const mins = Math.floor((value % 3600) / 60)
+        const secs = Math.floor(value % 60)
+        if (hours > 0) return `${hours}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+        return `${mins}:${secs.toString().padStart(2, "0")}`
+    }
+    if (type === "DISTANCE") {
+        // value is in meters
+        if (value >= 1000) return `${(value / 1000).toFixed(1)} km`
+        return `${Math.round(value)} m`
+    }
+    if (type === "SPEED") return `${value.toFixed(1)} km/h`
+    if (type === "POWER") return `${Math.round(value)} W`
+    if (type === "WEIGHT_REPS") return `${value} kg`
+    if (type === "COUNT") return `${Math.round(value)}`
+    return `${value} ${unit}`
 }
 
-export function MissionControlForm({ sports }: MissionControlFormProps) {
+interface MissionControlFormProps {
+    sports: (Sport & { disciplines: Discipline[] })[]
+    activeSportIds?: string[]
+    benchmarkDefinitions?: BenchmarkDef[]
+    userBenchmarkBests?: UserBest[]
+}
+
+export function MissionControlForm({
+    sports,
+    activeSportIds = [],
+    benchmarkDefinitions = [],
+    userBenchmarkBests = []
+}: MissionControlFormProps) {
     const [selectedSportId, setSelectedSportId] = useState<string>("")
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [rpe, setRpe] = useState<number>(5)
     const [isDragging, setIsDragging] = useState(false)
     const [photos, setPhotos] = useState<File[]>([])
+    const [sportSearchQuery, setSportSearchQuery] = useState("")
+    const [isSportPickerOpen, setIsSportPickerOpen] = useState(false)
+
+    // Separate active sports from other sports
+    const { activeSports, otherSports, filteredOtherSports } = useMemo(() => {
+        const active = sports.filter(s => activeSportIds.includes(s.id))
+        const other = sports.filter(s => !activeSportIds.includes(s.id))
+        const filtered = sportSearchQuery.trim()
+            ? other.filter(s =>
+                s.name.toLowerCase().includes(sportSearchQuery.toLowerCase()) ||
+                (s.category && s.category.toLowerCase().includes(sportSearchQuery.toLowerCase()))
+            )
+            : other
+        return { activeSports: active, otherSports: other, filteredOtherSports: filtered }
+    }, [sports, activeSportIds, sportSearchQuery])
+
+    // Get benchmarks for selected sport
+    const sportBenchmarks = useMemo(() => {
+        if (!selectedSportId) return []
+        return benchmarkDefinitions.filter(b => b.sportId === selectedSportId)
+    }, [selectedSportId, benchmarkDefinitions])
+
+    // Get user's PBs for selected sport benchmarks
+    const sportPBs = useMemo(() => {
+        const pbMap = new Map(userBenchmarkBests.map(pb => [pb.benchmarkId, pb]))
+        return sportBenchmarks.map(bench => ({
+            benchmark: bench,
+            pb: pbMap.get(bench.id)
+        }))
+    }, [sportBenchmarks, userBenchmarkBests])
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -152,7 +225,9 @@ export function MissionControlForm({ sports }: MissionControlFormProps) {
             formData.append("title", values.title)
             formData.append("description", values.description || "")
             formData.append("sportId", values.sportId)
-            formData.append("disciplineId", values.disciplineId)
+            if (values.disciplineId) {
+                formData.append("disciplineId", values.disciplineId)
+            }
 
             const dateTime = new Date(`${values.activityDate}T${values.activityTime}`)
             formData.append("activityDate", dateTime.toISOString())
@@ -274,7 +349,7 @@ export function MissionControlForm({ sports }: MissionControlFormProps) {
                             )}
                         />
 
-                        {/* Sport Tiles */}
+                        {/* Sport Selection */}
                         <div className="space-y-3">
                             <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">Sport</label>
                             <FormField
@@ -283,32 +358,170 @@ export function MissionControlForm({ sports }: MissionControlFormProps) {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                                {sports.slice(0, 8).map((sport) => {
-                                                    const Icon = getSportIcon(sport.name)
-                                                    const isSelected = field.value === sport.id
-                                                    return (
-                                                        <button
-                                                            key={sport.id}
+                                            <div className="space-y-4">
+                                                {/* Active Sports Tiles (if user has active sports) */}
+                                                {activeSports.length > 0 && (
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                                            <Star className="w-3 h-3" />
+                                                            <span>Your Active Sports</span>
+                                                        </div>
+                                                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" data-testid="active-sports-tiles">
+                                                            {activeSports.map((sport) => {
+                                                                const isSelected = field.value === sport.id
+                                                                return (
+                                                                    <button
+                                                                        key={sport.id}
+                                                                        type="button"
+                                                                        data-testid={`sport-tile-${sport.slug}`}
+                                                                        onClick={() => {
+                                                                            field.onChange(sport.id)
+                                                                            setSelectedSportId(sport.id)
+                                                                            form.setValue("disciplineId", "")
+                                                                        }}
+                                                                        className={cn(
+                                                                            "flex flex-col items-center gap-2 px-6 py-4 rounded-xl transition-all duration-200 shrink-0",
+                                                                            "border-2",
+                                                                            isSelected
+                                                                                ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent shadow-lg shadow-indigo-500/30 scale-105"
+                                                                                : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50"
+                                                                        )}
+                                                                    >
+                                                                        <SportGlyph sport={sport} size="md" className={cn(isSelected && "bg-white/20 border-white/30")} />
+                                                                        <span className="text-sm font-semibold whitespace-nowrap">{sport.name}</span>
+                                                                    </button>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* All Sports Picker / Search */}
+                                                <Popover open={isSportPickerOpen} onOpenChange={setIsSportPickerOpen}>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
                                                             type="button"
-                                                            onClick={() => {
-                                                                field.onChange(sport.id)
-                                                                setSelectedSportId(sport.id)
-                                                                form.setValue("disciplineId", "")
-                                                            }}
+                                                            variant="outline"
+                                                            role="combobox"
+                                                            data-testid="all-sports-picker"
                                                             className={cn(
-                                                                "flex flex-col items-center gap-2 px-6 py-4 rounded-xl transition-all duration-200 shrink-0",
-                                                                "border-2",
-                                                                isSelected
-                                                                    ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent shadow-lg shadow-indigo-500/30 scale-105"
-                                                                    : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50"
+                                                                "w-full justify-between h-12 text-left",
+                                                                !field.value && activeSports.length === 0 && "text-muted-foreground"
                                                             )}
                                                         >
-                                                            <Icon className="w-6 h-6" />
-                                                            <span className="text-sm font-semibold whitespace-nowrap">{sport.name}</span>
-                                                        </button>
-                                                    )
-                                                })}
+                                                            {field.value ? (
+                                                                <div className="flex items-center gap-3">
+                                                                    <SportGlyph sport={sports.find(s => s.id === field.value) || { name: "" }} size="sm" />
+                                                                    <span>{sports.find(s => s.id === field.value)?.name}</span>
+                                                                    {activeSportIds.includes(field.value) && (
+                                                                        <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="flex items-center gap-2">
+                                                                    <Search className="w-4 h-4" />
+                                                                    {activeSports.length > 0 ? "Or choose another sport..." : "Search all sports..."}
+                                                                </span>
+                                                            )}
+                                                            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-[400px] p-0" align="start">
+                                                        <div className="p-3 border-b">
+                                                            <div className="relative">
+                                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                <Input
+                                                                    placeholder="Search sports..."
+                                                                    value={sportSearchQuery}
+                                                                    onChange={(e) => setSportSearchQuery(e.target.value)}
+                                                                    className="pl-9"
+                                                                    data-testid="sport-search-input"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="max-h-[300px] overflow-y-auto p-2">
+                                                            {/* Active Sports Group */}
+                                                            {activeSports.length > 0 && !sportSearchQuery && (
+                                                                <div className="mb-3">
+                                                                    <div className="px-2 py-1 text-xs font-medium text-slate-500 flex items-center gap-1">
+                                                                        <Star className="w-3 h-3 text-amber-500" />
+                                                                        Active Sports
+                                                                    </div>
+                                                                    {activeSports.map((sport) => (
+                                                                        <button
+                                                                            key={sport.id}
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                field.onChange(sport.id)
+                                                                                setSelectedSportId(sport.id)
+                                                                                form.setValue("disciplineId", "")
+                                                                                setIsSportPickerOpen(false)
+                                                                                setSportSearchQuery("")
+                                                                            }}
+                                                                            className={cn(
+                                                                                "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors",
+                                                                                field.value === sport.id
+                                                                                    ? "bg-indigo-100 text-indigo-900"
+                                                                                    : "hover:bg-slate-100"
+                                                                            )}
+                                                                        >
+                                                                            <SportGlyph sport={sport} size="sm" />
+                                                                            <span className="font-medium">{sport.name}</span>
+                                                                            <Star className="w-3 h-3 text-amber-500 fill-amber-500 ml-auto" />
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+
+                                                            {/* All/Filtered Sports */}
+                                                            <div>
+                                                                {!sportSearchQuery && activeSports.length > 0 && (
+                                                                    <div className="px-2 py-1 text-xs font-medium text-slate-500">
+                                                                        All Sports
+                                                                    </div>
+                                                                )}
+                                                                {filteredOtherSports.length === 0 ? (
+                                                                    <div className="px-3 py-4 text-center text-sm text-muted-foreground">
+                                                                        No sports found
+                                                                    </div>
+                                                                ) : (
+                                                                    filteredOtherSports.slice(0, 20).map((sport) => (
+                                                                        <button
+                                                                            key={sport.id}
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                field.onChange(sport.id)
+                                                                                setSelectedSportId(sport.id)
+                                                                                form.setValue("disciplineId", "")
+                                                                                setIsSportPickerOpen(false)
+                                                                                setSportSearchQuery("")
+                                                                            }}
+                                                                            className={cn(
+                                                                                "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors",
+                                                                                field.value === sport.id
+                                                                                    ? "bg-indigo-100 text-indigo-900"
+                                                                                    : "hover:bg-slate-100"
+                                                                            )}
+                                                                        >
+                                                                            <SportGlyph sport={sport} size="sm" />
+                                                                            <div className="flex-1">
+                                                                                <span className="font-medium">{sport.name}</span>
+                                                                                {sport.category && (
+                                                                                    <span className="ml-2 text-xs text-slate-400">{sport.category}</span>
+                                                                                )}
+                                                                            </div>
+                                                                        </button>
+                                                                    ))
+                                                                )}
+                                                                {filteredOtherSports.length > 20 && (
+                                                                    <div className="px-3 py-2 text-xs text-center text-muted-foreground">
+                                                                        + {filteredOtherSports.length - 20} more. Type to search...
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </PopoverContent>
+                                                </Popover>
                                             </div>
                                         </FormControl>
                                         <FormMessage />
@@ -316,6 +529,48 @@ export function MissionControlForm({ sports }: MissionControlFormProps) {
                                 )}
                             />
                         </div>
+
+                        {/* PB Panel - Shows when sport is selected */}
+                        {selectedSport && sportPBs.length > 0 && (
+                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200 animate-in slide-in-from-top-2 duration-300" data-testid="pb-panel">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <Trophy className="w-5 h-5 text-amber-600" />
+                                        <span className="font-semibold text-slate-800">Your Personal Bests</span>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-amber-700 hover:text-amber-800 hover:bg-amber-100"
+                                        data-testid="add-pb-button"
+                                    >
+                                        <Plus className="w-4 h-4 mr-1" />
+                                        Add PB
+                                    </Button>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {sportPBs.slice(0, 6).map(({ benchmark, pb }) => (
+                                        <div
+                                            key={benchmark.id}
+                                            className={cn(
+                                                "p-3 rounded-xl border",
+                                                pb ? "bg-white border-amber-200" : "bg-white/50 border-dashed border-amber-200/50"
+                                            )}
+                                        >
+                                            <div className="text-xs text-slate-500 mb-1">{benchmark.name}</div>
+                                            {pb ? (
+                                                <div className="font-bold text-slate-900">
+                                                    {formatBenchmarkValue(pb.value, benchmark.measurementType, benchmark.unit)}
+                                                </div>
+                                            ) : (
+                                                <div className="text-sm text-slate-400 italic">Not set</div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Discipline Tiles (when sport selected) */}
                         {selectedSport && selectedSport.disciplines.length > 0 && (
