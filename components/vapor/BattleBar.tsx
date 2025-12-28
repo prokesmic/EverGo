@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Trophy, Flame, TrendingUp } from "lucide-react"
@@ -180,34 +181,101 @@ export function BattleBar({
   )
 }
 
-// Demo component with mock data
-export function BattleBarDemo() {
-  const mockTeamA = {
-    id: "team-alpha",
-    name: "Team Alpha",
-    logoUrl: null,
-    color: "bg-orange-500",
-    score: 12450,
-    weeklyActivities: 47,
-    streak: 14,
+// Active team battle widget that fetches real data
+export function ActiveTeamBattle({ className }: { className?: string }) {
+  const [battle, setBattle] = useState<{
+    teamA: TeamData
+    teamB: TeamData
+    challengeName: string
+    endsIn: string
+  } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchBattle = async () => {
+      try {
+        const res = await fetch("/api/teams/active-battle")
+        if (res.ok) {
+          const data = await res.json()
+          if (data.battle) {
+            setBattle(data.battle)
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching team battle:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBattle()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className={cn("vapor-card p-5 animate-pulse", className)}>
+        <div className="h-6 w-32 bg-slate-200 rounded mb-4" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-slate-200" />
+            <div className="space-y-2">
+              <div className="h-4 w-24 bg-slate-200 rounded" />
+              <div className="h-3 w-16 bg-slate-200 rounded" />
+            </div>
+          </div>
+          <div className="h-6 w-8 bg-slate-200 rounded" />
+          <div className="flex items-center gap-3">
+            <div className="space-y-2">
+              <div className="h-4 w-24 bg-slate-200 rounded" />
+              <div className="h-3 w-16 bg-slate-200 rounded" />
+            </div>
+            <div className="w-12 h-12 rounded-full bg-slate-200" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  const mockTeamB = {
-    id: "team-bravo",
-    name: "Team Bravo",
-    logoUrl: null,
-    color: "bg-indigo-500",
-    score: 11200,
-    weeklyActivities: 42,
-    streak: 9,
+  if (!battle) {
+    // Empty state - no active team battles
+    return (
+      <div className={cn("vapor-card p-5", className)}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="p-1.5 rounded-lg bg-orange-100">
+            <Flame className="w-4 h-4 text-orange-500" />
+          </div>
+          <span className="font-semibold text-slate-900 text-sm">Team Battles</span>
+        </div>
+        <div className="text-center py-6">
+          <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center">
+            <Trophy className="w-7 h-7 text-slate-300" />
+          </div>
+          <h3 className="font-medium text-slate-900 mb-1">No active battles</h3>
+          <p className="text-xs text-slate-500 mb-4">
+            Join a team to compete in weekly challenges
+          </p>
+          <Link href="/teams" className="inline-flex items-center gap-1 text-sm text-orange-500 hover:text-orange-600 font-medium">
+            Explore teams
+            <TrendingUp className="w-3 h-3" />
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
     <BattleBar
-      teamA={mockTeamA}
-      teamB={mockTeamB}
-      challengeName="Weekly Showdown"
-      endsIn="3 days"
+      teamA={battle.teamA}
+      teamB={battle.teamB}
+      challengeName={battle.challengeName}
+      endsIn={battle.endsIn}
+      className={className}
     />
   )
+}
+
+// For backwards compatibility - use ActiveTeamBattle instead
+/** @deprecated Use ActiveTeamBattle instead */
+export function BattleBarDemo() {
+  return <ActiveTeamBattle />
 }

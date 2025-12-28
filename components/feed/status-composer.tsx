@@ -39,9 +39,25 @@ export function StatusComposer({ onSubmit }: StatusComposerProps) {
     }
 
     const handleAddPhoto = () => {
-        // Mock photo upload for MVP
-        const mockPhoto = `https://picsum.photos/seed/${Date.now()}/800/600`
-        setPhotos([...photos, mockPhoto])
+        // TODO: Implement real photo upload via Supabase Storage
+        // For now, show a file picker that will be implemented later
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = 'image/*'
+        input.onchange = async (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0]
+            if (!file) return
+
+            // Create temporary preview URL
+            const previewUrl = URL.createObjectURL(file)
+            setPhotos([...photos, previewUrl])
+
+            // TODO: Upload to Supabase Storage and replace preview with permanent URL
+            // const { data, error } = await supabase.storage
+            //   .from('posts')
+            //   .upload(`${userId}/${Date.now()}-${file.name}`, file)
+        }
+        input.click()
     }
 
     return (

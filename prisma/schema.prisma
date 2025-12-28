@@ -66,6 +66,8 @@ model User {
   createdPartnerRequests PartnerRequest[] @relation("createdRequests")
   partnerRequestParticipations PartnerRequestParticipant[]
 
+  // Benchmarks / PBs
+  benchmarkBests  UserBenchmarkBest[]
 }
 
 model UserStats {
@@ -167,6 +169,7 @@ model Sport {
   communities     Community[]
   challenges      Challenge[]
   partnerRequests PartnerRequest[]
+  benchmarkDefinitions BenchmarkDefinition[]
 }
 
 model Discipline {
@@ -185,6 +188,21 @@ model Discipline {
   rankings        Ranking[]
   
   @@unique([sportId, slug])
+}
+
+enum SportCategory {
+  ENDURANCE
+  CYCLING
+  SWIMMING
+  STRENGTH
+  TEAM
+  RACKET
+  COMBAT
+  WATER_BOARD
+  OUTDOOR
+  WINTER
+  MINDBODY
+  GENERIC
 }
 
 enum UserSportStatus {
@@ -265,7 +283,8 @@ model Activity {
   
   post            Post?
   gearItems       ActivityGear[]
-  
+  benchmarkResults ActivityBenchmarkResult[]
+
   @@index([userId, activityDate(sort: Desc)])
   @@index([disciplineId])
   @@index([sportId])
@@ -1104,4 +1123,117 @@ model UserTrainingPlan {
 
   @@unique([userId, planId])
   @@index([userId])
+}
+
+// --- Benchmark / Personal Best (PB) Models ---
+
+enum BenchmarkMeasurementType {
+  TIME            // seconds; lower is better
+  DISTANCE        // meters/km; higher better
+  SPEED           // km/h; higher better
+  POWER           // watts; higher better
+  WEIGHT_REPS     // kg + reps; used to compute est 1RM, higher better
+  SCORE           // points, rating; higher better
+  COUNT           // reps, waves, matches; higher better
+  GRADE_LEVEL     // ordinal ladder (climbing grade, trick level); higher better
+  RESULT          // win/loss/draw or placing; mapped to score points
+}
+
+enum BenchmarkSource {
+  MANUAL
+  ACTIVITY_DERIVED
+  IMPORT_STRAVA
+  IMPORT_GARMIN
+}
+
+enum BenchmarkVerificationStatus {
+  UNVERIFIED
+  VERIFIED_LINKED_ACTIVITY
+  VERIFIED_IMPORT
+}
+
+enum ActivityResultSource {
+  AUTO
+  USER_CONFIRMED
+  USER_ENTERED
+}
+
+model BenchmarkDefinition {
+  id              String   @id @default(cuid())
+  sportId         String
+  slug            String   // unique per sport (e.g. "5k", "bench-1rm")
+  name            String   // display: "5K", "Bench Press 1RM", "Max Jump"
+  measurementType BenchmarkMeasurementType
+  unit            String   // "sec", "km", "m", "kg", "w", "points", "level"
+  higherIsBetter  Boolean  @default(true)
+
+  // JSON target specification:
+  // TIME/DISTANCE benchmarks may include {distanceMeters: 5000} or {durationSec: 1200}
+  targetJson      Json?
+
+  // Validity window (months) for ranking impact
+  validityMonths  Int      @default(24)
+  // Soft decay threshold (months)
+  decayAfterMonths Int     @default(12)
+
+  // Relative importance for Sport Index seeding
+  rankWeight      Float    @default(1.0)
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sport           Sport    @relation(fields: [sportId], references: [id], onDelete: Cascade)
+  userBests       UserBenchmarkBest[]
+  activityResults ActivityBenchmarkResult[]
+
+  @@unique([sportId, slug])
+  @@index([sportId, isActive])
+}
+
+model UserBenchmarkBest {
+  id                 String   @id @default(cuid())
+  userId             String
+  benchmarkId        String
+
+  // Store numeric canonical value:
+  // TIME => seconds; DISTANCE => meters; SPEED => kmh; POWER => watts; SCORE/COUNT/LEVEL => numeric
+  value              Float
+  achievedAt         DateTime
+  source             BenchmarkSource @default(MANUAL)
+  verificationStatus BenchmarkVerificationStatus @default(UNVERIFIED)
+  evidenceUrl        String?
+
+  // Convenience flags
+  isLegacy           Boolean  @default(false) // computed at write-time (older than validity window)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  benchmark          BenchmarkDefinition @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, benchmarkId]) // latest/active PB per benchmark
+  @@index([userId])
+  @@index([benchmarkId])
+}
+
+model ActivityBenchmarkResult {
+  id               String   @id @default(cuid())
+  activityId       String
+  benchmarkId      String
+
+  value            Float
+  source           ActivityResultSource @default(AUTO)
+
+  isPersonalBest   Boolean  @default(false)
+  countsForRanking Boolean  @default(true)
+
+  computedAt       DateTime @default(now())
+
+  activity         Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  benchmark        BenchmarkDefinition @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, benchmarkId])
+  @@index([benchmarkId])
 }

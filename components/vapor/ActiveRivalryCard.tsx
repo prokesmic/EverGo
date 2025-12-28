@@ -59,31 +59,49 @@ export function ActiveRivalryCard({ className }: ActiveRivalryCardProps) {
     fetchRival()
   }, [session])
 
-  // Mock data for demo
-  const mockRival: Rival = {
-    id: "rival-1",
-    displayName: "Alex Thompson",
-    avatarUrl: null,
-    sportIndex: 758,
-    weeklyDistance: 42.5,
-    weeklyTime: 320,
-    streak: 18,
-    city: "Prague",
+  // Show actual rival only - no mock data in staging/production
+  const displayRival = rival
+  const displayUserStats = userStats
+
+  // Calculate stats only if we have both rival and user stats
+  const indexDiff = displayRival && displayUserStats ? displayRival.sportIndex - displayUserStats.sportIndex : 0
+  const distanceDiff = displayRival && displayUserStats ? displayRival.weeklyDistance - displayUserStats.weeklyDistance : 0
+  const isWinning = displayRival && displayUserStats ? displayUserStats.sportIndex > displayRival.sportIndex : false
+
+  // Empty state when no rival found
+  if (!loading && !displayRival) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={cn("vapor-card overflow-hidden", className)}
+      >
+        <div className="px-5 py-4 bg-gradient-to-r from-orange-50 via-white to-slate-50 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-orange-100">
+              <Swords className="w-4 h-4 text-orange-500" />
+            </div>
+            <span className="font-semibold text-slate-900">Find a Rival</span>
+          </div>
+        </div>
+        <div className="p-6 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-50 flex items-center justify-center">
+            <Target className="w-8 h-8 text-orange-300" />
+          </div>
+          <h3 className="font-semibold text-slate-900 mb-1">No rival yet</h3>
+          <p className="text-sm text-slate-500 mb-4">
+            Log activities to get matched with a rival near your level
+          </p>
+          <Link href="/activity/create" className="block">
+            <Button className="w-full vapor-btn-primary">
+              <Zap className="w-4 h-4 mr-2" />
+              Log Your First Activity
+            </Button>
+          </Link>
+        </div>
+      </motion.div>
+    )
   }
-
-  const mockUserStats = {
-    sportIndex: 742,
-    weeklyDistance: 38.2,
-    weeklyTime: 285,
-    streak: 14,
-  }
-
-  const displayRival = rival || mockRival
-  const displayUserStats = userStats || mockUserStats
-
-  const indexDiff = displayRival.sportIndex - displayUserStats.sportIndex
-  const distanceDiff = displayRival.weeklyDistance - displayUserStats.weeklyDistance
-  const isWinning = displayUserStats.sportIndex > displayRival.sportIndex
 
   if (loading) {
     return (
@@ -100,6 +118,11 @@ export function ActiveRivalryCard({ className }: ActiveRivalryCardProps) {
         </div>
       </div>
     )
+  }
+
+  // At this point displayRival is guaranteed to be non-null (handled in empty state above)
+  if (!displayRival) {
+    return null
   }
 
   return (

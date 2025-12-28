@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db"
 import { WelcomeHero } from "@/components/dashboard/WelcomeHero"
 import { PulseRail } from "@/components/vapor/PulseRail"
 import { ActiveRivalryCard } from "@/components/vapor/ActiveRivalryCard"
-import { BattleBarDemo } from "@/components/vapor/BattleBar"
+import { ActiveTeamBattle } from "@/components/vapor/BattleBar"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
 import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestions-wrapper"
@@ -132,7 +132,7 @@ export default async function HomePage() {
               {/* Competition Zone - Motivation First */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <ActiveRivalryCard />
-                <BattleBarDemo />
+                <ActiveTeamBattle />
               </div>
 
               {/* Consumption Zone - Social Feed */}

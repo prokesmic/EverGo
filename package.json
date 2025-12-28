@@ -28,7 +28,12 @@
     "mike:smoke": "npx tsx mike/cli.ts smoke",
     "mike:full": "npx tsx mike/cli.ts full --verbose",
     "mike:discover": "npx tsx mike/cli.ts discover",
-    "mike:help": "npx tsx mike/cli.ts help"
+    "mike:help": "npx tsx mike/cli.ts help",
+    "check:nomock": "npx tsx scripts/noMockScan.ts",
+    "typecheck": "tsc --noEmit",
+    "seed:benchmarks": "npx tsx scripts/seedBenchmarks.ts",
+    "seed:sportsbench": "npx tsx scripts/seedSportsAndBenchmarks.ts",
+    "check:sportsbench": "npx tsx scripts/checkSportsBenchCoverage.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

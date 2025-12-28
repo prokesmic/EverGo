@@ -133,11 +133,20 @@ const sportsData = [
 ];
 
 async function main() {
-  console.log('Start seeding ...')
+  console.log('Start seeding reference data...')
+
+  // Only seed reference data (Sports and Disciplines)
+  // NO user data, NO activities, NO events - those come from real users
   for (const sport of sportsData) {
     const createdSport = await prisma.sport.upsert({
       where: { slug: sport.slug },
-      update: {},
+      update: {
+        // Update existing sports with any new data
+        name: sport.name,
+        icon: sport.icon,
+        category: sport.category,
+        hasGpsTracking: sport.hasGpsTracking,
+      },
       create: {
         name: sport.name,
         slug: sport.slug,
@@ -150,22 +159,38 @@ async function main() {
             slug: d.slug,
             measurementType: d.measurementType,
             primaryMetric: d.primaryMetric,
-            rankingFormula: "default", // Placeholder
+            rankingFormula: "default",
             lowerIsBetter: d.lowerIsBetter
           }))
         }
       },
     })
-    console.log(`Created sport: ${createdSport.name}`)
+    console.log(`Seeded sport: ${createdSport.name}`)
   }
 
-  // Seed User
-  const { seedUser } = require('./seed-user')
-  await seedUser(prisma)
+  // IMPORTANT: Do NOT seed demo users or activities in production/staging
+  // Demo data seeding is ONLY available in local environment with ALLOW_DEMO_DATA=true
+  const isLocal = process.env.NEXT_PUBLIC_APP_ENV === 'local' || !process.env.NEXT_PUBLIC_APP_ENV
+  const allowDemoData = process.env.ALLOW_DEMO_DATA === 'true'
 
-  // Seed Competitors
-  const { seedCompetitors } = require('./seed-competitors')
-  await seedCompetitors(prisma)
+  if (isLocal && allowDemoData) {
+    console.log('Local environment with ALLOW_DEMO_DATA=true - seeding demo data...')
+
+    // Seed demo user only in local dev with explicit flag
+    try {
+      const { seedUser } = require('./seed-user')
+      await seedUser(prisma)
+
+      const { seedCompetitors } = require('./seed-competitors')
+      await seedCompetitors(prisma)
+
+      console.log('Demo data seeded successfully')
+    } catch (error) {
+      console.warn('Could not seed demo data:', error)
+    }
+  } else {
+    console.log('Skipping demo data (not local or ALLOW_DEMO_DATA not set)')
+  }
 
   console.log('Seeding finished.')
 }
