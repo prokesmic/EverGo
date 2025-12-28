@@ -11,6 +11,7 @@ import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
 import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestions-wrapper"
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
+import { getHomeHeroForUser } from "@/lib/hero/getHomeHero"
 
 export const dynamic = 'force-dynamic'
 
@@ -81,6 +82,8 @@ export default async function HomePage() {
     const sortedSports = Object.entries(sportStats).sort((a, b) => b[1].distance - a[1].distance)
     const primarySport = sortedSports.length > 0 ? sortedSports[0][0] : "running"
 
+    // Get hero image based on user's primary sport
+    const hero = await getHomeHeroForUser(user.id)
 
     return (
       <main className="min-h-screen bg-slate-50 pb-20 md:pb-0">
@@ -93,7 +96,7 @@ export default async function HomePage() {
           name={user.displayName || "Athlete"}
           avatarUrl={user.avatarUrl || undefined}
           location={user.city || "Prague, Czech Republic"}
-          primarySport={primarySport}
+          primarySport={hero.sportName || primarySport}
           sportIndex={userStats?.sportIndex || 742}
           sportIndexTrend={38}
           streakDays={14}
@@ -102,6 +105,7 @@ export default async function HomePage() {
           weeklyActivities={weeklyActivities.length}
           globalRank={userStats?.globalRank || undefined}
           cityRank={userStats?.cityRank || undefined}
+          hero={hero}
         />
 
         {/* ============================================

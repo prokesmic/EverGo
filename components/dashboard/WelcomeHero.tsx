@@ -1,10 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { motion } from "framer-motion"
 import { Plus, Flame, TrendingUp, MapPin, Trophy, Activity, ChevronRight } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import type { ResolvedHero } from "@/lib/hero/heroResolver"
 
 interface WelcomeHeroProps {
   name: string
@@ -19,22 +21,7 @@ interface WelcomeHeroProps {
   weeklyActivities: number
   globalRank?: number
   cityRank?: number
-}
-
-// Sport-specific hero images (high-quality Unsplash photos)
-const sportBackgrounds: Record<string, string> = {
-  running: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1920&q=80",
-  cycling: "https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=1920&q=80",
-  swimming: "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1920&q=80",
-  hiking: "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1920&q=80",
-  gym: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1920&q=80",
-  fitness: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1920&q=80",
-  yoga: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1920&q=80",
-  tennis: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=1920&q=80",
-  golf: "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1920&q=80",
-  basketball: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1920&q=80",
-  football: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1920&q=80",
-  default: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1920&q=80",
+  hero?: ResolvedHero
 }
 
 export function WelcomeHero({
@@ -50,6 +37,7 @@ export function WelcomeHero({
   weeklyActivities,
   globalRank,
   cityRank,
+  hero,
 }: WelcomeHeroProps) {
   const formatTime = (minutes: number) => {
     const h = Math.floor(minutes / 60)
@@ -67,18 +55,24 @@ export function WelcomeHero({
     return "Good evening"
   }
 
-  // Get sport-specific background image
-  const sportKey = primarySport.toLowerCase().trim()
-  const backgroundImage = sportBackgrounds[sportKey] || sportBackgrounds.running
+  // Use hero image URL or fall back to Unsplash
+  const backgroundImage = hero?.imageUrl ??
+    "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1920&q=80"
+
+  const objectPosition = hero?.image?.objectPosition ?? "50% 35%"
 
   return (
     <section className="relative w-full overflow-hidden min-h-[280px] md:min-h-[320px]">
       {/* Sport-specific background image */}
       <div className="absolute inset-0">
-        <img
+        <Image
           src={backgroundImage}
-          alt={`${primarySport} background`}
-          className="w-full h-full object-cover object-center"
+          alt={`${hero?.sportName ?? primarySport} background`}
+          fill
+          priority
+          sizes="(max-width: 1024px) 100vw, 1400px"
+          className="object-cover"
+          style={{ objectPosition }}
         />
         {/* Dark gradient overlays for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/40" />
@@ -230,6 +224,25 @@ export function WelcomeHero({
             </div>
           </div>
         </div>
+
+        {/* Photo credit */}
+        {hero?.image?.credit?.name && (
+          <div className="mt-4 text-[10px] text-white/40">
+            Photo:{" "}
+            {hero.image.credit.url ? (
+              <a
+                className="underline hover:text-white/60 transition-colors"
+                href={hero.image.credit.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {hero.image.credit.name}
+              </a>
+            ) : (
+              hero.image.credit.name
+            )}
+          </div>
+        )}
       </div>
     </section>
   )
