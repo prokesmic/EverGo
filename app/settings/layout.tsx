@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { User, Dumbbell, CreditCard, Bell, Shield, ChevronLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { AppContainer } from "@/components/layout/AppContainer"
+import { MobileNavSelect } from "@/components/layout/MobileNavSelect"
 
 const settingsNavItems = [
   {
@@ -46,8 +48,8 @@ export default function SettingsLayout({
   const pathname = usePathname()
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="container max-w-6xl py-6 px-4 md:px-6">
+    <div className="min-h-screen bg-slate-50 pb-20 md:pb-0">
+      <AppContainer size="default" className="py-6 sm:py-8">
         {/* Back Link */}
         <Link
           href="/home"
@@ -57,10 +59,13 @@ export default function SettingsLayout({
           <span className="text-sm font-medium">Back to Home</span>
         </Link>
 
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Sidebar Navigation */}
-          <aside className="w-full md:w-64 shrink-0">
-            <nav className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        {/* Mobile Navigation Select */}
+        <MobileNavSelect items={settingsNavItems} className="mb-6" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 lg:gap-8">
+          {/* Sidebar Navigation - Hidden on mobile */}
+          <aside className="hidden lg:block shrink-0">
+            <nav className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden sticky top-20">
               <div className="p-4 border-b border-slate-100">
                 <h2 className="font-bold text-slate-900 text-lg">Settings</h2>
               </div>
@@ -105,11 +110,11 @@ export default function SettingsLayout({
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 min-w-0">
+          <main className="min-w-0">
             {children}
           </main>
         </div>
-      </div>
+      </AppContainer>
     </div>
   )
 }

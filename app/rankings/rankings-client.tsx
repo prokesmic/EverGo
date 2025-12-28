@@ -10,7 +10,8 @@ import { InsightsCard } from "@/components/rankings/insights-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trophy, Users, MapPin, Globe, TrendingUp, TrendingDown, Minus, Medal, Crown, Sparkles, Filter, ChevronRight } from "lucide-react"
+import { Trophy, Users, MapPin, Globe, TrendingUp, TrendingDown, Minus, Medal, Crown, Sparkles, Filter, ChevronRight, SlidersHorizontal } from "lucide-react"
+import { MobileFiltersSheet } from "@/components/layout/MobileFiltersSheet"
 import { Sport } from "@prisma/client"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -174,54 +175,132 @@ function RankingsContent({ sports }: RankingsClientProps) {
         </>
     )
 
-    const filterBar = (
-        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
-            {/* Scope Toggle Buttons */}
-            <div className="flex rounded-xl bg-muted/50 p-1 gap-1">
-                {scopeOptions.map((s) => (
-                    <button
-                        key={s.id}
-                        onClick={() => setScope(s.id)}
-                        className={cn(
-                            "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
-                            scope === s.id
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                        )}
-                    >
-                        <s.icon className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">{s.label}</span>
-                    </button>
-                ))}
+    // Mobile filter content (reusable in both desktop and mobile sheet)
+    const filterContent = (
+        <div className="flex flex-col gap-4">
+            {/* Scope Section */}
+            <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Scope</label>
+                <div className="flex flex-wrap rounded-xl bg-muted/50 p-1 gap-1">
+                    {scopeOptions.map((s) => (
+                        <button
+                            key={s.id}
+                            onClick={() => setScope(s.id)}
+                            className={cn(
+                                "flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex-1",
+                                scope === s.id
+                                    ? "bg-background text-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            <s.icon className="w-3.5 h-3.5" />
+                            <span>{s.label}</span>
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Sport Filter */}
-            <Select value={sport} onValueChange={setSport}>
-                <SelectTrigger className="w-full lg:w-[180px] h-9">
-                    <SelectValue placeholder="Select Sport" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Sports</SelectItem>
-                    {sports.map((s) => (
-                        <SelectItem key={s.slug} value={s.slug}>
-                            {s.name}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Sport</label>
+                <Select value={sport} onValueChange={setSport}>
+                    <SelectTrigger className="w-full h-11">
+                        <SelectValue placeholder="Select Sport" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Sports</SelectItem>
+                        {sports.map((s) => (
+                            <SelectItem key={s.slug} value={s.slug}>
+                                {s.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
 
             {/* Period Filter */}
-            <Select value={period} onValueChange={setPeriod}>
-                <SelectTrigger className="w-full lg:w-[150px] h-9">
-                    <SelectValue placeholder="Select Period" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all_time">All Time</SelectItem>
-                    <SelectItem value="this_year">This Year</SelectItem>
-                    <SelectItem value="this_month">This Month</SelectItem>
-                    <SelectItem value="this_week">This Week</SelectItem>
-                </SelectContent>
-            </Select>
+            <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Time Period</label>
+                <Select value={period} onValueChange={setPeriod}>
+                    <SelectTrigger className="w-full h-11">
+                        <SelectValue placeholder="Select Period" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all_time">All Time</SelectItem>
+                        <SelectItem value="this_year">This Year</SelectItem>
+                        <SelectItem value="this_month">This Month</SelectItem>
+                        <SelectItem value="this_week">This Week</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+        </div>
+    )
+
+    const filterBar = (
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
+            {/* Mobile Filters Button */}
+            <MobileFiltersSheet
+                title="Filter Rankings"
+                description="Narrow down the leaderboard"
+                triggerLabel="Filters"
+                onClear={() => {
+                    setScope("global")
+                    setSport("all")
+                    setPeriod("all_time")
+                }}
+            >
+                {filterContent}
+            </MobileFiltersSheet>
+
+            {/* Desktop Filters */}
+            <div className="hidden lg:flex lg:flex-row gap-3 items-center">
+                {/* Scope Toggle Buttons */}
+                <div className="flex rounded-xl bg-muted/50 p-1 gap-1">
+                    {scopeOptions.map((s) => (
+                        <button
+                            key={s.id}
+                            onClick={() => setScope(s.id)}
+                            className={cn(
+                                "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
+                                scope === s.id
+                                    ? "bg-background text-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            <s.icon className="w-3.5 h-3.5" />
+                            <span>{s.label}</span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Sport Filter */}
+                <Select value={sport} onValueChange={setSport}>
+                    <SelectTrigger className="w-[180px] h-9">
+                        <SelectValue placeholder="Select Sport" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Sports</SelectItem>
+                        {sports.map((s) => (
+                            <SelectItem key={s.slug} value={s.slug}>
+                                {s.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+
+                {/* Period Filter */}
+                <Select value={period} onValueChange={setPeriod}>
+                    <SelectTrigger className="w-[150px] h-9">
+                        <SelectValue placeholder="Select Period" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all_time">All Time</SelectItem>
+                        <SelectItem value="this_year">This Year</SelectItem>
+                        <SelectItem value="this_month">This Month</SelectItem>
+                        <SelectItem value="this_week">This Week</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
         </div>
     )
 

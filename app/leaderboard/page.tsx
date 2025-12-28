@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/db"
 import { AnimatedLeaderboard } from "@/components/rankings/animated-leaderboard"
+import { PageShell } from "@/components/layout/PageShell"
 
 export const dynamic = 'force-dynamic'
 
@@ -79,8 +80,8 @@ export default async function LeaderboardPage() {
   }))
 
   return (
-    <div className="min-h-screen bg-bg-page pb-20">
-      <div className="max-w-[1200px] mx-auto px-4 py-8">
+    <div className="min-h-screen bg-bg-page pb-20 md:pb-0">
+      <PageShell>
         <AnimatedLeaderboard
           initialEntries={leaderboardEntries}
           sports={sports}
@@ -89,7 +90,7 @@ export default async function LeaderboardPage() {
           title="Global Leaderboard"
           showStats={true}
         />
-      </div>
+      </PageShell>
     </div>
   )
 }
