@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -12,14 +13,22 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
 import { useSession, signOut } from "next-auth/react"
-import { Home, Trophy, Users, Calendar, Target, PlusCircle, Bell, Search, Sparkles } from "lucide-react"
+import { Home, Trophy, Users, Calendar, Target, PlusCircle, Bell, Search, Sparkles, Menu, Settings, LogOut, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SearchCommand } from "@/components/search-command"
 
 export function MainNav() {
     const pathname = usePathname()
     const { data: session } = useSession()
+    const [open, setOpen] = useState(false)
 
     // Hide main nav on landing page - it has its own header
     if (pathname === "/") {
@@ -35,7 +44,7 @@ export function MainNav() {
     ]
 
     return (
-        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200">
+        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200 hidden lg:block">
             <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                 {/* Logo */}
                 <div className="flex items-center gap-2">
@@ -49,8 +58,8 @@ export function MainNav() {
                     </Link>
                 </div>
 
-                {/* Centered Navigation */}
-                <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+                {/* Centered Navigation - always visible on lg+ */}
+                <nav className="flex items-center gap-8 text-sm font-medium">
                     {navItems.map((item) => {
                         const isActive = pathname?.startsWith(item.href)
                         return (
@@ -74,29 +83,18 @@ export function MainNav() {
                 {/* Right Side Actions */}
                 <div className="flex items-center gap-3">
                     {/* Search */}
-                    <div className="hidden lg:flex">
-                        <SearchCommand />
-                    </div>
-                    <Button variant="ghost" size="icon" className="lg:hidden text-slate-600 hover:bg-slate-100 rounded-full">
-                        <Search className="h-5 w-5" />
-                        <span className="sr-only">Search</span>
-                    </Button>
+                    <SearchCommand />
 
                     {session ? (
                         <div className="flex items-center gap-2">
                             {/* Log Activity Button */}
                             <Link
                                 href="/activity/create"
-                                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition"
                             >
                                 <PlusCircle className="h-4 w-4" />
-                                <span className="hidden md:inline">Log Activity</span>
+                                <span>Log Activity</span>
                             </Link>
-                            <Button variant="ghost" size="icon" className="sm:hidden text-slate-600 hover:bg-slate-100 rounded-full" asChild>
-                                <Link href="/activity/create">
-                                    <PlusCircle className="h-5 w-5" />
-                                </Link>
-                            </Button>
 
                             {/* Notifications */}
                             <Button variant="ghost" size="icon" className="text-slate-600 hover:bg-slate-100 rounded-full relative" asChild>
@@ -144,7 +142,7 @@ export function MainNav() {
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">
-                            <button className="hidden sm:inline-flex text-sm font-medium text-slate-700 hover:text-slate-900">
+                            <button className="text-sm font-medium text-slate-700 hover:text-slate-900">
                                 <Link href="/login">Log in</Link>
                             </button>
                             <Link
