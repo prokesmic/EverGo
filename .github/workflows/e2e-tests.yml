@@ -1,0 +1,288 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+  workflow_dispatch:
+    inputs:
+      agents:
+        description: 'Test agents to run (comma-separated: atlas,hermes,nyx,iris,kronos)'
+        required: false
+        default: 'atlas,hermes,nyx,iris,kronos'
+      base_url:
+        description: 'Base URL to test against'
+        required: false
+        default: ''
+
+env:
+  CI: true
+  TEST_BASE_URL: ${{ github.event.inputs.base_url || 'http://localhost:3000' }}
+  E2E_ENABLED: 'true'
+  E2E_TEST_SECRET: ${{ secrets.E2E_TEST_SECRET }}
+
+jobs:
+  # Build job - runs once
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: .next
+          retention-days: 1
+
+  # Test agents run in parallel
+  test-atlas:
+    needs: build
+    runs-on: ubuntu-latest
+    if: contains(github.event.inputs.agents || 'atlas,hermes,nyx,iris,kronos', 'atlas')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .next
+
+      - name: Install Playwright
+        run: npx playwright install chromium
+
+      - name: Run Atlas tests
+        run: npm run test:atlas
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  test-hermes:
+    needs: build
+    runs-on: ubuntu-latest
+    if: contains(github.event.inputs.agents || 'atlas,hermes,nyx,iris,kronos', 'hermes')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .next
+
+      - name: Install Playwright
+        run: npx playwright install chromium
+
+      - name: Run Hermes tests
+        run: npm run test:hermes
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  test-nyx:
+    needs: build
+    runs-on: ubuntu-latest
+    if: contains(github.event.inputs.agents || 'atlas,hermes,nyx,iris,kronos', 'nyx')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .next
+
+      - name: Install Playwright
+        run: npx playwright install chromium
+
+      - name: Run Nyx tests
+        run: npm run test:nyx
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nyx-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  test-iris:
+    needs: build
+    runs-on: ubuntu-latest
+    if: contains(github.event.inputs.agents || 'atlas,hermes,nyx,iris,kronos', 'iris')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .next
+
+      - name: Install Playwright
+        run: npx playwright install chromium
+
+      - name: Run Iris tests
+        run: npm run test:iris
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iris-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  test-kronos:
+    needs: build
+    runs-on: ubuntu-latest
+    if: contains(github.event.inputs.agents || 'atlas,hermes,nyx,iris,kronos', 'kronos')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .next
+
+      - name: Install Playwright
+        run: npx playwright install chromium
+
+      - name: Run Kronos tests
+        run: npm run test:kronos
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kronos-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # Summary job
+  summary:
+    needs: [test-atlas, test-hermes, test-nyx, test-iris, test-kronos]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-results'
+          merge-multiple: true
+
+      - name: Create summary
+        run: |
+          echo "# E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Agent | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Atlas | ${{ needs.test-atlas.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Hermes | ${{ needs.test-hermes.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Nyx | ${{ needs.test-nyx.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Iris | ${{ needs.test-iris.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Kronos | ${{ needs.test-kronos.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for failures
+        if: |
+          needs.test-atlas.result == 'failure' ||
+          needs.test-hermes.result == 'failure' ||
+          needs.test-nyx.result == 'failure' ||
+          needs.test-iris.result == 'failure' ||
+          needs.test-kronos.result == 'failure'
+        run: exit 1

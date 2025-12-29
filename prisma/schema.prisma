@@ -68,6 +68,9 @@ model User {
 
   // Benchmarks / PBs
   benchmarkBests  UserBenchmarkBest[]
+
+  // Integrations
+  stravaConnection StravaConnection?
 }
 
 model UserStats {
@@ -272,19 +275,22 @@ model Activity {
   // Source
   source          String      @default("MANUAL") // Enum: ActivitySource
   externalId      String?
-  
+  raw             Json?       // Raw data from external source for debugging
+  isHidden        Boolean     @default(false) // For privacy/deleted from external source
+
   // Weather
   weatherConditions String?   // JSON
-  
+
   visibility      String      @default("PUBLIC") // Enum: Visibility
-  
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  
+
   post            Post?
   gearItems       ActivityGear[]
   benchmarkResults ActivityBenchmarkResult[]
 
+  @@unique([source, externalId])
   @@index([userId, activityDate(sort: Desc)])
   @@index([disciplineId])
   @@index([sportId])
@@ -1236,4 +1242,60 @@ model ActivityBenchmarkResult {
 
   @@unique([activityId, benchmarkId])
   @@index([benchmarkId])
+}
+
+// --- Strava Integration Models ---
+
+model StravaConnection {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  athleteId       BigInt   @unique
+  scopes          String   // store accepted scope string (comma-separated)
+  accessToken     String   // short-lived; can store plain
+  refreshTokenEnc String   // encrypted refresh token
+  expiresAt       DateTime
+
+  lastSyncAt      DateTime?
+  lastBackfillAt  DateTime?
+  lastWebhookAt   DateTime?
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model StravaWebhookEvent {
+  id             String   @id @default(cuid())
+  subscriptionId Int
+  ownerId        BigInt
+  objectType     String   // "activity" | "athlete"
+  objectId       BigInt
+  aspectType     String   // "create" | "update" | "delete"
+  updates        Json?
+  eventTime      DateTime
+  receivedAt     DateTime @default(now())
+
+  status         String   @default("PENDING") // PENDING|PROCESSING|DONE|FAILED
+  error          String?
+  attempts       Int      @default(0)
+
+  @@index([status, receivedAt])
+  @@index([ownerId, objectId])
+}
+
+model IntegrationJob {
+  id        String   @id @default(cuid())
+  type      String   // STRAVA_BACKFILL | STRAVA_SYNC_RECENT | STRAVA_PROCESS_WEBHOOK
+  payload   Json
+  status    String   @default("PENDING") // PENDING|RUNNING|DONE|FAILED
+  runAt     DateTime @default(now())
+  attempts  Int      @default(0)
+  error     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, runAt])
 }

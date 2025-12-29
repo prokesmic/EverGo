@@ -1,8 +1,16 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Comprehensive Playwright Configuration
- * Following industry best practices for E2E testing
+ * EverGo Playwright Configuration
+ *
+ * 5 Testing Agents:
+ * - atlas: Navigation & routing tests
+ * - hermes: Form & data submission tests
+ * - nyx: Auth & session tests
+ * - iris: Visual & a11y tests
+ * - kronos: Performance & stress tests
+ *
+ * Plus browser-specific projects for cross-browser testing.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -16,15 +24,22 @@ export default defineConfig({
   // Retry failed tests - more on CI for flaky network conditions
   retries: process.env.CI ? 2 : 1,
 
-  // Limit parallel workers on CI
-  workers: process.env.CI ? 1 : undefined,
+  // Parallel workers - scale based on environment
+  workers: process.env.CI ? 4 : undefined,
 
   // Reporter configuration
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['list'],
-  ],
+  reporter: process.env.CI
+    ? [
+        ['html', { outputFolder: 'playwright-report' }],
+        ['json', { outputFile: 'test-results/results.json' }],
+        ['list'],
+        ['github'],
+      ]
+    : [
+        ['html', { outputFolder: 'playwright-report' }],
+        ['json', { outputFile: 'test-results/results.json' }],
+        ['list'],
+      ],
 
   // Global test timeout
   timeout: 30000,
@@ -64,15 +79,95 @@ export default defineConfig({
 
     // Ignore HTTPS errors (for local development)
     ignoreHTTPSErrors: true,
+
+    // Extra HTTP headers for E2E testing
+    extraHTTPHeaders: {
+      'x-e2e-test': 'true',
+    },
   },
 
   // Configure projects for major browsers and viewports
   projects: [
-    // Authentication setup - runs first
+    // ============================================
+    // SETUP PROJECT - runs first
+    // ============================================
     {
       name: 'setup',
       testMatch: /.*\.setup\.ts/,
     },
+
+    // ============================================
+    // AGENT PROJECTS (5 specialized test agents)
+    // ============================================
+
+    // ATLAS - Navigation & Routing
+    // Tests: page loads, route transitions, deep links, redirects
+    {
+      name: 'atlas',
+      testDir: './e2e/agents/atlas',
+      testMatch: /.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // HERMES - Forms & Data Submission
+    // Tests: form validation, data submission, error handling
+    {
+      name: 'hermes',
+      testDir: './e2e/agents/hermes',
+      testMatch: /.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // NYX - Auth & Sessions
+    // Tests: login, logout, session persistence, role-based access
+    {
+      name: 'nyx',
+      testDir: './e2e/agents/nyx',
+      testMatch: /.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        // NYX handles its own auth - no storageState
+      },
+    },
+
+    // IRIS - Visual & Accessibility
+    // Tests: visual regression, a11y, responsive design
+    {
+      name: 'iris',
+      testDir: './e2e/agents/iris',
+      testMatch: /.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // KRONOS - Performance & Stress
+    // Tests: load times, API response times, concurrent operations
+    {
+      name: 'kronos',
+      testDir: './e2e/agents/kronos',
+      testMatch: /.*\.spec\.ts/,
+      timeout: 60000, // Longer timeout for perf tests
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // ============================================
+    // BROWSER-SPECIFIC PROJECTS
+    // ============================================
 
     // Desktop Chrome - main test suite
     {
@@ -106,7 +201,7 @@ export default defineConfig({
 
     // Mobile Chrome
     {
-      name: 'Mobile Chrome',
+      name: 'mobile-chrome',
       use: {
         ...devices['Pixel 5'],
         storageState: 'playwright/.auth/user.json',
@@ -116,13 +211,17 @@ export default defineConfig({
 
     // Mobile Safari
     {
-      name: 'Mobile Safari',
+      name: 'mobile-safari',
       use: {
         ...devices['iPhone 12'],
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],
     },
+
+    // ============================================
+    // SPECIAL PURPOSE PROJECTS
+    // ============================================
 
     // Unauthenticated tests
     {
@@ -140,6 +239,26 @@ export default defineConfig({
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],
+    },
+
+    // Visual regression tests
+    {
+      name: 'visual',
+      testMatch: /.*\.visual\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
+    // API tests (no browser)
+    {
+      name: 'api',
+      testMatch: /.*\.api\.spec\.ts/,
+      use: {
+        // No browser needed for API tests
+      },
     },
   ],
 

@@ -4,10 +4,13 @@
  * Environment Variables:
  * - NEXT_PUBLIC_APP_ENV: "local" | "staging" | "production" (default: "local")
  * - ALLOW_DEMO_DATA: "true" | "false" (default: "false")
+ * - E2E_ENABLED: "true" | "false" - enables test API endpoints (staging only)
+ * - E2E_TEST_SECRET: shared secret for test API authentication
  *
  * Usage:
  * - In staging/production: ALLOW_DEMO_DATA must be "false"
  * - Demo data should ONLY be used in local development
+ * - E2E test API is ONLY available in staging with valid secret
  */
 
 export type AppEnv = "local" | "staging" | "production"
@@ -22,9 +25,26 @@ export const IS_PROD = APP_ENV === "production"
 export const ALLOW_DEMO_DATA =
   IS_LOCAL && (process.env.ALLOW_DEMO_DATA ?? "false").toLowerCase() === "true"
 
+// E2E Testing configuration
+// E2E_ENABLED: allows test endpoints to be active (local/staging only)
+// E2E_TEST_SECRET: shared secret for authenticating test API calls
+export const E2E_ENABLED =
+  (IS_LOCAL || IS_STAGING) &&
+  (process.env.E2E_ENABLED ?? "false").toLowerCase() === "true"
+
+export const E2E_TEST_SECRET = process.env.E2E_TEST_SECRET ?? ""
+
 // Helper to gate demo content - returns true only when safe to show demo data
 export function canShowDemoData(): boolean {
   return ALLOW_DEMO_DATA
+}
+
+// Helper to validate E2E test request authorization
+export function isValidE2ERequest(providedSecret: string | null): boolean {
+  if (!E2E_ENABLED) return false
+  if (!E2E_TEST_SECRET) return false
+  if (!providedSecret) return false
+  return providedSecret === E2E_TEST_SECRET
 }
 
 // Helper for feature flags that should only be active in certain environments
