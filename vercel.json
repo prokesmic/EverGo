@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/strava-sync",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/jobs/run",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 7 * * *"
     }
   ]
 }
