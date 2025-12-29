@@ -7,6 +7,21 @@ import { Plus, Flame, TrendingUp, MapPin, Trophy, Activity, ChevronRight } from 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import type { ResolvedHero } from "@/lib/hero/heroResolver"
+import { useState } from "react"
+
+// Category-specific Unsplash fallbacks (guaranteed to work)
+const CATEGORY_FALLBACKS: Record<string, string> = {
+  endurance: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1920&q=80",
+  strength: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1920&q=80",
+  water: "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1920&q=80",
+  winter: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=1920&q=80",
+  team: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1920&q=80",
+  racket: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=1920&q=80",
+  combat: "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=1920&q=80",
+  outdoor: "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1920&q=80",
+  mindbody: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1920&q=80",
+  generic: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1920&q=80",
+}
 
 interface WelcomeHeroProps {
   name: string
@@ -55,28 +70,49 @@ export function WelcomeHero({
     return "Good evening"
   }
 
-  // Use hero image URL or fall back to Unsplash
-  const backgroundImage = hero?.imageUrl ??
+  // Primary image URL
+  const primaryImage = hero?.imageUrl ??
     "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1920&q=80"
 
+  // Fallback image based on category
+  const fallbackImage = CATEGORY_FALLBACKS[hero?.category ?? "generic"] ?? CATEGORY_FALLBACKS.generic
+
+  // State for image error handling
+  const [imageSrc, setImageSrc] = useState(primaryImage)
+  const [hasError, setHasError] = useState(false)
+
   const objectPosition = hero?.image?.objectPosition ?? "50% 35%"
+
+  const handleImageError = () => {
+    if (!hasError) {
+      setHasError(true)
+      setImageSrc(fallbackImage)
+    }
+  }
 
   return (
     <section className="relative w-full overflow-hidden min-h-[280px] md:min-h-[320px]">
       {/* Sport-specific background image */}
       <div className="absolute inset-0">
         <Image
-          src={backgroundImage}
+          src={imageSrc}
           alt={`${hero?.sportName ?? primarySport} background`}
           fill
           priority
           sizes="(max-width: 1024px) 100vw, 1400px"
           className="object-cover"
           style={{ objectPosition }}
+          onError={handleImageError}
         />
-        {/* Dark gradient overlays for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/30" />
+        {/* Premium overlay system - allows image to show through beautifully */}
+        {/* 1. Subtle indigo/blue tint for brand feel */}
+        <div className="absolute inset-0 bg-indigo-950/20 mix-blend-multiply" />
+        {/* 2. Left gradient for text readability (softer) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/40 to-transparent" />
+        {/* 3. Bottom gradient for bottom content */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20" />
+        {/* 4. Subtle noise texture for premium feel */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
       </div>
 
       {/* Accent glows */}
