@@ -9,6 +9,7 @@ import Link from "next/link"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { Input } from "@/components/ui/input"
+import { SportGlyph } from "@/components/sports/SportGlyph"
 
 export const dynamic = 'force-dynamic'
 
@@ -66,14 +67,15 @@ export default async function TeamsPage() {
                             key={team.id}
                             href={`/teams/${team.slug}`}
                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors"
+                            data-testid={`team-mini-${team.id}`}
                         >
-                            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                                {team.logoUrl ? (
-                                    <img src={team.logoUrl} alt={team.name} className="w-full h-full rounded-lg object-cover" />
-                                ) : (
-                                    <span className="text-sm">{team.sport?.icon || '👥'}</span>
-                                )}
-                            </div>
+                            {team.logoUrl ? (
+                                <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
+                                    <img src={team.logoUrl} alt={team.name} className="w-full h-full object-cover" />
+                                </div>
+                            ) : (
+                                <SportGlyph sport={team.sport} size="md" />
+                            )}
                             <div className="min-w-0 flex-1">
                                 <div className="font-medium text-sm truncate">{team.name}</div>
                                 <div className="text-xs text-muted-foreground">{team._count?.members || 0} members</div>
@@ -162,13 +164,14 @@ export default async function TeamsPage() {
                 <Input
                     placeholder="Search teams..."
                     className="pl-9 h-9"
+                    data-testid="teams-search"
                 />
             </div>
         </div>
     )
 
     const actions = (
-        <Button asChild size="sm" className="gap-1.5">
+        <Button asChild size="sm" className="gap-1.5" data-testid="teams-create">
             <Link href="/teams/create">
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Create Team</span>

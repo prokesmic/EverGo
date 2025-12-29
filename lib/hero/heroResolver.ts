@@ -107,6 +107,53 @@ export function buildSupabasePublicUrl(path: string): string | null {
   return `${base}/storage/v1/object/public/${HERO_BUCKET}/${path}`
 }
 
+// Sport-specific Unsplash fallback images (higher priority than category)
+const SPORT_FALLBACK_IMAGES: Record<string, string[]> = {
+  kitesurfing: [
+    "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1920&q=80", // Kitesurfer jumping
+    "https://images.unsplash.com/photo-1568430462989-44163eb1752f?auto=format&fit=crop&w=1920&q=80", // Kite in sky
+    "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1920&q=80", // Kiteboarding action
+  ],
+  running: [
+    "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=1920&q=80",
+  ],
+  cycling: [
+    "https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&w=1920&q=80",
+  ],
+  swimming: [
+    "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1519315901367-f34ff9154487?auto=format&fit=crop&w=1920&q=80",
+  ],
+  skiing: [
+    "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1605540436563-5bca919ae766?auto=format&fit=crop&w=1920&q=80",
+  ],
+  tennis: [
+    "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=1920&q=80",
+  ],
+  basketball: [
+    "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1574623452334-1e0ac2b3ccb4?auto=format&fit=crop&w=1920&q=80",
+  ],
+  yoga: [
+    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1920&q=80",
+  ],
+  bouldering: [
+    "https://images.unsplash.com/photo-1564769662533-4f00a87b4056?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1522163182402-834f871fd851?auto=format&fit=crop&w=1920&q=80",
+  ],
+  boxing: [
+    "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1517438322307-e67f79e6e5fb?auto=format&fit=crop&w=1920&q=80",
+  ],
+}
+
 // Fallback to Unsplash images when Supabase bucket not available
 const FALLBACK_IMAGES: Record<HeroCategory, string> = {
   endurance:
@@ -152,9 +199,21 @@ export function resolveHeroForSport(params: {
 
   const image = pool[idx]
 
-  // Try Supabase URL first, fall back to Unsplash
+  // Try Supabase URL first, then sport-specific fallback, then category fallback
   const supabaseUrl = buildSupabasePublicUrl(image.path)
-  const imageUrl = supabaseUrl ?? FALLBACK_IMAGES[category]
+  let imageUrl = supabaseUrl
+
+  if (!imageUrl) {
+    // Sport-specific Unsplash fallbacks (pick deterministically)
+    const sportFallbacks = SPORT_FALLBACK_IMAGES[sportSlug]
+    if (sportFallbacks?.length) {
+      const fallbackIdx = hashToIndex(seed, sportFallbacks.length)
+      imageUrl = sportFallbacks[fallbackIdx]
+    } else {
+      // Fall back to category-based image
+      imageUrl = FALLBACK_IMAGES[category]
+    }
+  }
 
   return { sportName: sport.name, sportSlug, category, image, imageUrl }
 }

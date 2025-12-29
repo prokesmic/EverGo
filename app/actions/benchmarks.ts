@@ -89,6 +89,7 @@ export async function upsertUserPb(params: UpsertPbParams) {
   revalidatePath("/onboarding/benchmarks")
   revalidatePath("/profile")
   revalidatePath("/rankings")
+  revalidatePath("/settings/personal-bests")
 
   return { ok: true }
 }
@@ -110,6 +111,7 @@ export async function deleteUserPb(benchmarkId: string) {
 
   revalidatePath("/profile")
   revalidatePath("/rankings")
+  revalidatePath("/settings/personal-bests")
 
   return { ok: true }
 }
@@ -425,4 +427,71 @@ export async function getSportBenchmarks(sportId: string) {
   })
 
   return benchmarks
+}
+
+/**
+ * Get all benchmarks grouped by sport for user's active sports
+ * Used for the Personal Bests settings page
+ */
+export async function getUserSportsBenchmarks() {
+  const userId = await getCurrentUserId()
+
+  // Get user's active sports
+  const userSports = await prisma.userSport.findMany({
+    where: {
+      userId,
+      status: "ACTIVE",
+    },
+    include: {
+      sport: true,
+    },
+    orderBy: { priority: "asc" },
+  })
+
+  if (userSports.length === 0) {
+    return []
+  }
+
+  const sportIds = userSports.map((us) => us.sportId)
+
+  // Get all benchmarks for these sports
+  const benchmarks = await prisma.benchmarkDefinition.findMany({
+    where: {
+      sportId: { in: sportIds },
+      isActive: true,
+    },
+    orderBy: [{ rankWeight: "desc" }, { name: "asc" }],
+  })
+
+  // Get user's PBs for all these benchmarks
+  const userPbs = await prisma.userBenchmarkBest.findMany({
+    where: {
+      userId,
+      benchmarkId: { in: benchmarks.map((b) => b.id) },
+    },
+  })
+
+  const pbsByBenchmarkId = new Map(userPbs.map((pb) => [pb.benchmarkId, pb]))
+
+  // Group by sport
+  return userSports.map((userSport, index) => {
+    const sportBenchmarks = benchmarks
+      .filter((b) => b.sportId === userSport.sportId)
+      .map((benchmark) => ({
+        ...benchmark,
+        userPb: pbsByBenchmarkId.get(benchmark.id) ?? null,
+      }))
+
+    // Split into primary (top 5 by rankWeight) and secondary
+    const primaryBenchmarks = sportBenchmarks.slice(0, 5)
+    const secondaryBenchmarks = sportBenchmarks.slice(5)
+
+    return {
+      sport: userSport.sport,
+      isPrimary: index === 0,
+      priority: userSport.priority,
+      primaryBenchmarks,
+      secondaryBenchmarks,
+    }
+  })
 }

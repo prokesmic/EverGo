@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { User, Dumbbell, CreditCard, Bell, Shield, ChevronLeft } from "lucide-react"
+import { User, Dumbbell, CreditCard, Bell, Shield, ChevronLeft, Trophy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AppContainer } from "@/components/layout/AppContainer"
 import { MobileNavSelect } from "@/components/layout/MobileNavSelect"
@@ -19,6 +19,12 @@ const settingsNavItems = [
     icon: Dumbbell,
     label: "Sports",
     description: "Your sports & skill levels",
+  },
+  {
+    href: "/settings/personal-bests",
+    icon: Trophy,
+    label: "Personal Bests",
+    description: "Manage your PBs & records",
   },
   {
     href: "/settings/subscription",
