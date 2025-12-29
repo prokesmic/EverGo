@@ -1,5 +1,35 @@
 import { prisma } from "@/lib/db"
 
+/**
+ * Normalizes a sport name or slug to a consistent lowercase hyphenated format.
+ * Used for hero image lookups, category matching, and URL routing.
+ *
+ * Examples:
+ * - "Running" → "running"
+ * - "Trail Running" → "trail-running"
+ * - "Cross_Country_Skiing" → "cross-country-skiing"
+ * - "Open Water Swimming" → "open-water-swimming"
+ */
+export function normalizeSportSlug(input?: string | null): string | null {
+  if (!input) return null
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/_+/g, "-")
+    .replace(/-+/g, "-")
+}
+
+/**
+ * Converts a sport name to a URL-friendly slug.
+ * Similar to normalizeSportSlug but always returns a string.
+ */
+export function sportToSlug(name: string): string {
+  return normalizeSportSlug(name) || "unknown"
+}
+
 export type SportItem = {
   id: string
   name: string

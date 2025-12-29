@@ -71,7 +71,7 @@ export function MobileHeader() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-border-light lg:hidden pt-safe">
+      <header data-testid="mobile-header" className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-border-light lg:hidden pt-safe">
         <div className="flex items-center justify-between h-14 px-4">
           {/* Left: Hamburger Menu + Logo */}
           <div className="flex items-center gap-2">
@@ -81,6 +81,7 @@ export function MobileHeader() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  data-testid="mobile-menu-trigger"
                   className="w-10 h-10 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-secondary"
                   aria-label="Open menu"
                 >
