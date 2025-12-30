@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { ActivityPostCard } from "./activity-post-card"
-import { SuggestedAthletesCarousel } from "./suggested-athletes-carousel"
+import { SuggestedAthletes } from "@/components/recommendations/SuggestedAthletes"
 import { ActivityCardSkeleton } from "@/components/ui/skeleton"
 import { Loader2 } from "lucide-react"
 
@@ -73,9 +73,9 @@ export function Feed({ type = "all", refreshTrigger }: FeedProps) {
     }
 
     if (posts.length === 0) {
-        // Show SuggestedAthletesCarousel instead of generic empty state
+        // Show SuggestedAthletes instead of generic empty state
         // This drives engagement by helping users build their network
-        return <SuggestedAthletesCarousel />
+        return <SuggestedAthletes variant="cards" title="Build Your Network" />
     }
 
     return (

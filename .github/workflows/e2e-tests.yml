@@ -23,9 +23,33 @@ env:
   E2E_TEST_SECRET: ${{ secrets.E2E_TEST_SECRET }}
 
 jobs:
-  # Build job - runs once
+  # Build job - runs once with proper env validation
   build:
+    name: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      NODE_ENV: production
+
+      # REQUIRED SECRETS for Next.js build
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+
+      # Prisma - needed for prisma generate
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+      # Supabase - if imported at build time
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      # Strava - if referenced at build time
+      STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+      STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+      STRAVA_REDIRECT_URI: ${{ secrets.STRAVA_REDIRECT_URI }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -38,8 +62,45 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Validate required env (fail fast with clear message)
+        run: |
+          node -e "
+          const required = [
+            'NEXTAUTH_URL',
+            'NEXTAUTH_SECRET',
+            'DATABASE_URL',
+            'DIRECT_URL',
+          ];
+          const missing = required.filter(k => !process.env[k] || String(process.env[k]).trim()==='');
+          if (missing.length) {
+            console.error('\\n❌ Missing GitHub Secrets / env vars for CI build:');
+            missing.forEach(m => console.error('  - ' + m));
+            console.error('\\nGo to: GitHub repo → Settings → Secrets and variables → Actions → New repository secret');
+            process.exit(1);
+          }
+          console.log('✅ Required env present');
+          "
+
+      - name: Prisma generate (safe; does not touch DB)
+        run: npx prisma generate
+
+      - name: Typecheck
+        run: npm run typecheck || npx tsc --noEmit
+
+      - name: Build (capture logs)
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee next-build.log
+
+      - name: Upload build log (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            next-build.log
+            npm-debug.log
+          if-no-files-found: ignore
 
       - name: Upload build
         uses: actions/upload-artifact@v4

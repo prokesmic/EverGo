@@ -204,12 +204,31 @@ model Discipline {
   primaryMetric   String
   rankingFormula  String
   lowerIsBetter   Boolean   @default(true)
-  
+
+  // New fields for discipline-based rankings
+  unit            String?   // "sec", "km", "m/s", "watts", "kg", "points"
+  scoringKind     ScoringKind @default(PB_BEST) // How to compute leaderboard
+  validityMonths  Int       @default(24)        // Ranking validity window
+  isActive        Boolean   @default(true)
+  displayOrder    Int       @default(0)         // For UI ordering
+
+  // Link to primary benchmark for this discipline
+  primaryBenchmarkId String?
+
   activities      Activity[]
   personalRecords PersonalRecord[]
   rankings        Ranking[]
-  
+  leaderboardCache DisciplineLeaderboardCache[]
+  feedItems       FeedItem[]
+
   @@unique([sportId, slug])
+  @@index([sportId, isActive])
+}
+
+enum ScoringKind {
+  PB_BEST      // Best personal best (default for most sports)
+  PERIOD_BEST  // Best value within a rolling window
+  PERIOD_SUM   // Sum of values in rolling window (activity score)
 }
 
 enum SportCategory {
@@ -1779,4 +1798,148 @@ model UserActivityScore {
   @@index([asOfDate, windowDays, activityScore(sort: Desc)])
   @@index([asOfDate, windowDays, country, activityScore(sort: Desc)])
   @@index([asOfDate, windowDays, city, activityScore(sort: Desc)])
+}
+
+// =============================================================================
+// DISCIPLINE-BASED LEADERBOARD CACHE
+// =============================================================================
+
+model DisciplineLeaderboardCache {
+  id              String    @id @default(cuid())
+  disciplineId    String
+  discipline      Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+
+  // Scope definition
+  scope           String    // GLOBAL, COUNTRY, CITY, TEAM
+  scopeValue      String?   // null for global, "Czech Republic" for country, etc.
+
+  // Cached leaderboard data (top 100)
+  leaderboard     String    // JSON: [{userId, rank, value, formattedValue, delta, name, avatar}]
+  totalUsers      Int
+
+  calculatedAt    DateTime  @default(now())
+
+  @@unique([disciplineId, scope, scopeValue])
+  @@index([disciplineId])
+}
+
+// =============================================================================
+// FEED ITEMS (Highlights Feed)
+// =============================================================================
+
+enum FeedItemType {
+  PERSONAL_BEST
+  RANK_DELTA
+  RIVALRY_SWING
+  RIVALRY_COMPLETED
+  TEAM_WIN
+  NOTABLE_ACTIVITY
+  NEW_FOLLOW
+  BADGE_EARNED
+  STREAK_MILESTONE
+}
+
+model FeedItem {
+  id              String       @id @default(cuid())
+  createdAt       DateTime     @default(now())
+
+  type            FeedItemType
+  actorUserId     String       // User who triggered the event
+  subjectUserId   String?      // Target user (for follows, rivalries)
+
+  // Related entities
+  activityId      String?
+  disciplineId    String?
+  discipline      Discipline?  @relation(fields: [disciplineId], references: [id])
+  rivalryId       String?
+  competitionId   String?
+  badgeId         String?
+
+  // Delta/value for rankings
+  deltaRank       Int?
+  deltaValue      Float?
+  newValue        Float?
+  formattedValue  String?
+
+  // Display
+  title           String
+  subtitle        String?
+  imageUrl        String?
+
+  // Visibility
+  visibility      String       @default("PUBLIC") // PUBLIC, FOLLOWERS, PRIVATE
+
+  // Engagement
+  likesCount      Int          @default(0)
+  commentsCount   Int          @default(0)
+
+  // Computed highlight score (for feed ordering)
+  highlightScore  Int          @default(0)
+
+  @@index([actorUserId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([type, createdAt(sort: Desc)])
+}
+
+// =============================================================================
+// INVITE CODES (Alpha Gating)
+// =============================================================================
+
+model InviteCode {
+  id              String    @id @default(cuid())
+  code            String    @unique
+
+  // Creator
+  createdByUserId String?
+
+  // Usage limits
+  maxUses         Int       @default(1)
+  usedCount       Int       @default(0)
+
+  // Validity
+  expiresAt       DateTime?
+  isActive        Boolean   @default(true)
+
+  // Tracking
+  usages          InviteCodeUsage[]
+
+  createdAt       DateTime  @default(now())
+
+  @@index([code])
+  @@index([isActive, expiresAt])
+}
+
+model InviteCodeUsage {
+  id              String     @id @default(cuid())
+  inviteCodeId    String
+  inviteCode      InviteCode @relation(fields: [inviteCodeId], references: [id], onDelete: Cascade)
+
+  usedByUserId    String
+  usedAt          DateTime   @default(now())
+
+  @@unique([inviteCodeId, usedByUserId])
+}
+
+// =============================================================================
+// ANALYTICS EVENTS (Simple tracking)
+// =============================================================================
+
+model AnalyticsEvent {
+  id              String    @id @default(cuid())
+  createdAt       DateTime  @default(now())
+
+  // Event info
+  eventName       String    // onboarding_complete, connect_strava, activity_created, etc.
+  userId          String?
+  sessionId       String?
+
+  // Properties (JSON)
+  properties      Json?
+
+  // Context
+  userAgent       String?
+  ipCountry       String?
+
+  @@index([eventName, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
 }
