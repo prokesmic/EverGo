@@ -87,6 +87,9 @@ model User {
 
   // Competition Engine
   competitionsCreated Competition[]       @relation("CompetitionCreatedBy")
+
+  // Most Active Scores
+  activityScores      UserActivityScore[]
 }
 
 model UserStats {
@@ -314,6 +317,10 @@ model Activity {
   anomalyScore     Int?             // 0-100, higher = more suspicious
   isAnomalous      Boolean          @default(false)
   anomalies        ActivityAnomaly[]
+
+  // Most Active / Effort scoring
+  effortPoints     Int              @default(0) // Normalized cross-sport effort score
+  rpe              Int?             // Rate of Perceived Exertion (1-10, manual input)
 
   @@unique([source, externalId])
   @@index([rivalryId])
@@ -1742,4 +1749,34 @@ model RivalryResult {
 
   @@index([winnerUserId])
   @@index([loserUserId])
+}
+
+// --- Most Active / Universal Activity Score ---
+
+model UserActivityScore {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Snapshot date (start of day UTC)
+  asOfDate      DateTime
+
+  // Rolling window configuration
+  windowDays    Int      @default(28) // 28-day rolling window
+
+  // Computed values
+  totalEffort   Int      // Sum of effortPoints in window
+  activityScore Int      // Scaled 0-1000 for leaderboard
+  activityCount Int      @default(0) // Number of activities in window
+
+  // Location for regional rankings (denormalized from User)
+  country       String?
+  city          String?
+
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, asOfDate, windowDays])
+  @@index([asOfDate, windowDays, activityScore(sort: Desc)])
+  @@index([asOfDate, windowDays, country, activityScore(sort: Desc)])
+  @@index([asOfDate, windowDays, city, activityScore(sort: Desc)])
 }
