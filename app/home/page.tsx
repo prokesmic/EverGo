@@ -5,8 +5,7 @@ import { prisma } from "@/lib/db"
 import { WelcomeHero } from "@/components/dashboard/WelcomeHero"
 import { PulseRail } from "@/components/vapor/PulseRail"
 import { RankingSpotlight } from "@/components/widgets/RankingSpotlight"
-import { ActiveRivalryCard } from "@/components/vapor/ActiveRivalryCard"
-import { ActiveTeamBattle } from "@/components/vapor/BattleBar"
+import { CompeteNowDeckWrapper } from "@/components/home/CompeteNowDeckWrapper"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
 import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestions-wrapper"
@@ -17,13 +16,14 @@ import { getHomeHeroForUser } from "@/lib/hero/getHomeHero"
 export const dynamic = 'force-dynamic'
 
 /**
- * Home Dashboard Page - Hero-First Layout
+ * Home Dashboard Page - Competition-First Layout
  *
  * Layout Order:
  * 1. WelcomeHero (Full-width anchor with stats + Log Activity CTA)
  * 2. PulseRail (Stories-style friend activity)
- * 3. Motivation Zone (Rivalry + Ranking widgets)
- * 4. Deep Data (Summary + Feed)
+ * 3. CompeteNowDeck (Active rivalries, challenges, team battles - #1 priority)
+ * 4. RankingSpotlight (Rank + movement status)
+ * 5. Feed + Sidebar (Planning & Social)
  */
 export default async function HomePage() {
   try {
@@ -87,27 +87,29 @@ export default async function HomePage() {
     const hero = await getHomeHeroForUser(user.id)
 
     return (
-      <main className="min-h-screen bg-slate-50 pb-20 md:pb-0">
+      <main className="min-h-screen bg-slate-50 pb-20 md:pb-0" data-testid="home-page">
         {/* ============================================
             SECTION 1: THE ANCHOR - Welcome Hero
             Full-width, dark background, primary CTA
             Contains: Stats + Log Activity CTA
         ============================================ */}
-        <WelcomeHero
-          name={user.displayName || "Athlete"}
-          avatarUrl={user.avatarUrl || undefined}
-          location={user.city || "Prague, Czech Republic"}
-          primarySport={hero.sportName || primarySport}
-          sportIndex={userStats?.sportIndex || 742}
-          sportIndexTrend={38}
-          streakDays={14}
-          weeklyDistance={weeklyDistance}
-          weeklyTime={weeklyTime}
-          weeklyActivities={weeklyActivities.length}
-          globalRank={userStats?.globalRank || undefined}
-          cityRank={userStats?.cityRank || undefined}
-          hero={hero}
-        />
+        <div data-testid="home-slot-hero">
+          <WelcomeHero
+            name={user.displayName || "Athlete"}
+            avatarUrl={user.avatarUrl || undefined}
+            location={user.city || "Prague, Czech Republic"}
+            primarySport={hero.sportName || primarySport}
+            sportIndex={userStats?.sportIndex || 742}
+            sportIndexTrend={38}
+            streakDays={14}
+            weeklyDistance={weeklyDistance}
+            weeklyTime={weeklyTime}
+            weeklyActivities={weeklyActivities.length}
+            globalRank={userStats?.globalRank || undefined}
+            cityRank={userStats?.cityRank || undefined}
+            hero={hero}
+          />
+        </div>
 
         {/* ============================================
             SECTION 2: THE PULSE - Friend Activity Rail
@@ -122,36 +124,41 @@ export default async function HomePage() {
         {/* ============================================
             SECTION 3: MAIN CONTENT GRID
             12-column grid: Main (8) + Sidebar (4)
-            Time Horizon Flow: Motivation → Action → Planning
+            Order: Compete → Rank → Feed
         ============================================ */}
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
 
-            {/* MAIN COLUMN (Span 8) - Rankings First, Then Competition */}
-            <div className="lg:col-span-8 space-y-6">
+            {/* MAIN COLUMN (Span 8) - Compete First, Then Rankings */}
+            <div className="lg:col-span-8 space-y-5">
 
-              {/* Rankings Spotlight - #1 Prominence (compact variant) */}
-              <RankingSpotlight
-                variant="compact"
-                globalRank={userStats?.globalRank || 1234}
-                globalRankChange={-5}
-                cityRank={userStats?.cityRank || 42}
-                cityRankChange={-2}
-                cityName={user.city || "Prague"}
-                sportIndex={userStats?.sportIndex || 742}
-                sportIndexChange={38}
-                percentile={15}
-              />
+              {/* Compete Now Deck - #1 Priority (Rivalries, Challenges, Battles) */}
+              <div data-testid="home-slot-compete">
+                <CompeteNowDeckWrapper />
+              </div>
 
-              {/* Competition Zone - Motivation */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <ActiveRivalryCard />
-                <ActiveTeamBattle />
+              {/* Rankings Spotlight - Status Signal (compact) */}
+              <div data-testid="home-slot-rank">
+                <RankingSpotlight
+                  variant="compact"
+                  globalRank={userStats?.globalRank || 1234}
+                  globalRankChange={-5}
+                  cityRank={userStats?.cityRank || 42}
+                  cityRankChange={-2}
+                  cityName={user.city || "Prague"}
+                  sportIndex={userStats?.sportIndex || 742}
+                  sportIndexChange={38}
+                  percentile={15}
+                />
               </div>
 
               {/* Consumption Zone - Social Feed */}
-              <CreatePostBox userImage={user.avatarUrl || undefined} />
-              <Feed />
+              <div data-testid="home-slot-feed">
+                <CreatePostBox userImage={user.avatarUrl || undefined} />
+                <div className="mt-4">
+                  <Feed />
+                </div>
+              </div>
             </div>
 
             {/* SIDEBAR (Span 4) - Planning & Future */}
