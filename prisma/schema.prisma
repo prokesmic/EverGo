@@ -71,6 +71,11 @@ model User {
 
   // Integrations
   stravaConnection StravaConnection?
+
+  // Rivalries
+  rivalriesCreated    Rivalry[]           @relation("RivalryCreatedBy")
+  rivalryParticipations RivalryParticipant[]
+  sportRatings        UserSportRating[]
 }
 
 model UserStats {
@@ -290,7 +295,11 @@ model Activity {
   gearItems       ActivityGear[]
   benchmarkResults ActivityBenchmarkResult[]
 
+  // Rivalry tagging (optional)
+  rivalryId       String?
+
   @@unique([source, externalId])
+  @@index([rivalryId])
   @@index([userId, activityDate(sort: Desc)])
   @@index([disciplineId])
   @@index([sportId])
@@ -1298,4 +1307,144 @@ model IntegrationJob {
   updatedAt DateTime @updatedAt
 
   @@index([status, runAt])
+}
+
+// --- Rivalry Models ---
+
+enum RivalryStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum RivalryMode {
+  VOLUME
+  BENCHMARK
+}
+
+enum RivalryMetric {
+  DISTANCE    // sum of distance in meters
+  DURATION    // sum of duration in seconds
+  SESSIONS    // count of activities
+  TIME        // benchmark: fastest time (lower is better)
+  REPS        // benchmark: max reps (higher is better)
+  SCORE       // benchmark: highest score (higher is better)
+}
+
+enum RivalryVisibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+model Rivalry {
+  id              String           @id @default(cuid())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  status          RivalryStatus    @default(PENDING)
+  visibility      RivalryVisibility @default(FRIENDS)
+
+  // Sport association
+  sportSlug       String
+  sportSubtype    String?          // optional discipline
+
+  // Competition rules
+  mode            RivalryMode
+  metric          RivalryMetric
+  benchmarkId     String?          // if mode=BENCHMARK, link to BenchmarkDefinition
+
+  // Time window
+  windowStart     DateTime
+  windowEnd       DateTime
+  inviteExpiresAt DateTime
+
+  // Creator
+  createdByUserId String
+  createdByUser   User             @relation("RivalryCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  // Participants
+  participants    RivalryParticipant[]
+
+  // Computed snapshot for fast UI
+  leaderUserId    String?
+  lastComputedAt  DateTime?
+
+  @@index([createdByUserId])
+  @@index([status, windowEnd])
+  @@index([sportSlug, status])
+}
+
+model RivalryParticipant {
+  id             String    @id @default(cuid())
+  rivalryId      String
+  rivalry        Rivalry   @relation(fields: [rivalryId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Acceptance status
+  isCreator      Boolean   @default(false)
+  isAccepted     Boolean   @default(false)
+  acceptedAt     DateTime?
+  joinedAt       DateTime?
+
+  // Computed scores (updated on activity log)
+  scoreValue     Float?    // total distance/duration/sessions for VOLUME mode
+  bestValue      Float?    // best benchmark value for BENCHMARK mode
+  bestActivityId String?   // activity that achieved the best benchmark
+  lastActivityAt DateTime?
+  activityCount  Int       @default(0)
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([rivalryId, userId])
+  @@index([userId, rivalryId])
+}
+
+model UserSportRating {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sportSlug String
+
+  // Elo-like rating
+  rating    Int      @default(1000)
+  rd        Int?     // rating deviation (optional for Glicko-2)
+
+  // Stats
+  wins      Int      @default(0)
+  losses    Int      @default(0)
+  ties      Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, sportSlug])
+  @@index([sportSlug, rating(sort: Desc)])
+}
+
+model RivalryResult {
+  id            String   @id @default(cuid())
+  rivalryId     String   @unique
+
+  // Winner determination
+  winnerUserId  String?  // null if tie
+  loserUserId   String?  // null if tie
+  isTie         Boolean  @default(false)
+
+  // Final scores
+  winnerScore   Float?
+  loserScore    Float?
+
+  // Rating changes
+  winnerRatingDelta Int?
+  loserRatingDelta  Int?
+
+  completedAt   DateTime @default(now())
+
+  @@index([winnerUserId])
+  @@index([loserUserId])
 }

@@ -29,37 +29,47 @@ export function CompeteNowDeckWrapper({ className }: CompeteNowDeckWrapperProps)
       }
 
       try {
-        // Fetch rival from existing API
-        const rivalRes = await fetch("/api/rankings/rival")
         const competeItems: CompeteItem[] = []
 
-        if (rivalRes.ok) {
-          const data = await rivalRes.json()
-          if (data.rival) {
-            // Calculate delta (your score - their score means positive = you're ahead)
-            const indexDiff = data.userStats?.sportIndex
-              ? data.userStats.sportIndex - data.rival.sportIndex
-              : null
+        // Fetch active rivalries from new API
+        const rivalriesRes = await fetch("/api/rivalries/active")
+        if (rivalriesRes.ok) {
+          const data = await rivalriesRes.json()
+          if (data.items && data.items.length > 0) {
+            competeItems.push(...data.items)
+          }
+        }
 
-            competeItems.push({
-              kind: "rivalry",
-              id: data.rival.id,
-              endsAt: null, // Auto-assigned rivals don't have end dates currently
-              opponentName: data.rival.displayName || "Rival",
-              opponentAvatarUrl: data.rival.avatarUrl,
-              sportSlug: null, // Could be derived from primary sport
-              delta: indexDiff,
-              myScore: data.userStats?.sportIndex,
-              theirScore: data.rival.sportIndex,
-              status:
-                indexDiff === null
-                  ? "UNKNOWN"
-                  : indexDiff > 0
-                    ? "WINNING"
-                    : indexDiff < 0
-                      ? "LOSING"
-                      : "TIED",
-            })
+        // Fallback: fetch auto-assigned rival from rankings if no active rivalries
+        if (competeItems.length === 0) {
+          const rivalRes = await fetch("/api/rankings/rival")
+          if (rivalRes.ok) {
+            const data = await rivalRes.json()
+            if (data.rival) {
+              const indexDiff = data.userStats?.sportIndex
+                ? data.userStats.sportIndex - data.rival.sportIndex
+                : null
+
+              competeItems.push({
+                kind: "rivalry",
+                id: data.rival.id,
+                endsAt: null,
+                opponentName: data.rival.displayName || "Rival",
+                opponentAvatarUrl: data.rival.avatarUrl,
+                sportSlug: null,
+                delta: indexDiff,
+                myScore: data.userStats?.sportIndex,
+                theirScore: data.rival.sportIndex,
+                status:
+                  indexDiff === null
+                    ? "UNKNOWN"
+                    : indexDiff > 0
+                      ? "WINNING"
+                      : indexDiff < 0
+                        ? "LOSING"
+                        : "TIED",
+              })
+            }
           }
         }
 
