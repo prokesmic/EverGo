@@ -12,18 +12,20 @@ import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestion
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
 import { getHomeHeroForUser } from "@/lib/hero/getHomeHero"
+import { HighlightsFeed } from "@/components/home/HighlightsFeed"
 
 export const dynamic = 'force-dynamic'
 
 /**
- * Home Dashboard Page - Competition-First Layout
+ * Home Dashboard Page - Compare → Compete → Social Proof
  *
  * Layout Order:
  * 1. WelcomeHero (Full-width anchor with stats + Log Activity CTA)
  * 2. PulseRail (Stories-style friend activity)
- * 3. CompeteNowDeck (Active rivalries, challenges, team battles - #1 priority)
- * 4. RankingSpotlight (Rank + movement status)
- * 5. Feed + Sidebar (Planning & Social)
+ * 3. RankingSpotlight (Rank + status - #1 visibility)
+ * 4. CompeteNowDeck (Active rivalries, challenges, team battles)
+ * 5. HighlightsFeed (High-signal activity highlights)
+ * 6. Feed + Sidebar (Planning & Social)
  */
 export default async function HomePage() {
   try {
@@ -129,16 +131,11 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-5">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
 
-            {/* MAIN COLUMN (Span 8) - Compete First, Then Rankings */}
+            {/* MAIN COLUMN (Span 8) - Rank First, Then Compete */}
             <div className="lg:col-span-8 space-y-5">
 
-              {/* Compete Now Deck - #1 Priority (Rivalries, Challenges, Battles) */}
-              <div data-testid="home-slot-compete">
-                <CompeteNowDeckWrapper />
-              </div>
-
-              {/* Rankings Spotlight - Status Signal (compact) */}
-              <div data-testid="home-slot-rank">
+              {/* Rankings Spotlight - Status Signal (compact) - #1 visibility */}
+              <div data-testid="home-slot-ranking">
                 <RankingSpotlight
                   variant="compact"
                   globalRank={userStats?.globalRank || 1234}
@@ -150,6 +147,16 @@ export default async function HomePage() {
                   sportIndexChange={38}
                   percentile={15}
                 />
+              </div>
+
+              {/* Compete Now Deck - Rivalries, Challenges, Battles */}
+              <div data-testid="home-slot-compete">
+                <CompeteNowDeckWrapper />
+              </div>
+
+              {/* Highlights Feed - High-signal activity highlights */}
+              <div data-testid="home-slot-highlights">
+                <HighlightsFeed userId={user.id} />
               </div>
 
               {/* Consumption Zone - Social Feed */}
