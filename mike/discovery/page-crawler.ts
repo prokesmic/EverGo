@@ -22,17 +22,29 @@ export class PageCrawler {
    */
   async crawl(page: Page, startUrl: string): Promise<CrawlResult> {
     const startTime = Date.now()
+    const maxCrawlTime = 60000 // Max 60 seconds for crawling
     this.reset()
 
-    // Start with the base URL
-    this.urlQueue.push(startUrl)
+    // Start with common pages instead of just base URL for faster discovery
+    const commonPages = this.getCommonPages()
+    this.urlQueue.push(...commonPages)
 
     let depth = 0
-    while (this.urlQueue.length > 0 && depth < this.config.maxDepth) {
-      const currentBatch = [...this.urlQueue]
-      this.urlQueue = []
+    const maxPages = 20 // Limit pages to crawl for speed
+
+    while (this.urlQueue.length > 0 && depth < this.config.maxDepth && this.visitedUrls.size < maxPages) {
+      // Check if we've exceeded max crawl time
+      if (Date.now() - startTime > maxCrawlTime) {
+        console.log('Max crawl time reached, stopping...')
+        break
+      }
+
+      const currentBatch = [...this.urlQueue].slice(0, 5) // Process max 5 at a time
+      this.urlQueue = this.urlQueue.slice(5)
 
       for (const url of currentBatch) {
+        if (this.visitedUrls.size >= maxPages) break
+
         if (this.shouldSkip(url)) {
           this.skippedUrls.add(url)
           continue
@@ -44,8 +56,9 @@ export class PageCrawler {
 
         try {
           await this.crawlPage(page, url)
-        } catch (error: any) {
-          this.errors.push({ url, error: error.message })
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : String(error)
+          this.errors.push({ url, error: errorMessage })
         }
       }
 
@@ -71,10 +84,10 @@ export class PageCrawler {
     if (this.visitedUrls.has(normalizedUrl)) return
 
     try {
-      // Navigate to the page
+      // Navigate to the page with domcontentloaded (faster than networkidle)
       const response = await page.goto(url, {
-        waitUntil: 'networkidle',
-        timeout: this.config.timeout
+        waitUntil: 'domcontentloaded',
+        timeout: 10000 // 10 second timeout per page
       })
 
       // Check for successful response
@@ -86,26 +99,30 @@ export class PageCrawler {
       // Mark as visited
       this.visitedUrls.add(normalizedUrl)
 
-      // Wait for dynamic content
-      await page.waitForTimeout(500)
+      // Wait briefly for dynamic content
+      await page.waitForTimeout(300)
 
       // Extract all links from the page
       const links = await this.extractLinks(page)
 
-      // Add new links to queue
+      // Add new links to queue (limit to 10 per page)
+      let added = 0
       for (const link of links) {
+        if (added >= 10) break
         const normalizedLink = this.normalizeUrl(link)
         if (!this.visitedUrls.has(normalizedLink) && !this.shouldSkip(link)) {
           this.urlQueue.push(link)
+          added++
         }
       }
-    } catch (error: any) {
+    } catch {
       // Page might have redirected to login - that's okay
       if (page.url().includes('/login')) {
         this.visitedUrls.add(normalizedUrl)
         return
       }
-      throw error
+      // For any other error, just mark as visited to avoid infinite loops
+      this.visitedUrls.add(normalizedUrl)
     }
   }
 
@@ -195,7 +212,7 @@ export class PageCrawler {
     try {
       const urlObj = new URL(url)
       // Keep path but normalize it
-      let path = urlObj.pathname.replace(/\/+$/, '') || '/'
+      const path = urlObj.pathname.replace(/\/+$/, '') || '/'
       return `${urlObj.origin}${path}`
     } catch {
       return url

@@ -11,13 +11,13 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") || "50")
 
     try {
-        let whereClause: any = {}
+        const whereClause: any = {}
 
         if (scope === "country" && scopeValue) whereClause.country = scopeValue
         if (scope === "city" && scopeValue) whereClause.city = scopeValue
         // Friends/Team scope implementation omitted for brevity
 
-        let orderBy: any = { sportIndex: 'desc' }
+        const orderBy: any = { sportIndex: 'desc' }
 
         // If specific sport, query UserSportStats instead
         if (sport && sport !== "all") {

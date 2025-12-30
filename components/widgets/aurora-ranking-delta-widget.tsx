@@ -15,27 +15,27 @@ type RankingDeltaProps = {
   insights: RankingInsights
 }
 
+function TrendIcon({ delta }: { delta: number }) {
+  if (delta < 0) return <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+  if (delta > 0) return <TrendingDown className="w-3.5 h-3.5 text-red-500" />
+  return <Minus className="w-3.5 h-3.5 text-slate-400" />
+}
+
+function trendLabel(delta: number) {
+  if (delta === 0) return "No change"
+  if (delta < 0) return `+${Math.abs(delta)} places`
+  return `-${delta} places`
+}
+
+function trendColor(delta: number) {
+  if (delta < 0) return "text-emerald-600"
+  if (delta > 0) return "text-red-500"
+  return "text-slate-500"
+}
+
 export function AuroraRankingDeltaWidget({ insights }: RankingDeltaProps) {
   const globalDelta = insights.globalRankChange ?? 0
   const cityDelta = insights.cityRankChange ?? 0
-
-  const TrendIcon = ({ delta }: { delta: number }) => {
-    if (delta < 0) return <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-    if (delta > 0) return <TrendingDown className="w-3.5 h-3.5 text-red-500" />
-    return <Minus className="w-3.5 h-3.5 text-slate-400" />
-  }
-
-  const trendLabel = (delta: number) => {
-    if (delta === 0) return "No change"
-    if (delta < 0) return `+${Math.abs(delta)} places`
-    return `-${delta} places`
-  }
-
-  const trendColor = (delta: number) => {
-    if (delta < 0) return "text-emerald-600"
-    if (delta > 0) return "text-red-500"
-    return "text-slate-500"
-  }
 
   return (
     <div className="eg-card p-6 space-y-4">

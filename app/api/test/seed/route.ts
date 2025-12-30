@@ -156,7 +156,7 @@ async function seedTeamMembership(userId: string) {
 
 async function seedBenchmarkPBs(userId: string, sportId: string | null) {
   // Get sport
-  let sport = sportId
+  const sport = sportId
     ? await prisma.sport.findUnique({ where: { id: sportId } })
     : await prisma.sport.findFirst()
 

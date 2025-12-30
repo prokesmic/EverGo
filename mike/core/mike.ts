@@ -284,10 +284,15 @@ export class Mike {
    * Authenticate with the application
    */
   private async authenticate(page: Page): Promise<void> {
-    await page.goto(`${this.config.baseUrl}/login`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+    try {
+      await page.goto(`${this.config.baseUrl}/login`, { waitUntil: 'domcontentloaded', timeout: 10000 })
+    } catch {
+      // If page fails to load, try without waiting
+      await page.goto(`${this.config.baseUrl}/login`, { timeout: 10000 })
+    }
 
-    // Wait for JavaScript hydration
-    await page.waitForTimeout(2000)
+    // Wait for JavaScript hydration (shorter timeout)
+    await page.waitForTimeout(1000)
 
     // Check if already logged in (redirected away from login)
     const currentUrl = page.url()
@@ -295,17 +300,14 @@ export class Mike {
       return // Already authenticated
     }
 
-    // Wait for full page hydration (Next.js client-side rendering)
-    await page.waitForLoadState('networkidle')
-
-    // Wait explicitly for the form to be present and interactive
+    // Wait for form with shorter timeout
     try {
-      await page.waitForSelector('form', { timeout: 10000, state: 'attached' })
+      await page.waitForSelector('form', { timeout: 5000, state: 'attached' })
     } catch {
       // Take screenshot for debugging
       try {
         await page.screenshot({ path: `${this.config.outputDir}/login-debug.png`, fullPage: true })
-      } catch { }
+      } catch { /* ignore */ }
       throw new Error('Login form not found on page')
     }
 
@@ -316,8 +318,8 @@ export class Mike {
     for (const selector of emailSelectors) {
       try {
         // Wait for the element to be visible and attached
-        await page.waitForSelector(selector, { state: 'visible', timeout: 5000 })
-        await page.fill(selector, this.config.testUser.email, { timeout: 5000 })
+        await page.waitForSelector(selector, { state: 'visible', timeout: 3000 })
+        await page.fill(selector, this.config.testUser.email, { timeout: 3000 })
         emailFilled = true
         break
       } catch {
@@ -338,8 +340,8 @@ export class Mike {
 
     for (const selector of passwordSelectors) {
       try {
-        await page.waitForSelector(selector, { state: 'visible', timeout: 5000 })
-        await page.fill(selector, this.config.testUser.password, { timeout: 5000 })
+        await page.waitForSelector(selector, { state: 'visible', timeout: 3000 })
+        await page.fill(selector, this.config.testUser.password, { timeout: 3000 })
         passwordFilled = true
         break
       } catch {
@@ -357,8 +359,8 @@ export class Mike {
 
     for (const selector of submitSelectors) {
       try {
-        await page.waitForSelector(selector, { state: 'visible', timeout: 5000 })
-        await page.click(selector, { timeout: 5000 })
+        await page.waitForSelector(selector, { state: 'visible', timeout: 3000 })
+        await page.click(selector, { timeout: 3000 })
         clicked = true
         break
       } catch {
@@ -372,7 +374,7 @@ export class Mike {
 
     // Wait for navigation away from login page or error message
     try {
-      await page.waitForURL((url) => !url.toString().includes('/login'), { timeout: 10000 })
+      await page.waitForURL((url) => !url.toString().includes('/login'), { timeout: 8000 })
     } catch {
       // Check if there's an error message on the page
       const pageContent = await page.content()

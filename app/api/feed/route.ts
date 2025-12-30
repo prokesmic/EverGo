@@ -25,7 +25,7 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
-        let whereClause: any = {
+        const whereClause: any = {
             visibility: { in: ["PUBLIC", "FRIENDS"] } // Simplified visibility logic
         }
 

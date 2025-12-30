@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const skip = (page - 1) * limit
 
     try {
-        let whereClause: any = {}
+        const whereClause: any = {}
 
         if (sport) {
             whereClause.sport = { slug: sport }

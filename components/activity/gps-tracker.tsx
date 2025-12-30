@@ -40,15 +40,17 @@ export function GPSTracker({ onComplete }: GPSTrackerProps) {
 
   // Request location permission
   useEffect(() => {
+    let isMounted = true
     if ("geolocation" in navigator) {
       navigator.permissions?.query({ name: "geolocation" }).then((result) => {
-        if (result.state === "denied") {
+        if (isMounted && result.state === "denied") {
           setError("Location permission denied. Please enable location services.")
         }
       })
     } else {
       setError("Geolocation is not supported by your browser")
     }
+    return () => { isMounted = false }
   }, [])
 
   // Calculate distance between two points using Haversine formula

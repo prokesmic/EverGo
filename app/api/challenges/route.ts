@@ -42,7 +42,7 @@ export async function GET(request: Request) {
         })
 
         // If user is logged in, fetch their participation status
-        let userParticipation: any = {}
+        const userParticipation: any = {}
         if (session?.user?.email) {
             const user = await prisma.user.findUnique({ where: { email: session.user.email } })
             if (user) {

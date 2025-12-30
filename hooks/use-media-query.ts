@@ -1,13 +1,20 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false)
+  const getMatches = useCallback((q: string): boolean => {
+    if (typeof window !== "undefined") {
+      return window.matchMedia(q).matches
+    }
+    return false
+  }, [])
+
+  const [matches, setMatches] = useState<boolean>(() => getMatches(query))
 
   useEffect(() => {
     const media = window.matchMedia(query)
-    if (media.matches !== matches) {
-      setMatches(media.matches)
-    }
+
+    // Set initial value
+    setMatches(media.matches)
 
     const listener = (event: MediaQueryListEvent) => {
       setMatches(event.matches)
@@ -15,7 +22,7 @@ export function useMediaQuery(query: string): boolean {
 
     media.addEventListener("change", listener)
     return () => media.removeEventListener("change", listener)
-  }, [matches, query])
+  }, [query])
 
   return matches
 }
