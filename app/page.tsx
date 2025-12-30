@@ -1,5 +1,6 @@
 import { LandingHeader } from "@/components/landing/LandingHeader"
 import { LandingHero } from "@/components/landing/LandingHero"
+import { RankingsShowcase } from "@/components/landing/RankingsShowcase"
 import { LandingFeatures } from "@/components/landing/LandingFeatures"
 import { LandingHowItWorks } from "@/components/landing/LandingHowItWorks"
 import { LandingSocialProof } from "@/components/landing/LandingSocialProof"
@@ -18,6 +19,9 @@ export default function Home() {
       <CommandPalette />
       <main className="flex-1 relative z-10" data-testid="landing-main">
         <LandingHero />
+        <section id="rankings">
+          <RankingsShowcase />
+        </section>
         <section id="features">
           <LandingFeatures />
         </section>

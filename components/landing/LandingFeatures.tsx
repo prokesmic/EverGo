@@ -1,6 +1,7 @@
 "use client"
 
-import { Target, Users, TrendingUp, Zap, BarChart3, Trophy } from "lucide-react"
+import { Target, Users, TrendingUp, Zap, BarChart3 } from "lucide-react"
+import { RivalriesWidgetCompact } from "./RivalriesWidgetCompact"
 
 export function LandingFeatures() {
   return (
@@ -18,51 +19,19 @@ export function LandingFeatures() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 max-w-6xl mx-auto">
           {/* Feature 1: Active Rivalries (Large - spans 2 columns, 2 rows) */}
           <div className="md:col-span-2 md:row-span-2 bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-100 relative overflow-hidden group hover:-translate-y-0.5 hover:shadow-xl transition-all">
-            <div className="relative z-10">
+            <div className="relative z-10 mb-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center mb-3">
                 <Target className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-1.5">Active Rivalries</h3>
-              <p className="text-slate-600 text-sm mb-4 max-w-md">
+              <p className="text-slate-600 text-sm max-w-md">
                 The algorithm finds athletes exactly 1% faster than you. Beat them to level up.
               </p>
             </div>
 
-            {/* Rivalry Widget Mockup - Hidden on mobile */}
-            <div className="hidden md:block absolute bottom-0 right-0 w-3/4 lg:translate-y-3 lg:translate-x-3 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-500">
-              <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 mr-3 mb-3">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="relative">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-lg">
-                      You
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
-                      #12
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="h-3 bg-slate-100 rounded-full overflow-hidden mb-2">
-                      <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" style={{ width: "72%" }} />
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 font-medium">142.5 km</span>
-                      <span className="text-red-500 font-bold">12km behind</span>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white font-bold text-lg">
-                      MK
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">
-                      #11
-                    </div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <span className="text-xs text-slate-400 uppercase tracking-wider font-bold">Weekly Challenge</span>
-                  <div className="text-sm text-slate-600 mt-1">4 days remaining</div>
-                </div>
-              </div>
+            {/* Rivalries Widget */}
+            <div className="relative z-10">
+              <RivalriesWidgetCompact />
             </div>
           </div>
 
