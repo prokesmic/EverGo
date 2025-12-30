@@ -14,6 +14,13 @@ export type ResolvedHero = {
   category: HeroCategory
   image: HeroImage
   imageUrl: string
+  // Debug info (for development)
+  debug?: {
+    usedSupabase: boolean
+    usedSportFallback: boolean
+    usedCategoryFallback: boolean
+    supabaseUrl: string | null
+  }
 }
 
 export function sportToSlug(name: string): string {
@@ -374,13 +381,14 @@ const SPORT_FALLBACK_IMAGES: Record<string, string[]> = {
 }
 
 // Fallback to Unsplash images when Supabase bucket not available
+// NOTE: water category uses kitesurfing (not swimming) to be more neutral for all water sports
 const FALLBACK_IMAGES: Record<HeroCategory, string> = {
   endurance:
     "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1920&q=80",
   strength:
     "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1920&q=80",
   water:
-    "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1920&q=80", // kitesurfing - neutral for all water sports
   winter:
     "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=1920&q=80",
   team:
@@ -401,8 +409,9 @@ export function resolveHeroForSport(params: {
   sport: SportLike
   userId?: string
   dateISO?: string
+  includeDebug?: boolean
 }): ResolvedHero {
-  const { sport, userId } = params
+  const { sport, userId, includeDebug } = params
   const sportSlug = sportToSlug(sport.name)
   const category = inferHeroCategoryFromSportName(sport.name)
 
@@ -421,6 +430,9 @@ export function resolveHeroForSport(params: {
   // Try Supabase URL first, then sport-specific fallback, then category fallback
   const supabaseUrl = buildSupabasePublicUrl(image.path)
   let imageUrl = supabaseUrl
+  let usedSupabase = !!supabaseUrl
+  let usedSportFallback = false
+  let usedCategoryFallback = false
 
   if (!imageUrl) {
     // Sport-specific Unsplash fallbacks (pick deterministically)
@@ -428,11 +440,25 @@ export function resolveHeroForSport(params: {
     if (sportFallbacks?.length) {
       const fallbackIdx = hashToIndex(seed, sportFallbacks.length)
       imageUrl = sportFallbacks[fallbackIdx]
+      usedSportFallback = true
     } else {
       // Fall back to category-based image
       imageUrl = FALLBACK_IMAGES[category]
+      usedCategoryFallback = true
     }
   }
 
-  return { sportName: sport.name, sportSlug, category, image, imageUrl }
+  const result: ResolvedHero = { sportName: sport.name, sportSlug, category, image, imageUrl }
+
+  // Include debug info only in development or when explicitly requested
+  if (includeDebug || process.env.NODE_ENV === "development") {
+    result.debug = {
+      usedSupabase,
+      usedSportFallback,
+      usedCategoryFallback,
+      supabaseUrl,
+    }
+  }
+
+  return result
 }

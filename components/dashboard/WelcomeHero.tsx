@@ -10,10 +10,11 @@ import type { ResolvedHero } from "@/lib/hero/heroResolver"
 import { useState } from "react"
 
 // Category-specific Unsplash fallbacks (guaranteed to work)
+// NOTE: water uses kitesurfing (not swimming) to be neutral for all water sports
 const CATEGORY_FALLBACKS: Record<string, string> = {
   endurance: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1920&q=80",
   strength: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1920&q=80",
-  water: "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1920&q=80",
+  water: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1920&q=80", // kitesurfing
   winter: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=1920&q=80",
   team: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1920&q=80",
   racket: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=1920&q=80",
@@ -244,6 +245,43 @@ export function WelcomeHero({
             ) : (
               hero.image.credit.name
             )}
+          </div>
+        )}
+
+        {/* Debug info (development only) */}
+        {hero?.debug && process.env.NODE_ENV !== "production" && (
+          <div className="mt-2 px-3 py-2 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-[10px] font-mono text-white/70 space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">
+                slug: {hero.sportSlug}
+              </span>
+              <span className="px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">
+                category: {hero.category}
+              </span>
+              {hero.debug.usedSupabase && (
+                <span className="px-1.5 py-0.5 rounded bg-emerald-800 text-emerald-300">
+                  Supabase
+                </span>
+              )}
+              {hero.debug.usedSportFallback && (
+                <span className="px-1.5 py-0.5 rounded bg-amber-800 text-amber-300">
+                  Sport Fallback
+                </span>
+              )}
+              {hero.debug.usedCategoryFallback && (
+                <span className="px-1.5 py-0.5 rounded bg-orange-800 text-orange-300">
+                  Category Fallback
+                </span>
+              )}
+              {hasError && (
+                <span className="px-1.5 py-0.5 rounded bg-red-800 text-red-300">
+                  Image Error (using client fallback)
+                </span>
+              )}
+            </div>
+            <div className="truncate opacity-60">
+              src: {imageSrc.slice(0, 80)}...
+            </div>
           </div>
         )}
       </div>

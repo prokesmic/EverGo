@@ -130,8 +130,9 @@ export default async function HomePage() {
             {/* MAIN COLUMN (Span 8) - Rankings First, Then Competition */}
             <div className="lg:col-span-8 space-y-6">
 
-              {/* Rankings Spotlight - #1 Prominence */}
+              {/* Rankings Spotlight - #1 Prominence (compact variant) */}
               <RankingSpotlight
+                variant="compact"
                 globalRank={userStats?.globalRank || 1234}
                 globalRankChange={-5}
                 cityRank={userStats?.cityRank || 42}
