@@ -11,10 +11,11 @@ import type { ResolvedHero } from "@/lib/hero/heroResolver"
 import { useState } from "react"
 
 // Category-specific Unsplash fallbacks (guaranteed to work)
+// NOTE: water uses kitesurfing (not swimming) to be neutral for all water sports
 const CATEGORY_FALLBACKS: Record<string, string> = {
   endurance: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1920&q=80",
   strength: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1920&q=80",
-  water: "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1920&q=80",
+  water: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1920&q=80", // kitesurfing
   winter: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=1920&q=80",
   team: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1920&q=80",
   racket: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=1920&q=80",

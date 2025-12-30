@@ -5,6 +5,7 @@ import { Providers } from "@/components/providers";
 import { MainNav } from "@/components/main-nav";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
+import { MobileTopTabs } from "@/components/layout/MobileTopTabs";
 import { Toaster } from "@/components/ui/sonner";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
@@ -87,6 +88,8 @@ export default function RootLayout({
             <MainNav />
             {/* Mobile Header */}
             <MobileHeader />
+            {/* Mobile Top Tabs (navigation pills) */}
+            <MobileTopTabs />
             {/* Main content with padding for mobile header and nav */}
             <main className="flex-1 pt-14 pb-20 lg:pt-0 lg:pb-0">
               {children}
