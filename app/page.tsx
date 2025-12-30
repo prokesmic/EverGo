@@ -9,14 +9,14 @@ import { LandingFooter } from "@/components/landing/LandingFooter"
 import { LandingUpcoming } from "@/components/landing/LandingUpcoming"
 import { CommandPalette } from "@/components/landing/CommandPalette"
 
-// Static landing page - Platinum theme (Aggressive, performance-focused)
+// Static landing page - Platinum theme (Premium, athletic)
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-orange-200 overflow-x-hidden relative">
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-orange-200 relative isolate overflow-x-clip">
 
       <LandingHeader />
       <CommandPalette />
-      <main className="flex-1 relative z-10">
+      <main className="flex-1 relative z-10" data-testid="landing-main">
         <LandingHero />
         <section id="features">
           <LandingFeatures />

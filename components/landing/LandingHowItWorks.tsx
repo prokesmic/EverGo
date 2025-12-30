@@ -252,27 +252,27 @@ export function LandingHowItWorks() {
   }
 
   return (
-    <section ref={sectionRef} className="w-full py-24 bg-white border-t border-slate-200">
-      <div className="container px-4 md:px-6 mx-auto max-w-7xl">
+    <section ref={sectionRef} className="w-full py-14 sm:py-16 lg:py-20 bg-white border-t border-slate-200" data-testid="landing-how-it-works">
+      <div className="container px-4 sm:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 rounded-full text-white text-sm font-bold mb-4">
-            <Zap className="w-4 h-4 text-orange-500" />
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-900 rounded-full text-white text-xs font-bold mb-4">
+            <Zap className="w-3.5 h-3.5 text-orange-500" />
             <span>Simple to start</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+          <h2 className="text-[clamp(24px,4vw,36px)] font-bold text-slate-900 tracking-[-0.01em] mb-3">
             Get Started in Minutes
           </h2>
-          <p className="text-lg text-slate-500">
+          <p className="text-base text-slate-500">
             No complex setup. No learning curve. Just sign up and start dominating.
           </p>
         </div>
 
         {/* Scrollytelling Layout */}
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
+          <div className="grid lg:grid-cols-2 gap-8 items-start">
             {/* Steps List - Left side */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {steps.map((step, index) => {
                 const Icon = step.icon
                 const isActive = index === activeStep
@@ -283,22 +283,22 @@ export function LandingHowItWorks() {
                     ref={(el) => { stepRefs.current[index] = el }}
                     onClick={() => setActiveStep(index)}
                     className={cn(
-                      "w-full text-left p-6 rounded-2xl transition-all duration-300 cursor-pointer",
+                      "w-full text-left p-4 sm:p-5 rounded-2xl transition-all duration-300 cursor-pointer",
                       isActive
-                        ? "bg-white shadow-xl border-l-4 border-orange-500 border border-slate-200"
+                        ? "bg-white shadow-lg border-l-4 border-orange-500 border border-slate-200"
                         : "bg-slate-50 hover:bg-slate-100 border-l-4 border-transparent border border-slate-100"
                     )}
                   >
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-3">
                       <div
                         className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
                           isActive
-                            ? "bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/20"
+                            ? "bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-md shadow-orange-500/20"
                             : "bg-slate-200 text-slate-500"
                         )}
                       >
-                        <Icon className="w-6 h-6" />
+                        <Icon className="w-5 h-5" />
                       </div>
 
                       <div className="flex-1 min-w-0">
@@ -350,9 +350,9 @@ export function LandingHowItWorks() {
               })}
             </div>
 
-            {/* Sticky Mockup - Right side */}
+            {/* Sticky Mockup - Right side (sticky only on lg+) */}
             <div className="hidden lg:block">
-              <div className="sticky top-1/4">
+              <div className="relative lg:sticky lg:top-24">
                 <div className="relative">
                   {/* Background glow */}
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70" />
@@ -384,18 +384,17 @@ export function LandingHowItWorks() {
         </div>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-16">
+        <div className="text-center mt-10 sm:mt-12">
           <Button
             asChild
-            size="lg"
-            className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-10 py-7 h-auto shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/30 transition-all hover:scale-[1.02] rounded-full"
+            className="h-11 px-5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-[15px] shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-orange-500/25 transition-all"
           >
             <Link href="/register" className="flex items-center gap-2">
               Start Dominating
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </Link>
           </Button>
-          <p className="text-sm text-slate-500 mt-3">No credit card required</p>
+          <p className="text-xs text-slate-500 mt-2">No credit card required</p>
         </div>
       </div>
     </section>

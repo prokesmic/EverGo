@@ -4,33 +4,33 @@ import { Target, Users, TrendingUp, Zap, BarChart3, Trophy } from "lucide-react"
 
 export function LandingFeatures() {
   return (
-    <section className="w-full py-24 bg-white border-t border-slate-200">
-      <div className="container px-4 md:px-6 mx-auto max-w-7xl">
+    <section className="w-full py-14 sm:py-16 lg:py-20 bg-white border-t border-slate-200" data-testid="landing-features">
+      <div className="container px-4 sm:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
-        <div className="mb-16 text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+        <div className="mb-10 sm:mb-12 text-center">
+          <h2 className="text-[clamp(24px,4vw,36px)] font-bold text-slate-900 tracking-[-0.01em] mb-3">
             Not Just Another Tracker.
           </h2>
-          <p className="text-xl text-slate-500">We don't just log miles. We rank them.</p>
+          <p className="text-lg text-slate-600">We don&apos;t just log miles. We rank them.</p>
         </div>
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 max-w-6xl mx-auto">
           {/* Feature 1: Active Rivalries (Large - spans 2 columns, 2 rows) */}
-          <div className="md:col-span-2 md:row-span-2 bg-slate-50 rounded-3xl p-8 border border-slate-100 relative overflow-hidden group hover:-translate-y-1 hover:shadow-2xl transition-all">
+          <div className="md:col-span-2 md:row-span-2 bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-100 relative overflow-hidden group hover:-translate-y-0.5 hover:shadow-xl transition-all">
             <div className="relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center mb-4">
-                <Target className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center mb-3">
+                <Target className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Active Rivalries</h3>
-              <p className="text-slate-500 mb-6 max-w-md">
+              <h3 className="text-xl font-semibold text-slate-900 mb-1.5">Active Rivalries</h3>
+              <p className="text-slate-600 text-sm mb-4 max-w-md">
                 The algorithm finds athletes exactly 1% faster than you. Beat them to level up.
               </p>
             </div>
 
-            {/* Rivalry Widget Mockup */}
-            <div className="absolute bottom-0 right-0 w-full md:w-3/4 translate-y-4 translate-x-4 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-500">
-              <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-5 mr-4 mb-4">
+            {/* Rivalry Widget Mockup - Hidden on mobile */}
+            <div className="hidden md:block absolute bottom-0 right-0 w-3/4 lg:translate-y-3 lg:translate-x-3 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-500">
+              <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 mr-3 mb-3">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="relative">
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center text-white font-bold text-lg">
@@ -67,13 +67,13 @@ export function LandingFeatures() {
           </div>
 
           {/* Feature 2: Squad Battles (Dark) */}
-          <div className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden group hover:-translate-y-1 hover:shadow-2xl transition-all">
+          <div className="bg-slate-900 rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden group hover:-translate-y-0.5 hover:shadow-xl transition-all">
             <div className="relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-3">
+                <Users className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Squad Battles</h3>
-              <p className="text-slate-400 text-sm mb-6">Team vs Team. Weekly wars.</p>
+              <h3 className="text-lg font-semibold mb-1">Squad Battles</h3>
+              <p className="text-slate-400 text-sm mb-4">Team vs Team. Weekly wars.</p>
 
               {/* Team Battle Visual */}
               <div className="space-y-3">
@@ -96,34 +96,34 @@ export function LandingFeatures() {
           </div>
 
           {/* Feature 3: Sport Index (Orange) */}
-          <div className="bg-orange-500 rounded-3xl p-8 text-white relative overflow-hidden group hover:-translate-y-1 hover:shadow-2xl transition-all">
+          <div className="bg-orange-500 rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden group hover:-translate-y-0.5 hover:shadow-xl transition-all">
             <div className="relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-4">
-                <BarChart3 className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+                <BarChart3 className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Sport Index</h3>
-              <p className="text-orange-100 text-sm mb-4">Your universal performance score.</p>
+              <h3 className="text-lg font-semibold mb-1">Sport Index</h3>
+              <p className="text-orange-100 text-sm mb-3">Your universal performance score.</p>
 
               {/* Score Display */}
               <div className="text-center">
-                <div className="text-6xl font-extrabold tracking-tight">847</div>
+                <div className="text-5xl font-bold tracking-tight">847</div>
                 <div className="text-orange-200 text-sm font-medium">+24 this week</div>
               </div>
             </div>
 
             {/* Decorative element */}
-            <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           </div>
 
           {/* Feature 4: Global Rankings (Wide - spans 2 columns) */}
-          <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-slate-200 shadow-lg group hover:-translate-y-1 hover:shadow-2xl transition-all">
-            <div className="flex flex-col md:flex-row md:items-center gap-8">
+          <div className="md:col-span-2 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-md group hover:-translate-y-0.5 hover:shadow-xl transition-all">
+            <div className="flex flex-col md:flex-row md:items-center gap-5">
               <div className="flex-1">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mb-4">
-                  <TrendingUp className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mb-3">
+                  <TrendingUp className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Real Rankings</h3>
-                <p className="text-slate-500 mb-6">
+                <h3 className="text-xl font-semibold text-slate-900 mb-1.5">Real Rankings</h3>
+                <p className="text-slate-600 text-sm mb-4">
                   Compete at every level - from your local club to the global stage.
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -178,26 +178,26 @@ export function LandingFeatures() {
           </div>
 
           {/* Feature 5: Auto Sync */}
-          <div className="bg-white/60 backdrop-blur-md rounded-3xl p-8 border border-white/50 shadow-xl group hover:-translate-y-1 hover:shadow-2xl transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-4">
-              <Zap className="w-6 h-6 text-white" />
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-md group hover:-translate-y-0.5 hover:shadow-xl transition-all">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-3">
+              <Zap className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Auto Sync</h3>
-            <p className="text-slate-500 text-sm mb-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-1">Auto Sync</h3>
+            <p className="text-slate-500 text-sm mb-4">
               Import from Garmin, Strava, Apple Health instantly.
             </p>
 
             {/* Device logos */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {["Garmin", "Strava", "Apple"].map((brand) => (
                 <div
                   key={brand}
-                  className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500"
+                  className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500"
                 >
                   {brand[0]}
                 </div>
               ))}
-              <span className="text-slate-400 text-sm">+12 more</span>
+              <span className="text-slate-400 text-xs">+12 more</span>
             </div>
           </div>
         </div>

@@ -185,28 +185,28 @@ function ComparisonValue({ data, isEvergo = false }: { data: { value: boolean | 
 
 export function LandingComparison() {
   return (
-    <section className="w-full py-24 bg-slate-50">
-      <div className="container px-4 md:px-6 mx-auto max-w-7xl">
+    <section className="w-full py-14 sm:py-16 lg:py-20 bg-slate-50" data-testid="landing-comparison">
+      <div className="container px-4 sm:px-6 mx-auto max-w-7xl">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 rounded-full text-white text-sm font-bold mb-4">
-            <Trophy className="w-4 h-4 text-orange-500" />
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-900 rounded-full text-white text-xs font-bold mb-4">
+            <Trophy className="w-3.5 h-3.5 text-orange-500" />
             <span>See the difference</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+          <h2 className="text-[clamp(24px,4vw,36px)] font-bold text-slate-900 tracking-[-0.01em] mb-3">
             Why Athletes Choose EverGo
           </h2>
-          <p className="text-lg text-slate-500">
+          <p className="text-base text-slate-500">
             We built what other apps won&apos;t. Real competition. Real rankings.
           </p>
         </div>
 
         {/* Comparison Table */}
         <div className="max-w-5xl mx-auto">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-4 gap-4 p-6 bg-white border-b border-slate-200">
-              <div className="font-bold text-slate-900 text-sm uppercase tracking-wide">
+            <div className="grid grid-cols-4 gap-3 p-4 sm:p-5 bg-white border-b border-slate-200">
+              <div className="font-semibold text-slate-900 text-xs uppercase tracking-wide">
                 Feature
               </div>
               {competitors.map((comp) => (
@@ -218,16 +218,16 @@ export function LandingComparison() {
                   )}
                 >
                   {comp.highlight && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-orange-500 to-red-600 text-white text-[10px] font-bold rounded-full whitespace-nowrap">
+                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gradient-to-r from-orange-500 to-red-600 text-white text-[9px] font-bold rounded-full whitespace-nowrap">
                       DOMINATE
                     </div>
                   )}
                   <div className={cn(
-                    "flex flex-col items-center gap-2 p-3 rounded-xl",
-                    comp.highlight && "bg-orange-50 border-2 border-orange-200 shadow-lg shadow-orange-500/10"
+                    "flex flex-col items-center gap-1.5 p-2.5 rounded-xl",
+                    comp.highlight && "bg-orange-50 border-2 border-orange-200 shadow-md shadow-orange-500/10"
                   )}>
                     <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold",
+                      "w-10 h-10 rounded-lg flex items-center justify-center text-base font-bold",
                       comp.highlight
                         ? "bg-gradient-to-br from-orange-500 to-red-600 text-white"
                         : "bg-slate-100 text-slate-500"
@@ -235,12 +235,12 @@ export function LandingComparison() {
                       {comp.logo}
                     </div>
                     <span className={cn(
-                      "font-bold",
+                      "font-semibold text-sm",
                       comp.highlight ? "text-orange-600" : "text-slate-600"
                     )}>
                       {comp.name}
                     </span>
-                    <span className="text-xs text-slate-400">{comp.tagline}</span>
+                    <span className="text-[10px] text-slate-400">{comp.tagline}</span>
                   </div>
                 </div>
               ))}
@@ -289,29 +289,29 @@ export function LandingComparison() {
             ))}
 
             {/* CTA Row */}
-            <div className="grid grid-cols-4 gap-4 p-6 bg-slate-50 border-t border-slate-200">
+            <div className="grid grid-cols-4 gap-3 p-4 sm:p-5 bg-slate-50 border-t border-slate-200">
               <div />
               <div className="flex justify-center">
-                <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 rounded-full">
-                  <Link href="/register" className="flex items-center gap-2">
+                <Button asChild className="h-9 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm shadow-md shadow-orange-500/20 hover:shadow-orange-500/30">
+                  <Link href="/register" className="flex items-center gap-1.5">
                     Start Free
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </Button>
               </div>
               <div className="flex justify-center items-center">
-                <span className="text-sm text-slate-500">$11.99/mo</span>
+                <span className="text-xs text-slate-500">$11.99/mo</span>
               </div>
               <div className="flex justify-center items-center">
-                <span className="text-sm text-slate-500">Free</span>
+                <span className="text-xs text-slate-500">Free</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Note */}
-        <div className="text-center mt-8">
-          <p className="text-sm text-slate-500 italic">
+        <div className="text-center mt-6">
+          <p className="text-xs text-slate-500 italic">
             * Comparison based on free tiers as of December 2025
           </p>
         </div>
