@@ -76,6 +76,17 @@ model User {
   rivalriesCreated    Rivalry[]           @relation("RivalryCreatedBy")
   rivalryParticipations RivalryParticipant[]
   sportRatings        UserSportRating[]
+
+  // Sport Index Events (Explainability)
+  sportIndexSnapshots SportIndexSnapshot[]
+  sportIndexEvents    SportIndexEvent[]
+
+  // Anti-cheat
+  activityAnomalies   ActivityAnomaly[]
+  disputes            Dispute[]           @relation("DisputeReporter")
+
+  // Competition Engine
+  competitionsCreated Competition[]       @relation("CompetitionCreatedBy")
 }
 
 model UserStats {
@@ -298,11 +309,18 @@ model Activity {
   // Rivalry tagging (optional)
   rivalryId       String?
 
+  // Trust & Integrity (Anti-cheat)
+  verificationTier VerificationTier @default(BRONZE)
+  anomalyScore     Int?             // 0-100, higher = more suspicious
+  isAnomalous      Boolean          @default(false)
+  anomalies        ActivityAnomaly[]
+
   @@unique([source, externalId])
   @@index([rivalryId])
   @@index([userId, activityDate(sort: Desc)])
   @@index([disciplineId])
   @@index([sportId])
+  @@index([isAnomalous])
 }
 
 model Ranking {
@@ -1310,6 +1328,283 @@ model IntegrationJob {
 }
 
 // --- Rivalry Models ---
+
+// =============================================================================
+// SPORT INDEX EVENTS (Explainability / Audit Trail)
+// =============================================================================
+
+enum SportIndexEventType {
+  ACTIVITY_ADDED
+  ACTIVITY_EDITED
+  ACTIVITY_DELETED
+  ACTIVITY_IMPORTED
+  PERSONAL_BEST_ADDED
+  PERSONAL_BEST_UPDATED
+  RIVALRY_SCORE_CHANGED
+  RIVALRY_COMPLETED
+  DECAY_APPLIED
+  VERIFICATION_UPGRADED
+  ANOMALY_FLAGGED
+  ADMIN_ADJUSTMENT
+}
+
+enum VerificationTier {
+  BRONZE  // manual no proof
+  SILVER  // manual with proof (photo/gpx) OR trusted device w/o gps
+  GOLD    // device sync w/ gps (Strava/Garmin/Health)
+}
+
+enum EntityType {
+  ACTIVITY
+  PERSONAL_BEST
+  COMPETITION
+}
+
+model SportIndexSnapshot {
+  id        String   @id @default(cuid())
+  userId    String
+  sportSlug String
+  value     Int
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sportSlug])
+  @@index([sportSlug, value])
+}
+
+model SportIndexEvent {
+  id            String              @id @default(cuid())
+  createdAt     DateTime            @default(now())
+
+  userId        String
+  sportSlug     String
+  type          SportIndexEventType
+
+  // the "before/after" so users can understand deltas
+  prevValue     Int?
+  newValue      Int?
+  deltaValue    Int?
+
+  // rank movement (optional; populate when you compute rankings)
+  prevRankCity    Int?
+  newRankCity     Int?
+  prevRankCountry Int?
+  newRankCountry  Int?
+  prevRankGlobal  Int?
+  newRankGlobal   Int?
+
+  // what caused it
+  entityType    EntityType?
+  entityId      String?
+
+  // short message + structured details for UI
+  title         String
+  detailJson    Json?
+
+  // traceability
+  requestId     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, sportSlug, createdAt])
+  @@index([entityType, entityId])
+}
+
+// =============================================================================
+// ANTI-CHEAT (Anomaly Detection + Disputes)
+// =============================================================================
+
+enum AnomalyType {
+  IMPOSSIBLE_PACE
+  IMPOSSIBLE_SPEED
+  IMPOSSIBLE_DISTANCE
+  GPS_JUMP
+  TOO_MANY_MICRO_ACTIVITIES
+}
+
+model ActivityAnomaly {
+  id         String      @id @default(cuid())
+  createdAt  DateTime    @default(now())
+  activityId String
+  userId     String
+  type       AnomalyType
+  severity   Int         // 1-5
+  message    String
+  detailJson Json?
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([activityId])
+  @@index([userId, createdAt])
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED_ACCEPTED
+  RESOLVED_REJECTED
+}
+
+model Dispute {
+  id          String        @id @default(cuid())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  reporterUserId String
+  againstUserId  String?
+
+  competitionId  String?
+  activityId     String?
+
+  reason       String
+  detailJson   Json?
+  status       DisputeStatus @default(OPEN)
+
+  reporter User @relation("DisputeReporter", fields: [reporterUserId], references: [id], onDelete: Cascade)
+
+  @@index([competitionId])
+  @@index([activityId])
+  @@index([status, createdAt])
+}
+
+// =============================================================================
+// UNIFIED COMPETITION ENGINE
+// =============================================================================
+
+enum CompetitionType {
+  RIVALRY
+  CHALLENGE
+  TEAM_BATTLE
+}
+
+enum CompetitionStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  EXPIRED
+  DISPUTED
+}
+
+enum ScoringMode {
+  VOLUME
+  BENCHMARK
+  STREAK
+}
+
+enum ScoringMetric {
+  DISTANCE
+  DURATION
+  SESSIONS
+  TIME
+  REPS
+  SCORE
+  ELEVATION_GAIN
+}
+
+enum ParticipantEntityType {
+  USER
+  TEAM
+}
+
+enum CompetitionEventType {
+  SCORE_CHANGED
+  COMPLETED
+  DISPUTED
+  ACCEPTED
+}
+
+model Competition {
+  id              String            @id @default(cuid())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  type            CompetitionType
+  status          CompetitionStatus @default(PENDING)
+  visibility      RivalryVisibility @default(FRIENDS)
+
+  sportSlug       String?
+  sportSubtype    String?
+
+  windowStart     DateTime
+  windowEnd       DateTime
+
+  scoringMode     ScoringMode
+  scoringMetric   ScoringMetric
+  benchmarkId     String?           // if BENCHMARK mode
+
+  createdByUserId String
+  createdByUser   User              @relation("CompetitionCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  participants    CompetitionParticipant[]
+  snapshots       CompetitionSnapshot[]
+  events          CompetitionEvent[]
+
+  leaderEntityId  String?           // winner userId or teamId depending on competition
+  lastComputedAt  DateTime?
+
+  disputeId       String?           // link to Dispute if status=DISPUTED
+
+  @@index([createdByUserId])
+  @@index([status, windowEnd])
+  @@index([type, status])
+}
+
+model CompetitionParticipant {
+  id              String                @id @default(cuid())
+  competitionId   String
+
+  entityType      ParticipantEntityType
+  entityId        String                // userId or teamId
+
+  joinedAt        DateTime?
+  acceptedAt      DateTime?
+  isAccepted      Boolean               @default(false)
+
+  // rolling computed fields
+  scoreValue      Float?
+  bestValue       Float?
+  bestActivityId  String?
+  lastActivityAt  DateTime?
+
+  competition     Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@index([competitionId])
+  @@unique([competitionId, entityType, entityId])
+}
+
+model CompetitionSnapshot {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  competitionId String
+
+  // normalized payload to render scoreboards and explain changes
+  snapshotJson  Json
+
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@index([competitionId, createdAt])
+}
+
+model CompetitionEvent {
+  id            String               @id @default(cuid())
+  createdAt     DateTime             @default(now())
+  competitionId String
+  type          CompetitionEventType
+  title         String
+  detailJson    Json?
+
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@index([competitionId, createdAt])
+}
+
+// =============================================================================
+// RIVALRY MODELS (keeping existing, will migrate to Competition engine)
+// =============================================================================
 
 enum RivalryStatus {
   PENDING
