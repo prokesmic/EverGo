@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { WelcomeHero } from "@/components/dashboard/WelcomeHero"
 import { PulseRail } from "@/components/vapor/PulseRail"
+import { RankingSpotlight } from "@/components/widgets/RankingSpotlight"
 import { ActiveRivalryCard } from "@/components/vapor/ActiveRivalryCard"
 import { ActiveTeamBattle } from "@/components/vapor/BattleBar"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
@@ -126,10 +127,22 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
 
-            {/* MAIN COLUMN (Span 8) - Motivation & Competition */}
+            {/* MAIN COLUMN (Span 8) - Rankings First, Then Competition */}
             <div className="lg:col-span-8 space-y-6">
 
-              {/* Competition Zone - Motivation First */}
+              {/* Rankings Spotlight - #1 Prominence */}
+              <RankingSpotlight
+                globalRank={userStats?.globalRank || 1234}
+                globalRankChange={-5}
+                cityRank={userStats?.cityRank || 42}
+                cityRankChange={-2}
+                cityName={user.city || "Prague"}
+                sportIndex={userStats?.sportIndex || 742}
+                sportIndexChange={38}
+                percentile={15}
+              />
+
+              {/* Competition Zone - Motivation */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <ActiveRivalryCard />
                 <ActiveTeamBattle />

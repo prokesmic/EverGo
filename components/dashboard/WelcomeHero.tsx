@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { Plus, Flame, TrendingUp, MapPin, Trophy, Activity, ChevronRight } from "lucide-react"
+import { Plus, Flame, TrendingUp, MapPin, Trophy, ChevronRight } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import type { ResolvedHero } from "@/lib/hero/heroResolver"
@@ -204,60 +204,27 @@ export function WelcomeHero({
           </div>
         </div>
 
-        {/* Weekly Summary Strip */}
-        <div className="mt-6 pt-6 border-t border-white/10">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs uppercase tracking-[0.12em] text-slate-400 font-medium">
-              This Week
-            </p>
+        {/* Weekly Summary Strip - De-emphasized, secondary info */}
+        <div className="mt-4 pt-4 border-t border-white/5">
+          <div className="flex items-center gap-6 text-sm">
+            <span className="text-slate-400/80">
+              <span className="font-medium text-white/80">{weeklyDistance.toFixed(1)}</span>
+              <span className="ml-1 text-slate-500">km</span>
+            </span>
+            <span className="text-slate-400/80">
+              <span className="font-medium text-white/80">{formatTime(weeklyTime)}</span>
+              <span className="ml-1 text-slate-500">active</span>
+            </span>
+            <span className="text-slate-400/80">
+              <span className="font-medium text-white/80">{weeklyActivities}</span>
+              <span className="ml-1 text-slate-500">activities</span>
+            </span>
             <Link
               href="/profile/me"
-              className="text-xs text-orange-400 hover:text-orange-300 font-medium flex items-center gap-1 transition-colors"
+              className="text-xs text-slate-400 hover:text-orange-400 transition-colors ml-auto flex items-center gap-1"
             >
-              View all <ChevronRight className="w-3 h-3" />
+              View stats <ChevronRight className="w-3 h-3" />
             </Link>
-          </div>
-
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-            {/* Distance */}
-            <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 px-4 py-3">
-              <p className="text-2xl md:text-3xl font-bold text-white tabular-nums">
-                {weeklyDistance.toFixed(1)}
-                <span className="text-sm font-normal text-slate-400 ml-1">km</span>
-              </p>
-              <p className="text-xs text-slate-400 mt-0.5">Distance</p>
-            </div>
-
-            {/* Time */}
-            <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 px-4 py-3">
-              <p className="text-2xl md:text-3xl font-bold text-white tabular-nums">
-                {formatTime(weeklyTime)}
-              </p>
-              <p className="text-xs text-slate-400 mt-0.5">Active time</p>
-            </div>
-
-            {/* Activities */}
-            <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 px-4 py-3">
-              <p className="text-2xl md:text-3xl font-bold text-white tabular-nums">
-                {weeklyActivities}
-              </p>
-              <p className="text-xs text-slate-400 mt-0.5">Activities</p>
-            </div>
-
-            {/* Rank - Hidden on small mobile */}
-            <div className="hidden md:block rounded-xl bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/20 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-emerald-400" />
-                <div>
-                  <p className="text-lg font-bold text-white">
-                    #{cityRank || globalRank || '—'}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {cityRank ? 'City Rank' : 'Global Rank'}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
