@@ -118,8 +118,8 @@ export function EmptyEventsState() {
     <EmptyStateCard
       title="No upcoming events"
       description="Find races, group rides, or training sessions in your area."
-      primaryCta={{ label: "Browse Events", href: "/events" }}
-      secondaryCta={{ label: "Create Event", href: "/events/create" }}
+      primaryCta={{ label: "Browse Events", href: "/calendar" }}
+      secondaryCta={{ label: "Create Event", href: "/calendar" }}
     />
   )
 }

@@ -97,8 +97,9 @@ export function CalendarShell({ initialItems, initialSports }: CalendarShellProp
   }, [router])
 
   const handleBrowseEvents = useCallback(() => {
-    router.push("/events")
-  }, [router])
+    // Open the create drawer for adding events/activities
+    setCreateDrawerOpen(true)
+  }, [])
 
   // Render the appropriate view
   const renderView = () => {

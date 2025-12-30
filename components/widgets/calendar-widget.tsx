@@ -75,7 +75,7 @@ export function CalendarWidget() {
         <CardShell
             title="Upcoming Events"
             icon={<CalendarIcon className="h-5 w-5" />}
-            action={<Link href="/events" className="flex items-center text-primary hover:underline">View all <ChevronRight className="h-3 w-3 ml-1" /></Link>}
+            action={<Link href="/calendar" className="flex items-center text-primary hover:underline">View all <ChevronRight className="h-3 w-3 ml-1" /></Link>}
         >
             <div className="space-y-2">
                 {events.slice(0, 3).map((event) => (
@@ -121,7 +121,7 @@ export function CalendarWidget() {
                         <p className="text-xs text-slate-400 mt-1">Find races, group rides, or training sessions</p>
                         <div className="flex items-center justify-center gap-2 mt-4">
                             <Link
-                                href="/events"
+                                href="/calendar"
                                 className="text-xs text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1"
                             >
                                 Browse Events

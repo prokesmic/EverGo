@@ -1,0 +1,2116 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mike Test Report - 12/30/2025</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 3rem; padding: 3rem; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 1rem; border: 1px solid #334155; }
+    .header h1 { font-size: 2.5rem; color: #f97316; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .header p { color: #94a3b8; }
+
+    /* Summary Cards */
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .summary-card { background: #1e293b; border-radius: 0.75rem; padding: 1.5rem; text-align: center; border: 1px solid #334155; }
+    .summary-card h3 { font-size: 2.5rem; margin-bottom: 0.25rem; }
+    .summary-card p { color: #94a3b8; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .summary-card.passed h3 { color: #22c55e; }
+    .summary-card.failed h3 { color: #ef4444; }
+    .summary-card.total h3 { color: #3b82f6; }
+    .summary-card.rate h3 { color: #f97316; }
+
+    /* Progress Bar */
+    .progress-container { margin-bottom: 2rem; }
+    .progress-bar { height: 1rem; background: #334155; border-radius: 0.5rem; overflow: hidden; display: flex; }
+    .progress-passed { background: #22c55e; }
+    .progress-failed { background: #ef4444; }
+    .progress-skipped { background: #94a3b8; }
+
+    /* Sections */
+    .section { background: #1e293b; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #334155; }
+    .section h2 { color: #f97316; margin-bottom: 1rem; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    /* Category Grid */
+    .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; }
+    .category-item { background: #0f172a; padding: 1rem; border-radius: 0.5rem; text-align: center; }
+    .category-item h4 { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; margin-bottom: 0.5rem; }
+    .category-item .stats { display: flex; justify-content: center; gap: 0.5rem; font-size: 0.875rem; }
+    .category-item .stats span { padding: 0.25rem 0.5rem; border-radius: 0.25rem; }
+    .cat-passed { background: #22c55e20; color: #22c55e; }
+    .cat-failed { background: #ef444420; color: #ef4444; }
+
+    /* Test List */
+    .test-list { list-style: none; }
+    .test-item { padding: 1rem; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 1rem; }
+    .test-item:last-child { border-bottom: none; }
+    .test-status { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .test-status.passed { background: #22c55e20; color: #22c55e; }
+    .test-status.failed { background: #ef444420; color: #ef4444; }
+    .test-info { flex: 1; }
+    .test-name { font-weight: 500; margin-bottom: 0.25rem; }
+    .test-meta { font-size: 0.75rem; color: #94a3b8; display: flex; gap: 1rem; }
+    .test-error { background: #ef444410; border: 1px solid #ef444440; border-radius: 0.5rem; padding: 0.75rem; margin-top: 0.5rem; font-family: monospace; font-size: 0.75rem; color: #fca5a5; }
+
+    /* Recommendations */
+    .recommendations { list-style: none; }
+    .recommendations li { padding: 0.75rem; background: #0f172a; border-radius: 0.5rem; margin-bottom: 0.5rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+    .recommendations li::before { content: "💡"; }
+
+    /* Footer */
+    .footer { text-align: center; padding: 2rem; color: #64748b; font-size: 0.875rem; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .container { padding: 1rem; }
+      .header h1 { font-size: 1.5rem; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🤖 Mike Test Report</h1>
+      <p>Generated on 12/30/2025, 11:46:31 AM</p>
+      <p style="margin-top: 0.5rem; font-size: 0.875rem;">http://localhost:3000 | Chromium | 1920x1080</p>
+    </header>
+
+    <div class="summary-grid">
+      <div class="summary-card total">
+        <h3>236</h3>
+        <p>Total Tests</p>
+      </div>
+      <div class="summary-card passed">
+        <h3>151</h3>
+        <p>Passed</p>
+      </div>
+      <div class="summary-card failed">
+        <h3>85</h3>
+        <p>Failed</p>
+      </div>
+      <div class="summary-card rate">
+        <h3>64.0%</h3>
+        <p>Pass Rate</p>
+      </div>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-passed" style="width: 63.983050847457626%"></div>
+        <div class="progress-failed" style="width: 36.016949152542374%"></div>
+        <div class="progress-skipped" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <section class="section">
+      <h2>📊 Results by Category</h2>
+      <div class="category-grid">
+        
+          <div class="category-item">
+            <h4>navigation</h4>
+            <div class="stats">
+              <span class="cat-passed">✓ 12</span>
+              <span class="cat-failed">✗ 0</span>
+            </div>
+          </div>
+        
+          <div class="category-item">
+            <h4>button click</h4>
+            <div class="stats">
+              <span class="cat-passed">✓ 93</span>
+              <span class="cat-failed">✗ 26</span>
+            </div>
+          </div>
+        
+          <div class="category-item">
+            <h4>link click</h4>
+            <div class="stats">
+              <span class="cat-passed">✓ 9</span>
+              <span class="cat-failed">✗ 59</span>
+            </div>
+          </div>
+        
+          <div class="category-item">
+            <h4>form submission</h4>
+            <div class="stats">
+              <span class="cat-passed">✓ 12</span>
+              <span class="cat-failed">✗ 0</span>
+            </div>
+          </div>
+        
+          <div class="category-item">
+            <h4>data validation</h4>
+            <div class="stats">
+              <span class="cat-passed">✓ 9</span>
+              <span class="cat-failed">✗ 0</span>
+            </div>
+          </div>
+        
+          <div class="category-item">
+            <h4>user flow</h4>
+            <div class="stats">
+              <span class="cat-passed">✓ 2</span>
+              <span class="cat-failed">✗ 0</span>
+            </div>
+          </div>
+        
+          <div class="category-item">
+            <h4>accessibility</h4>
+            <div class="stats">
+              <span class="cat-passed">✓ 12</span>
+              <span class="cat-failed">✗ 0</span>
+            </div>
+          </div>
+        
+          <div class="category-item">
+            <h4>error handling</h4>
+            <div class="stats">
+              <span class="cat-passed">✓ 2</span>
+              <span class="cat-failed">✗ 0</span>
+            </div>
+          </div>
+        
+      </div>
+    </section>
+
+    
+    <section class="section">
+      <h2>❌ Failed Tests (85)</h2>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Button" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94184ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(1)')[22m
+[2m    - locator resolved to 3 elements. Proceeding with the first one: <button class="h-2 rounded-full transition-all duration-300 w-8 bg-orange-500"></button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  14 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Button" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94241ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(2)')[22m
+[2m    - locator resolved to 4 elements. Proceeding with the first one: <button class="h-2 rounded-full transition-all duration-300 w-2 bg-slate-300 hover:bg-slate-400"></button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  14 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Button" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94456ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(3)')[22m
+[2m    - locator resolved to 3 elements. Proceeding with the first one: <button class="h-2 rounded-full transition-all duration-300 w-2 bg-slate-300 hover:bg-slate-400"></button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  14 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Button" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94394ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(4)').first() to be visible[22m
+[2m    64 × locator resolved to hidden <button aria-label="Toggle menu" class="md:hidden p-2 rounded-lg transition-colors text-slate-700 hover:bg-slate-100">…</button>[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Previous testimonial" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94444ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(1)')[22m
+[2m    - locator resolved to 3 elements. Proceeding with the first one: <button class="h-2 rounded-full transition-all duration-300 w-8 bg-orange-500"></button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  14 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Next testimonial" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94407ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(2)')[22m
+[2m    - locator resolved to 4 elements. Proceeding with the first one: <button class="h-2 rounded-full transition-all duration-300 w-2 bg-slate-300 hover:bg-slate-400"></button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  14 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Go to testimonial 1" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94197ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(1)')[22m
+[2m    - locator resolved to 3 elements. Proceeding with the first one: <button class="h-2 rounded-full transition-all duration-300 w-8 bg-orange-500"></button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  14 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Go to testimonial 2" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94248ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(2)')[22m
+[2m    - locator resolved to 4 elements. Proceeding with the first one: <button class="h-2 rounded-full transition-all duration-300 w-2 bg-slate-300 hover:bg-slate-400"></button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  14 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Go to testimonial 3" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94758ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(3)')[22m
+[2m    - locator resolved to 3 elements. Proceeding with the first one: <button class="h-2 rounded-full transition-all duration-300 w-2 bg-slate-300 hover:bg-slate-400"></button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  14 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 py-3">…</header> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70"></div> intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Go to testimonial 4" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 94252ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:nth-child(4)').first() to be visible[22m
+[2m    65 × locator resolved to hidden <button aria-label="Toggle menu" class="md:hidden p-2 rounded-lg transition-colors text-slate-700 hover:bg-slate-100">…</button>[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Login</div>
+              <div class="test-meta">
+                <span>Duration: 4099ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Register</div>
+              <div class="test-meta">
+                <span>Duration: 4117ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 26548ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "P" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 120096ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#radix-_r_0_').first() to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Activity Create</div>
+              <div class="test-meta">
+                <span>Duration: 6436ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Public
+Everyone can see" button on Activity Create</div>
+              <div class="test-meta">
+                <span>Duration: 6410ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Public
+Everyone can see")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Public[22m
+[2mEveryone can see") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Followers
+Only followers" button on Activity Create</div>
+              <div class="test-meta">
+                <span>Duration: 6486ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Followers
+Only followers")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Followers[22m
+[2mOnly followers") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Private
+Only you" button on Activity Create</div>
+              <div class="test-meta">
+                <span>Duration: 6512ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Private
+Only you")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Private[22m
+[2mOnly you") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Challenges</div>
+              <div class="test-meta">
+                <span>Duration: 6391ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Rankings</div>
+              <div class="test-meta">
+                <span>Duration: 7047ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Teams</div>
+              <div class="test-meta">
+                <span>Duration: 5097ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Calendar</div>
+              <div class="test-meta">
+                <span>Duration: 4914ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "4" button on Calendar</div>
+              <div class="test-meta">
+                <span>Duration: 95403ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("4")').first() to be visible[22m
+[2m    64 × locator resolved to hidden <button data-slot="button" class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-9 w-10 h-10 rounded-full text-text…>…</button>[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Settings</div>
+              <div class="test-meta">
+                <span>Duration: 4756ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Notifications</div>
+              <div class="test-meta">
+                <span>Duration: 3829ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Search...
+⌘
+K" button on Leaderboard</div>
+              <div class="test-meta">
+                <span>Duration: 6394ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Unsupported token "BADSTRING" while parsing css selector "button:has-text("Search...
+⌘
+K")". Did you mean to CSS.escape it?
+Call log:
+[2m  - waiting for button:has-text("Search...[22m
+[2m⌘[22m
+[2mK") >> nth=0 to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Log in" link</div>
+              <div class="test-meta">
+                <span>Duration: 4942ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/login". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Start Free" link</div>
+              <div class="test-meta">
+                <span>Duration: 4905ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/register". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "View Leaderboards" link</div>
+              <div class="test-meta">
+                <span>Duration: 4559ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/leaderboard". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Twitter" link</div>
+              <div class="test-meta">
+                <span>Duration: 5802ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "https://twitter.com/evergo". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Instagram" link</div>
+              <div class="test-meta">
+                <span>Duration: 4559ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "https://instagram.com/evergo". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "LinkedIn" link</div>
+              <div class="test-meta">
+                <span>Duration: 4324ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "https://linkedin.com/company/evergo". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "YouTube" link</div>
+              <div class="test-meta">
+                <span>Duration: 5362ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "https://youtube.com/evergo". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "About Us" link</div>
+              <div class="test-meta">
+                <span>Duration: 4012ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/about". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Careers" link</div>
+              <div class="test-meta">
+                <span>Duration: 4370ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/careers". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Blog" link</div>
+              <div class="test-meta">
+                <span>Duration: 5199ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/blog". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Help Center" link</div>
+              <div class="test-meta">
+                <span>Duration: 4547ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/help". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Community" link</div>
+              <div class="test-meta">
+                <span>Duration: 5075ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/community". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Developers" link</div>
+              <div class="test-meta">
+                <span>Duration: 4547ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/developers". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Status" link</div>
+              <div class="test-meta">
+                <span>Duration: 4492ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/status". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Privacy Policy" link</div>
+              <div class="test-meta">
+                <span>Duration: 4980ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/privacy". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Terms of Service" link</div>
+              <div class="test-meta">
+                <span>Duration: 5058ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/terms". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Cookie Policy" link</div>
+              <div class="test-meta">
+                <span>Duration: 4380ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/cookies". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "GDPR" link</div>
+              <div class="test-meta">
+                <span>Duration: 4344ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/gdpr". Actual: "http://localhost:3000/"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "⚡EverGo
+AURORA" link</div>
+              <div class="test-meta">
+                <span>Duration: 3813ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/home". Actual: "http://localhost:3000/login"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Rankings" link</div>
+              <div class="test-meta">
+                <span>Duration: 3677ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/rankings". Actual: "http://localhost:3000/login"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Challenges" link</div>
+              <div class="test-meta">
+                <span>Duration: 3685ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/challenges". Actual: "http://localhost:3000/login"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Teams" link</div>
+              <div class="test-meta">
+                <span>Duration: 3641ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/teams". Actual: "http://localhost:3000/login"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Events" link</div>
+              <div class="test-meta">
+                <span>Duration: 3936ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/calendar". Actual: "http://localhost:3000/login"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Log Activity" link</div>
+              <div class="test-meta">
+                <span>Duration: 3676ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/activity/create". Actual: "http://localhost:3000/login"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "/notifications" link</div>
+              <div class="test-meta">
+                <span>Duration: 3441ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/notifications". Actual: "http://localhost:3000/login"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Forgot password?" link</div>
+              <div class="test-meta">
+                <span>Duration: 3578ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/forgot-password". Actual: "http://localhost:3000/login"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "View all" link</div>
+              <div class="test-meta">
+                <span>Duration: 23591ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/me". Actual: "http://localhost:3000/home"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "🔍
+Find athletes" link</div>
+              <div class="test-meta">
+                <span>Duration: 24650ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/discover". Actual: "http://localhost:3000/home"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "📨
+Invite friends" link</div>
+              <div class="test-meta">
+                <span>Duration: 20123ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/invite". Actual: "http://localhost:3000/home"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "A" link</div>
+              <div class="test-meta">
+                <span>Duration: 113246ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('a[href="/profile/admin_616d68671bed4e3c348d"]').first() to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "T" link</div>
+              <div class="test-meta">
+                <span>Duration: 110305ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('a[href="/profile/cmixi65l800008oxq4tjbb5au"]').first() to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "MT" link</div>
+              <div class="test-meta">
+                <span>Duration: 110953ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('a[href="/profile/mike_tester_512aa352564688b"]').first() to be visible[22m
+</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Discover More Athletes" link</div>
+              <div class="test-meta">
+                <span>Duration: 20520ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/search". Actual: "http://localhost:3000/home"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "View all" link</div>
+              <div class="test-meta">
+                <span>Duration: 20634ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/events". Actual: "http://localhost:3000/home"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Create Challenge" link</div>
+              <div class="test-meta">
+                <span>Duration: 6301ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/challenges/create". Actual: "http://localhost:3000/challenges"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "View Progress" link</div>
+              <div class="test-meta">
+                <span>Duration: 6248ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/challenges/cmj6wb92x001x8oplly8935mq". Actual: "http://localhost:3000/challenges"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "View Progress" link</div>
+              <div class="test-meta">
+                <span>Duration: 6190ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/challenges/cmj6wbac6002d8oplstlfqvut". Actual: "http://localhost:3000/challenges"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "View Progress" link</div>
+              <div class="test-meta">
+                <span>Duration: 7561ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/challenges/cmj6wbbo8002v8oplvdpdjtqq". Actual: "http://localhost:3000/challenges"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "View all" link</div>
+              <div class="test-meta">
+                <span>Duration: 6751ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/me/stats". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Alex Thompson
+Prague
+890
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6826ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/alex_champion". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Maria Garcia
+Prague
+845
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6766ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/maria_swift". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "James Wilson
+Prague
+812
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6836ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/james_runner". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "4
+Sofia Novak
+Brno
+785
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6864ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/sofia_cyclist". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "5
+Mike Roberts
+Prague
+756
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6763ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/mike_power". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "6
+A
+Admin
+Prague
+742
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6851ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/admin@evergo.app". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "7
+Emma Chen
+Prague
+732
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6701ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/emma_endurance". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "8
+Lucas Brown
+Ostrava
+698
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6776ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/lucas_fast". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "9
+Anna Kowalski
+Prague
+678
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6859ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/anna_fit". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "10
+David Kim
+Prague
+645
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6585ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/david_speed". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "11
+Lisa Martinez
+Brno
+612
+points" link</div>
+              <div class="test-meta">
+                <span>Duration: 6855ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/profile/lisa_strong". Actual: "http://localhost:3000/rankings"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Create Team" link</div>
+              <div class="test-meta">
+                <span>Duration: 5264ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/teams/create". Actual: "http://localhost:3000/teams"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Running
+Brno Endurance Team
+Brno
+6
+#33" link</div>
+              <div class="test-meta">
+                <span>Duration: 5500ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/teams/brno-endurance". Actual: "http://localhost:3000/teams"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Cycling
+Czech Cycling Club
+Prague
+6
+#55" link</div>
+              <div class="test-meta">
+                <span>Duration: 5600ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/teams/czech-cycling-club". Actual: "http://localhost:3000/teams"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Running
+Prague Runners Elite
+Prague
+6
+#100" link</div>
+              <div class="test-meta">
+                <span>Duration: 5370ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/teams/prague-runners-elite". Actual: "http://localhost:3000/teams"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Sports
+
+Your sports & skill levels" link</div>
+              <div class="test-meta">
+                <span>Duration: 4680ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/settings/sports". Actual: "http://localhost:3000/settings/profile"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Personal Bests
+
+Manage your PBs & records" link</div>
+              <div class="test-meta">
+                <span>Duration: 5154ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/settings/personal-bests". Actual: "http://localhost:3000/settings/profile"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Subscription
+
+Manage your plan" link</div>
+              <div class="test-meta">
+                <span>Duration: 4792ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/settings/subscription". Actual: "http://localhost:3000/settings/profile"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Notifications
+
+Email & push preferences" link</div>
+              <div class="test-meta">
+                <span>Duration: 5188ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/notifications/settings". Actual: "http://localhost:3000/settings/profile"</div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status failed">✗</div>
+            <div class="test-info">
+              <div class="test-name">Click "Account
+
+Security & privacy" link</div>
+              <div class="test-meta">
+                <span>Duration: 5390ms</span>
+                <span>Retries: 3</span>
+              </div>
+              <div class="test-error">Expected URL to contain "/settings/account". Actual: "http://localhost:3000/settings/profile"</div>
+            </div>
+          </li>
+        
+      </ul>
+    </section>
+    
+
+    <section class="section">
+      <h2>✅ Passed Tests (151)</h2>
+      <ul class="test-list">
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Home</div>
+              <div class="test-meta">
+                <span>Duration: 1398ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Login</div>
+              <div class="test-meta">
+                <span>Duration: 1266ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Register</div>
+              <div class="test-meta">
+                <span>Duration: 1359ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Home</div>
+              <div class="test-meta">
+                <span>Duration: 11343ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Activity Create</div>
+              <div class="test-meta">
+                <span>Duration: 2103ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Challenges</div>
+              <div class="test-meta">
+                <span>Duration: 2154ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Rankings</div>
+              <div class="test-meta">
+                <span>Duration: 2289ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Teams</div>
+              <div class="test-meta">
+                <span>Duration: 2241ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Calendar</div>
+              <div class="test-meta">
+                <span>Duration: 1913ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Settings</div>
+              <div class="test-meta">
+                <span>Duration: 1490ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Notifications</div>
+              <div class="test-meta">
+                <span>Duration: 1641ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Navigate to Leaderboard</div>
+              <div class="test-meta">
+                <span>Duration: 2177ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Click "Go to testimonial 5" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 2783ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Click "Notify Me" button on Home</div>
+              <div class="test-meta">
+                <span>Duration: 2393ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Click "P" button on Login</div>
+              <div class="test-meta">
+                <span>Duration: 2481ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Click "Sign In" button on Login</div>
+              <div class="test-meta">
+                <span>Duration: 2608ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Click "Google" button on Login</div>
+              <div class="test-meta">
+                <span>Duration: 2586ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Click "Facebook" button on Login</div>
+              <div class="test-meta">
+                <span>Duration: 2615ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Click "P" button on Register</div>
+              <div class="test-meta">
+                <span>Duration: 2612ms</span>
+              </div>
+            </div>
+          </li>
+        
+          <li class="test-item">
+            <div class="test-status passed">✓</div>
+            <div class="test-info">
+              <div class="test-name">Click "Create Account" button on Register</div>
+              <div class="test-meta">
+                <span>Duration: 2649ms</span>
+              </div>
+            </div>
+          </li>
+        
+        <li class="test-item" style="justify-content: center; color: #64748b;">... and 131 more passed tests</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>💡 Recommendations</h2>
+      <ul class="recommendations">
+        <li>Pass rate is below 80%. Review failing tests and fix underlying issues.</li><li>Repeated error (8x): "page.click: Timeout 30000ms exceeded.
+Call log:
+[..." - Consider fixing root cause.</li><li>Repeated error (7x): "locator.waitFor: Timeout 30000ms exceeded.
+Call lo..." - Consider fixing root cause.</li><li>Repeated error (14x): "locator.waitFor: Unsupported token "BADSTRING" whi..." - Consider fixing root cause.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>📈 Coverage Summary</h2>
+      <p>Discovered Elements: <strong>492</strong></p>
+      <p>Generated Scenarios: <strong>236</strong></p>
+      <p>Estimated Coverage: <strong>35.0%</strong></p>
+      <p>Total Duration: <strong>2500.52s</strong></p>
+    </section>
+
+    <footer class="footer">
+      <p>Generated by Mike - Master Intelligent Knowledge Engine for Testing</p>
+      <p>Node v22.20.0 | darwin</p>
+    </footer>
+  </div>
+</body>
+</html>
+    
