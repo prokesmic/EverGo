@@ -15,7 +15,7 @@ export default async function TrackActivityPage() {
   })
 
   return (
-    <div className="container max-w-4xl py-10">
+    <div className="max-w-4xl mx-auto py-10 px-4 md:px-6">
       <Card className="mb-6 border-brand-primary/20 bg-gradient-to-r from-brand-primary/5 to-brand-secondary/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
