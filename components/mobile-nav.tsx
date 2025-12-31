@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Trophy, Target, Users, Dumbbell, Plus } from "lucide-react"
+import { Home, Trophy, Target, Users, Dumbbell, Plus, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
 
@@ -15,17 +15,21 @@ export function MobileNav() {
     return null
   }
 
+  // Mobile bottom nav shows 5 items - prioritize most used
+  // Full menu is accessible via hamburger in mobile header
   const navItems = [
     { href: "/home", label: "Home", icon: Home, testId: "nav-home" },
     { href: "/rankings", label: "Rankings", icon: Trophy, testId: "nav-rankings" },
+    { href: "/challenges", label: "Compete", icon: Target, testId: "nav-challenges" },
     { href: "/sports", label: "Sports", icon: Dumbbell, testId: "nav-sports" },
-    { href: "/teams", label: "Teams", icon: Users, testId: "nav-teams" },
-    { href: "/challenges", label: "Challenges", icon: Target, testId: "nav-challenges" },
+    { href: "/calendar", label: "Events", icon: Calendar, testId: "nav-events" },
   ]
 
   const isActive = (href: string) => {
     if (href === "/home") return pathname === "/home" || pathname === "/"
     if (href.startsWith("/profile")) return pathname?.startsWith("/profile")
+    // /challenges also covers /teams conceptually for "Compete"
+    if (href === "/challenges") return pathname?.startsWith("/challenges") || pathname?.startsWith("/teams")
     return pathname?.startsWith(href)
   }
 

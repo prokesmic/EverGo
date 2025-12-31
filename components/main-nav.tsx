@@ -13,36 +13,42 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet"
 import { useSession, signOut } from "next-auth/react"
-import { Home, Trophy, Users, Calendar, Target, PlusCircle, Bell, Search, Sparkles, Menu, Settings, LogOut, User, Dumbbell } from "lucide-react"
+import { Home, Trophy, Users, Calendar, Target, PlusCircle, Bell, Sparkles, ChevronDown, Swords, Dumbbell } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SearchCommand } from "@/components/search-command"
+
+// Navigation configuration
+const primaryLinks = [
+    { href: "/home", label: "Home", icon: Home },
+    { href: "/rankings", label: "Rankings", icon: Trophy },
+]
+
+const competeLinks = [
+    { href: "/challenges", label: "Challenges", icon: Target },
+    { href: "/teams", label: "Teams", icon: Users },
+]
+
+const moreLinks = [
+    { href: "/sports", label: "Sports", icon: Dumbbell },
+    { href: "/calendar", label: "Events", icon: Calendar },
+]
+
+// Get all hrefs for a dropdown to check active state
+const competeHrefs = competeLinks.map(l => l.href)
+const moreHrefs = moreLinks.map(l => l.href)
 
 export function MainNav() {
     const pathname = usePathname()
     const { data: session } = useSession()
-    const [open, setOpen] = useState(false)
 
     // Hide main nav on landing page - it has its own header
     if (pathname === "/") {
         return null
     }
 
-    const navItems = [
-        { href: "/home", label: "Home", icon: Home },
-        { href: "/rankings", label: "Rankings", icon: Trophy },
-        { href: "/sports", label: "Sports", icon: Dumbbell },
-        { href: "/challenges", label: "Challenges", icon: Target },
-        { href: "/teams", label: "Teams", icon: Users },
-        { href: "/calendar", label: "Events", icon: Calendar },
-    ]
+    const isActive = (href: string) => pathname?.startsWith(href)
+    const isDropdownActive = (hrefs: string[]) => hrefs.some(href => pathname?.startsWith(href))
 
     return (
         <header data-testid="desktop-nav" className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200 hidden lg:block">
@@ -59,26 +65,89 @@ export function MainNav() {
                     </Link>
                 </div>
 
-                {/* Centered Navigation - always visible on lg+ */}
-                <nav className="flex items-center gap-8 text-sm font-medium">
-                    {navItems.map((item) => {
-                        const isActive = pathname?.startsWith(item.href)
+                {/* Centered Navigation */}
+                <nav className="flex items-center gap-6 text-sm font-medium">
+                    {/* Primary Links */}
+                    {primaryLinks.map((item) => {
+                        const active = isActive(item.href)
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
                                     "relative transition-colors text-slate-600 hover:text-slate-900",
-                                    isActive && "text-slate-900"
+                                    active && "text-slate-900"
                                 )}
                             >
                                 {item.label}
-                                {isActive && (
+                                {active && (
                                     <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 rounded-full" />
                                 )}
                             </Link>
                         )
                     })}
+
+                    {/* Compete Dropdown */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className={cn(
+                                    "relative flex items-center gap-1 transition-colors text-slate-600 hover:text-slate-900 focus:outline-none",
+                                    isDropdownActive(competeHrefs) && "text-slate-900"
+                                )}
+                            >
+                                Compete
+                                <ChevronDown className="h-3.5 w-3.5" />
+                                {isDropdownActive(competeHrefs) && (
+                                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 rounded-full" />
+                                )}
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-48">
+                            {competeLinks.map((item) => (
+                                <DropdownMenuItem key={item.href} asChild>
+                                    <Link href={item.href} className={cn(
+                                        "flex items-center gap-2 cursor-pointer",
+                                        isActive(item.href) && "bg-slate-100"
+                                    )}>
+                                        <item.icon className="h-4 w-4 text-slate-500" />
+                                        {item.label}
+                                    </Link>
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* More Dropdown */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className={cn(
+                                    "relative flex items-center gap-1 transition-colors text-slate-600 hover:text-slate-900 focus:outline-none",
+                                    isDropdownActive(moreHrefs) && "text-slate-900"
+                                )}
+                            >
+                                More
+                                <ChevronDown className="h-3.5 w-3.5" />
+                                {isDropdownActive(moreHrefs) && (
+                                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 rounded-full" />
+                                )}
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-48">
+                            {moreLinks.map((item) => (
+                                <DropdownMenuItem key={item.href} asChild>
+                                    <Link href={item.href} className={cn(
+                                        "flex items-center gap-2 cursor-pointer",
+                                        isActive(item.href) && "bg-slate-100"
+                                    )}>
+                                        <item.icon className="h-4 w-4 text-slate-500" />
+                                        {item.label}
+                                    </Link>
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </nav>
 
                 {/* Right Side Actions */}
