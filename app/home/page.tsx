@@ -4,7 +4,6 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { WelcomeHero } from "@/components/dashboard/WelcomeHero"
 import { PulseRail } from "@/components/vapor/PulseRail"
-import { YourRankWidget } from "@/components/widgets/YourRankWidget"
 import { CompeteNowDeckWrapper } from "@/components/home/CompeteNowDeckWrapper"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
@@ -21,12 +20,11 @@ export const dynamic = 'force-dynamic'
  * Home Dashboard Page - Compare → Compete → Social Proof
  *
  * Layout Order:
- * 1. WelcomeHero (Full-width anchor with stats + Log Activity CTA)
+ * 1. WelcomeHero (Full-width anchor with stats, RankStrip on desktop, Log Activity CTA)
  * 2. PulseRail (Stories-style friend activity)
- * 3. RankingSpotlight (Rank + status - #1 visibility)
- * 4. CompeteNowDeck (Active rivalries, challenges, team battles)
- * 5. HighlightsFeed (High-signal activity highlights)
- * 6. Feed + Sidebar (Planning & Social)
+ * 3. CompeteNowDeck (Active rivalries, challenges, team battles)
+ * 4. HighlightsFeed (High-signal activity highlights)
+ * 5. Feed + Sidebar (Planning & Social)
  */
 export default async function HomePage() {
   try {
@@ -136,13 +134,8 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-5">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
 
-            {/* MAIN COLUMN (Span 8) - Rank First, Then Compete */}
+            {/* MAIN COLUMN (Span 8) - Compete First */}
             <div className="lg:col-span-8 space-y-5">
-
-              {/* Your Rank Widget - Dynamic scope selector with TEAM support */}
-              <div data-testid="home-slot-ranking">
-                <YourRankWidget />
-              </div>
 
               {/* Compete Now Deck - Rivalries, Challenges, Battles */}
               <div data-testid="home-slot-compete">
