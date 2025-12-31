@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils"
 const TABS = [
   { href: "/home", label: "Home" },
   { href: "/rankings", label: "Rankings" },
+  { href: "/sports", label: "Sports" },
   { href: "/challenges", label: "Challenges" },
   { href: "/teams", label: "Teams" },
-  { href: "/rivalries", label: "Rivalries" },
 ]
 
 export function MobileTopTabs() {

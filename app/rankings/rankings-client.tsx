@@ -7,6 +7,7 @@ import { PageGrid } from "@/components/layout/page-grid"
 import { PageSubheader } from "@/components/layout/page-subheader"
 import { YourRankingsWidget } from "@/components/rankings/your-rankings-widget"
 import { InsightsCard } from "@/components/rankings/insights-card"
+import { ScopeSelector, type LeaderboardScope } from "@/components/leaderboards/ScopeSelector"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -22,11 +23,41 @@ interface RankingsClientProps {
 
 type RankingMode = "benchmark" | "most-active"
 
-const scopeOptions = [
-    { id: 'global', label: 'Global', icon: Globe },
-    { id: 'country', label: 'National', icon: MapPin },
-    { id: 'city', label: 'City', icon: MapPin },
-]
+interface Team {
+    id: string
+    name: string
+    logoUrl: string | null
+}
+
+interface LocationInfo {
+    hasCountry: boolean
+    hasCity: boolean
+    country: string | null
+    city: string | null
+}
+
+interface LeaderboardRow {
+    userId: string
+    displayName: string
+    avatarUrl: string | null
+    value: number
+    formattedValue: string
+    rank: number
+}
+
+interface LeaderboardResult {
+    meta: {
+        key: string
+        label: string
+        unit: string
+        order: "ASC" | "DESC"
+    }
+    top: LeaderboardRow[]
+    me: LeaderboardRow | null
+    delta: number | null
+    total: number
+    scopeLabel: string
+}
 
 interface BenchmarkOption {
     id: string
@@ -35,39 +66,15 @@ interface BenchmarkOption {
     unit: string
 }
 
-interface BenchmarkEntry {
-    rank: number
-    userId: string
-    username: string | null
-    displayName: string
-    avatarUrl: string | null
-    value: number
-    formattedValue: string
-    achievedAt: string
-    verified: boolean
-    location: string | null
-}
-
-interface MostActiveEntry {
-    rank: number
-    userId: string
-    username: string | null
-    displayName: string
-    avatarUrl: string | null
-    activityScore: number
-    totalEffort: number
-    activityCount: number
-    location: string | null
-}
-
 // Inner component that uses useSearchParams
 function RankingsContent({ sports }: RankingsClientProps) {
     const { data: session } = useSession()
     const searchParams = useSearchParams()
 
     // Initialize from URL params or localStorage
-    const urlScope = searchParams.get('scope')
+    const urlScope = searchParams.get('scope')?.toUpperCase() as LeaderboardScope | null
     const urlMode = searchParams.get('mode') as RankingMode | null
+    const urlTeamId = searchParams.get('teamId') ?? undefined
 
     const [mode, setMode] = useState<RankingMode>(() => {
         if (urlMode === "benchmark" || urlMode === "most-active") return urlMode
@@ -85,20 +92,26 @@ function RankingsContent({ sports }: RankingsClientProps) {
         return "running"
     })
 
-    const [scope, setScope] = useState(() => {
-        if (urlScope) return urlScope
-        if (typeof window !== "undefined") {
-            return localStorage.getItem("rankings_filter_scope") || "global"
+    const [scope, setScope] = useState<LeaderboardScope>(() => {
+        if (urlScope && ["GLOBAL", "COUNTRY", "CITY", "TEAM"].includes(urlScope)) {
+            return urlScope
         }
-        return "global"
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("rankings_filter_scope")
+            if (saved && ["GLOBAL", "COUNTRY", "CITY", "TEAM"].includes(saved)) {
+                return saved as LeaderboardScope
+            }
+        }
+        return "GLOBAL"
     })
 
-    const [windowDays, setWindowDays] = useState(28)
+    const [teamId, setTeamId] = useState<string | undefined>(urlTeamId)
+    const [teams, setTeams] = useState<Team[]>([])
+    const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null)
+
     const [benchmarks, setBenchmarks] = useState<BenchmarkOption[]>([])
     const [selectedBenchmark, setSelectedBenchmark] = useState<string>("")
-    const [benchmarkLeaderboard, setBenchmarkLeaderboard] = useState<BenchmarkEntry[]>([])
-    const [mostActiveLeaderboard, setMostActiveLeaderboard] = useState<MostActiveEntry[]>([])
-    const [benchmarkMeta, setBenchmarkMeta] = useState<any>(null)
+    const [leaderboardData, setLeaderboardData] = useState<LeaderboardResult | null>(null)
     const [userRankings, setUserRankings] = useState<any>(null)
     const [insights, setInsights] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
@@ -110,7 +123,7 @@ function RankingsContent({ sports }: RankingsClientProps) {
         }
     }, [mode])
 
-    // Persist filters to localStorage whenever they change
+    // Persist filters to localStorage
     useEffect(() => {
         if (typeof window !== "undefined") {
             localStorage.setItem("rankings_filter_sport", sport)
@@ -123,6 +136,31 @@ function RankingsContent({ sports }: RankingsClientProps) {
         }
     }, [scope])
 
+    // Fetch user context (teams and location) on mount
+    useEffect(() => {
+        const fetchContext = async () => {
+            try {
+                const res = await fetch("/api/leaderboards", { method: "POST" })
+                if (res.ok) {
+                    const data = await res.json()
+                    setTeams(data.teams || [])
+                    setLocationInfo(data.locationInfo || null)
+
+                    // Auto-select first team if TEAM scope but no team selected
+                    if (scope === "TEAM" && !teamId && data.teams?.length > 0) {
+                        setTeamId(data.teams[0].id)
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching context:", error)
+            }
+        }
+
+        if (session?.user) {
+            fetchContext()
+        }
+    }, [session])
+
     // Fetch benchmarks when sport changes (for benchmark mode)
     useEffect(() => {
         if (mode !== "benchmark") return
@@ -132,7 +170,6 @@ function RankingsContent({ sports }: RankingsClientProps) {
                 const res = await fetch(`/api/rankings/benchmark?sportSlug=${sport}`)
                 const data = await res.json()
                 setBenchmarks(data.benchmarks || [])
-                // Auto-select first benchmark if none selected
                 if (data.benchmarks?.length > 0 && !selectedBenchmark) {
                     setSelectedBenchmark(data.benchmarks[0].id)
                 }
@@ -145,35 +182,56 @@ function RankingsContent({ sports }: RankingsClientProps) {
         fetchBenchmarks()
     }, [sport, mode])
 
-    // Fetch leaderboard data
+    // Fetch leaderboard data using new API
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true)
             try {
-                if (mode === "most-active") {
-                    // Fetch Most Active leaderboard
-                    const res = await fetch(`/api/rankings/most-active?scope=${scope}&windowDays=${windowDays}`)
-                    const data = await res.json()
-                    setMostActiveLeaderboard(data.entries || [])
-                } else if (mode === "benchmark" && selectedBenchmark) {
-                    // Fetch Benchmark leaderboard
-                    const res = await fetch(`/api/rankings/benchmark?benchmarkId=${selectedBenchmark}&scope=${scope}`)
-                    const data = await res.json()
-                    setBenchmarkLeaderboard(data.entries || [])
-                    setBenchmarkMeta(data.benchmark || null)
+                // Determine metricKey based on mode
+                let metricKey = "activity:score"
+                if (mode === "benchmark" && selectedBenchmark) {
+                    // For benchmark mode, we need to map benchmarkId to metricKey
+                    const benchmark = benchmarks.find((b) => b.id === selectedBenchmark)
+                    if (benchmark) {
+                        metricKey = `${sport}:${benchmark.slug}`
+                    }
+                } else if (mode === "most-active") {
+                    metricKey = "activity:effort"
                 }
 
-                // Fetch user-specific data
+                // Build query params
+                const params = new URLSearchParams({
+                    metricKey,
+                    scope,
+                    limit: "50",
+                })
+                if (scope === "TEAM" && teamId) {
+                    params.set("teamId", teamId)
+                }
+
+                const res = await fetch(`/api/leaderboards?${params}`)
+                if (res.ok) {
+                    const data: LeaderboardResult = await res.json()
+                    setLeaderboardData(data)
+                } else {
+                    setLeaderboardData(null)
+                }
+
+                // Fetch user-specific data (legacy API)
                 if (session?.user?.email) {
                     const userId = (session.user as any).id
                     if (userId) {
-                        const userRes = await fetch(`/api/rankings/user/${userId}`)
-                        const userData = await userRes.json()
-                        setUserRankings(userData)
-
-                        const insightsRes = await fetch(`/api/rankings/insights/${userId}`)
-                        const insightsData = await insightsRes.json()
-                        setInsights(insightsData.insights || [])
+                        const [userRes, insightsRes] = await Promise.all([
+                            fetch(`/api/rankings/user/${userId}`),
+                            fetch(`/api/rankings/insights/${userId}`),
+                        ])
+                        if (userRes.ok) {
+                            setUserRankings(await userRes.json())
+                        }
+                        if (insightsRes.ok) {
+                            const insightsData = await insightsRes.json()
+                            setInsights(insightsData.insights || [])
+                        }
                     }
                 }
             } catch (error) {
@@ -183,14 +241,45 @@ function RankingsContent({ sports }: RankingsClientProps) {
             }
         }
 
+        // Wait for benchmarks to load before fetching benchmark leaderboard
+        if (mode === "benchmark" && !selectedBenchmark && benchmarks.length === 0) {
+            return
+        }
+
         fetchData()
-    }, [mode, sport, scope, windowDays, selectedBenchmark, session])
+    }, [mode, sport, scope, teamId, selectedBenchmark, session, benchmarks])
+
+    const handleScopeChange = (newScope: LeaderboardScope, newTeamId?: string) => {
+        setScope(newScope)
+        setTeamId(newTeamId)
+    }
 
     const getRankBadge = (rank: number) => {
         if (rank === 1) return <Crown className="h-5 w-5 text-amber-500" />
         if (rank === 2) return <Medal className="h-5 w-5 text-gray-400" />
         if (rank === 3) return <Medal className="h-5 w-5 text-amber-600" />
         return <span className="text-sm font-bold text-muted-foreground tabular-nums">{rank}</span>
+    }
+
+    const getDeltaDisplay = (delta: number | null) => {
+        if (delta === null) return null
+        if (delta > 0) {
+            return (
+                <span className="flex items-center gap-0.5 text-green-600 text-xs font-medium">
+                    <TrendingUp className="h-3 w-3" />
+                    +{delta}
+                </span>
+            )
+        }
+        if (delta < 0) {
+            return (
+                <span className="flex items-center gap-0.5 text-red-500 text-xs font-medium">
+                    <TrendingDown className="h-3 w-3" />
+                    {delta}
+                </span>
+            )
+        }
+        return <Minus className="h-3 w-3 text-muted-foreground" />
     }
 
     const leftSidebar = (
@@ -220,13 +309,35 @@ function RankingsContent({ sports }: RankingsClientProps) {
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">
                     {mode === "most-active"
-                        ? "Rankings based on total activity effort over the last 28 days. Effort is calculated from duration, intensity, and sport type."
+                        ? "Rankings based on total activity effort over the last 30 days. Effort is calculated from duration, intensity, and sport type."
                         : "Rankings based on actual performance in specific benchmarks like 5K time, max bench press, etc."}
                 </p>
             </div>
 
+            {/* Your Rank Card */}
+            {leaderboardData?.me && (
+                <div className="card-elevated p-4 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/10">
+                    <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-primary" />
+                        Your Position
+                    </h3>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <div className="text-2xl font-bold">#{leaderboardData.me.rank}</div>
+                            <div className="text-xs text-muted-foreground">
+                                of {leaderboardData.total.toLocaleString()} {leaderboardData.scopeLabel}
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <div className="font-semibold">{leaderboardData.me.formattedValue}</div>
+                            {getDeltaDisplay(leaderboardData.delta)}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Pro Tip Card */}
-            <div className="card-elevated p-4 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/10">
+            <div className="card-elevated p-4">
                 <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-primary" />
                     Pro Tip
@@ -240,7 +351,7 @@ function RankingsContent({ sports }: RankingsClientProps) {
         </>
     )
 
-    // Mobile filter content (reusable in both desktop and mobile sheet)
+    // Mobile filter content
     const filterContent = (
         <div className="flex flex-col gap-4">
             {/* Mode Toggle */}
@@ -277,23 +388,13 @@ function RankingsContent({ sports }: RankingsClientProps) {
             {/* Scope Section */}
             <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Scope</label>
-                <div className="flex flex-wrap rounded-xl bg-muted/50 p-1 gap-1">
-                    {scopeOptions.map((s) => (
-                        <button
-                            key={s.id}
-                            onClick={() => setScope(s.id)}
-                            className={cn(
-                                "flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex-1",
-                                scope === s.id
-                                    ? "bg-background text-foreground shadow-sm"
-                                    : "text-muted-foreground hover:text-foreground"
-                            )}
-                        >
-                            <s.icon className="w-3.5 h-3.5" />
-                            <span>{s.label}</span>
-                        </button>
-                    ))}
-                </div>
+                <ScopeSelector
+                    scope={scope}
+                    teamId={teamId}
+                    onScopeChange={handleScopeChange}
+                    teams={teams}
+                    locationInfo={locationInfo ?? undefined}
+                />
             </div>
 
             {/* Sport Filter (for benchmark mode) */}
@@ -333,23 +434,6 @@ function RankingsContent({ sports }: RankingsClientProps) {
                     </Select>
                 </div>
             )}
-
-            {/* Window Days Filter (for most-active mode) */}
-            {mode === "most-active" && (
-                <div>
-                    <label className="text-sm font-medium text-foreground mb-2 block">Time Window</label>
-                    <Select value={String(windowDays)} onValueChange={(v) => setWindowDays(Number(v))}>
-                        <SelectTrigger className="w-full h-11">
-                            <SelectValue placeholder="Select Window" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="7">Last 7 days</SelectItem>
-                            <SelectItem value="14">Last 14 days</SelectItem>
-                            <SelectItem value="28">Last 28 days</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            )}
         </div>
     )
 
@@ -362,9 +446,9 @@ function RankingsContent({ sports }: RankingsClientProps) {
                 triggerLabel="Filters"
                 onClear={() => {
                     setMode("most-active")
-                    setScope("global")
+                    setScope("GLOBAL")
                     setSport("running")
-                    setWindowDays(28)
+                    setTeamId(undefined)
                 }}
             >
                 {filterContent}
@@ -400,24 +484,14 @@ function RankingsContent({ sports }: RankingsClientProps) {
                     </button>
                 </div>
 
-                {/* Scope Toggle Buttons */}
-                <div className="flex rounded-xl bg-muted/50 p-1 gap-1">
-                    {scopeOptions.map((s) => (
-                        <button
-                            key={s.id}
-                            onClick={() => setScope(s.id)}
-                            className={cn(
-                                "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
-                                scope === s.id
-                                    ? "bg-background text-foreground shadow-sm"
-                                    : "text-muted-foreground hover:text-foreground"
-                            )}
-                        >
-                            <s.icon className="w-3.5 h-3.5" />
-                            <span>{s.label}</span>
-                        </button>
-                    ))}
-                </div>
+                {/* Scope Selector */}
+                <ScopeSelector
+                    scope={scope}
+                    teamId={teamId}
+                    onScopeChange={handleScopeChange}
+                    teams={teams}
+                    locationInfo={locationInfo ?? undefined}
+                />
 
                 {/* Sport Filter (for benchmark mode) */}
                 {mode === "benchmark" && (
@@ -450,25 +524,11 @@ function RankingsContent({ sports }: RankingsClientProps) {
                         </SelectContent>
                     </Select>
                 )}
-
-                {/* Window Days (for most-active mode) */}
-                {mode === "most-active" && (
-                    <Select value={String(windowDays)} onValueChange={(v) => setWindowDays(Number(v))}>
-                        <SelectTrigger className="w-[140px] h-9">
-                            <SelectValue placeholder="Time Window" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="7">Last 7 days</SelectItem>
-                            <SelectItem value="14">Last 14 days</SelectItem>
-                            <SelectItem value="28">Last 28 days</SelectItem>
-                        </SelectContent>
-                    </Select>
-                )}
             </div>
         </div>
     )
 
-    const leaderboard = mode === "most-active" ? mostActiveLeaderboard : benchmarkLeaderboard
+    const leaderboard = leaderboardData?.top || []
 
     return (
         <div className="min-h-screen bg-background pb-20 md:pb-0">
@@ -487,8 +547,8 @@ function RankingsContent({ sports }: RankingsClientProps) {
                             <p className="text-sm text-slate-600 mt-1 max-w-xl">
                                 {mode === "most-active"
                                     ? "See who's putting in the most effort across all sports."
-                                    : benchmarkMeta
-                                        ? `${benchmarkMeta.name} rankings - showing real performance in ${benchmarkMeta.unit}`
+                                    : leaderboardData?.meta
+                                        ? `${leaderboardData.meta.label} rankings - showing real performance`
                                         : "Compare your personal bests in specific benchmarks."}
                             </p>
                         </div>
@@ -515,13 +575,13 @@ function RankingsContent({ sports }: RankingsClientProps) {
                                 <Target className="h-4 w-4 text-primary" />
                             )}
                             <span className="font-semibold text-sm">
-                                {scope === 'global' ? 'Global' : scope === 'country' ? 'National' : 'City'} Leaderboard
+                                {leaderboardData?.scopeLabel || "Global"} Leaderboard
                             </span>
                         </div>
                         <span className="text-xs text-muted-foreground">
-                            {mode === "most-active"
-                                ? `Last ${windowDays} days`
-                                : benchmarkMeta?.name || "Select a benchmark"}
+                            {leaderboardData?.total
+                                ? `${leaderboardData.total.toLocaleString()} athletes`
+                                : "Loading..."}
                         </span>
                     </div>
 
@@ -547,16 +607,15 @@ function RankingsContent({ sports }: RankingsClientProps) {
                                     <Link href="/activity/create">Log Activity</Link>
                                 </Button>
                             </div>
-                        ) : mode === "most-active" ? (
-                            // Most Active Leaderboard
-                            (leaderboard as MostActiveEntry[]).map((entry) => {
+                        ) : (
+                            leaderboard.map((entry) => {
                                 const isCurrentUser = (session?.user as any)?.id === entry.userId
                                 const isTopThree = entry.rank <= 3
 
                                 return (
                                     <Link
                                         key={entry.userId}
-                                        href={`/profile/${entry.username || entry.userId}`}
+                                        href={`/profile/${entry.userId}`}
                                         className={cn(
                                             "leaderboard-row flex items-center gap-3 px-4 py-3 transition-all duration-200",
                                             "hover:bg-muted/50",
@@ -583,7 +642,7 @@ function RankingsContent({ sports }: RankingsClientProps) {
                                             </AvatarFallback>
                                         </Avatar>
 
-                                        {/* Name & Location */}
+                                        {/* Name */}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                                 <span className={cn(
@@ -598,97 +657,15 @@ function RankingsContent({ sports }: RankingsClientProps) {
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                <MapPin className="h-3 w-3" />
-                                                <span className="truncate">{entry.location || "Unknown location"}</span>
-                                            </div>
                                         </div>
 
-                                        {/* Score */}
+                                        {/* Value */}
                                         <div className="text-right shrink-0">
                                             <div className={cn(
                                                 "font-bold tabular-nums",
                                                 isTopThree ? "text-amber-600 dark:text-amber-400" : "text-foreground"
                                             )}>
-                                                {entry.activityScore.toLocaleString()}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground">
-                                                {entry.activityCount} activities
-                                            </div>
-                                        </div>
-                                    </Link>
-                                )
-                            })
-                        ) : (
-                            // Benchmark Leaderboard
-                            (leaderboard as BenchmarkEntry[]).map((entry) => {
-                                const isCurrentUser = (session?.user as any)?.id === entry.userId
-                                const isTopThree = entry.rank <= 3
-
-                                return (
-                                    <Link
-                                        key={entry.userId}
-                                        href={`/profile/${entry.username || entry.userId}`}
-                                        className={cn(
-                                            "leaderboard-row flex items-center gap-3 px-4 py-3 transition-all duration-200",
-                                            "hover:bg-muted/50",
-                                            isCurrentUser && "bg-primary/5 hover:bg-primary/10",
-                                            isTopThree && "bg-gradient-to-r from-amber-50/50 to-transparent dark:from-amber-950/20"
-                                        )}
-                                    >
-                                        {/* Rank */}
-                                        <div className={cn(
-                                            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                                            isTopThree ? "bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30" : "bg-muted/50"
-                                        )}>
-                                            {getRankBadge(entry.rank)}
-                                        </div>
-
-                                        {/* Avatar */}
-                                        <Avatar className={cn(
-                                            "h-10 w-10 border-2 shrink-0",
-                                            isTopThree ? "border-amber-400/50" : "border-border"
-                                        )}>
-                                            <AvatarImage src={entry.avatarUrl || undefined} alt={entry.displayName} />
-                                            <AvatarFallback className="text-sm font-semibold">
-                                                {entry.displayName?.[0]?.toUpperCase() || "?"}
-                                            </AvatarFallback>
-                                        </Avatar>
-
-                                        {/* Name & Location */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className={cn(
-                                                    "font-semibold text-sm truncate",
-                                                    isCurrentUser && "text-primary"
-                                                )}>
-                                                    {entry.displayName}
-                                                </span>
-                                                {isCurrentUser && (
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">
-                                                        You
-                                                    </span>
-                                                )}
-                                                {entry.verified && (
-                                                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                <MapPin className="h-3 w-3" />
-                                                <span className="truncate">{entry.location || "Unknown location"}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Value (Real Units!) */}
-                                        <div className="text-right shrink-0">
-                                            <div className={cn(
-                                                "font-bold tabular-nums text-lg",
-                                                isTopThree ? "text-amber-600 dark:text-amber-400" : "text-foreground"
-                                            )}>
                                                 {entry.formattedValue}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground">
-                                                {new Date(entry.achievedAt).toLocaleDateString()}
                                             </div>
                                         </div>
                                     </Link>
@@ -698,7 +675,7 @@ function RankingsContent({ sports }: RankingsClientProps) {
                     </div>
 
                     {/* Load More */}
-                    {leaderboard.length > 0 && leaderboard.length >= 20 && (
+                    {leaderboard.length > 0 && leaderboard.length >= 50 && (
                         <div className="p-4 border-t border-border text-center">
                             <Button variant="outline" size="sm">
                                 Load More

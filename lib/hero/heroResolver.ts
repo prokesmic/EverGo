@@ -5,6 +5,7 @@ import {
   HeroCategory,
   HeroImage,
 } from "./heroCatalog"
+import { normalizeSportSlug } from "@/lib/sports/normalizeSportSlug"
 
 export type SportLike = { id: string; name: string }
 
@@ -20,17 +21,17 @@ export type ResolvedHero = {
     usedSportFallback: boolean
     usedCategoryFallback: boolean
     supabaseUrl: string | null
+    rawSlug?: string
+    normalizedSlug?: string
   }
 }
 
+/**
+ * Converts a sport name to a canonical slug using the normalization utility.
+ * This ensures "Road Cycling" -> "cycling", "Kite Surfing" -> "kitesurfing", etc.
+ */
 export function sportToSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/&/g, "and")
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
+  return normalizeSportSlug(name) ?? name.toLowerCase().replace(/\s+/g, "-")
 }
 
 export function inferHeroCategoryFromSportName(name: string): HeroCategory {
@@ -412,8 +413,19 @@ export function resolveHeroForSport(params: {
   includeDebug?: boolean
 }): ResolvedHero {
   const { sport, userId, includeDebug } = params
+
+  // Use the normalized slug for hero image matching
   const sportSlug = sportToSlug(sport.name)
   const category = inferHeroCategoryFromSportName(sport.name)
+
+  // Raw slug for debugging purposes
+  const rawSlug = sport.name
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
 
   const overridePool = SPORT_HERO_OVERRIDES[sportSlug]
   const categoryPool =
@@ -457,6 +469,8 @@ export function resolveHeroForSport(params: {
       usedSportFallback,
       usedCategoryFallback,
       supabaseUrl,
+      rawSlug,
+      normalizedSlug: sportSlug,
     }
   }
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Trophy, Target, Users, User, Plus } from "lucide-react"
+import { Home, Trophy, Target, Users, Dumbbell, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
 
@@ -18,9 +18,9 @@ export function MobileNav() {
   const navItems = [
     { href: "/home", label: "Home", icon: Home, testId: "nav-home" },
     { href: "/rankings", label: "Rankings", icon: Trophy, testId: "nav-rankings" },
+    { href: "/sports", label: "Sports", icon: Dumbbell, testId: "nav-sports" },
     { href: "/teams", label: "Teams", icon: Users, testId: "nav-teams" },
     { href: "/challenges", label: "Challenges", icon: Target, testId: "nav-challenges" },
-    { href: session ? `/profile/${session.user?.username || 'me'}` : "/login", label: "Profile", icon: User, testId: "nav-profile" },
   ]
 
   const isActive = (href: string) => {

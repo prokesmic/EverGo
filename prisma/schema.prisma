@@ -707,6 +707,26 @@ enum ChallengeScope {
   PERSONAL
 }
 
+enum LeaderboardScope {
+  GLOBAL
+  COUNTRY
+  CITY
+  TEAM
+}
+
+// Track user's last known rank for delta calculation (no cron needed)
+model UserRankState {
+  id        String   @id @default(cuid())
+  userId    String
+  metricKey String   // "activity:score", "running:5k_time", etc.
+  scopeKey  String   // "GLOBAL", "COUNTRY", "CITY", "TEAM:<teamId>"
+  lastRank  Int
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, metricKey, scopeKey])
+  @@index([metricKey, scopeKey])
+}
+
 model ChallengeParticipant {
   id            String    @id @default(cuid())
   challengeId   String

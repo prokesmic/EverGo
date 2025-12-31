@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { WelcomeHero } from "@/components/dashboard/WelcomeHero"
 import { PulseRail } from "@/components/vapor/PulseRail"
-import { RankingSpotlight } from "@/components/widgets/RankingSpotlight"
+import { YourRankWidget } from "@/components/widgets/YourRankWidget"
 import { CompeteNowDeckWrapper } from "@/components/home/CompeteNowDeckWrapper"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
@@ -134,19 +134,9 @@ export default async function HomePage() {
             {/* MAIN COLUMN (Span 8) - Rank First, Then Compete */}
             <div className="lg:col-span-8 space-y-5">
 
-              {/* Rankings Spotlight - Status Signal (compact) - #1 visibility */}
+              {/* Your Rank Widget - Dynamic scope selector with TEAM support */}
               <div data-testid="home-slot-ranking">
-                <RankingSpotlight
-                  variant="compact"
-                  globalRank={userStats?.globalRank || 1234}
-                  globalRankChange={-5}
-                  cityRank={userStats?.cityRank || 42}
-                  cityRankChange={-2}
-                  cityName={user.city || "Prague"}
-                  sportIndex={userStats?.sportIndex || 742}
-                  sportIndexChange={38}
-                  percentile={15}
-                />
+                <YourRankWidget />
               </div>
 
               {/* Compete Now Deck - Rivalries, Challenges, Battles */}

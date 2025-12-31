@@ -21,7 +21,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { useSession, signOut } from "next-auth/react"
-import { Home, Trophy, Users, Calendar, Target, PlusCircle, Bell, Search, Sparkles, Menu, Settings, LogOut, User } from "lucide-react"
+import { Home, Trophy, Users, Calendar, Target, PlusCircle, Bell, Search, Sparkles, Menu, Settings, LogOut, User, Dumbbell } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SearchCommand } from "@/components/search-command"
 
@@ -38,6 +38,7 @@ export function MainNav() {
     const navItems = [
         { href: "/home", label: "Home", icon: Home },
         { href: "/rankings", label: "Rankings", icon: Trophy },
+        { href: "/sports", label: "Sports", icon: Dumbbell },
         { href: "/challenges", label: "Challenges", icon: Target },
         { href: "/teams", label: "Teams", icon: Users },
         { href: "/calendar", label: "Events", icon: Calendar },

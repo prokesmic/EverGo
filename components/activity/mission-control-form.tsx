@@ -51,7 +51,8 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { createActivity } from "@/app/actions/activity"
+import { createActivityAction, CreateActivityInput } from "@/app/actions/activity"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { SportGlyph } from "@/components/sports/SportGlyph"
 import { AddPersonalBestDrawer } from "@/components/benchmarks/AddPersonalBestDrawer"
@@ -137,6 +138,7 @@ export function MissionControlForm({
     benchmarkDefinitions = [],
     userBenchmarkBests = []
 }: MissionControlFormProps) {
+    const router = useRouter()
     const [selectedSportId, setSelectedSportId] = useState<string>("")
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [rpe, setRpe] = useState<number>(5)
@@ -231,33 +233,97 @@ export function MissionControlForm({
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true)
         try {
-            const formData = new FormData()
-            formData.append("title", values.title)
-            formData.append("description", values.description || "")
-            formData.append("sportId", values.sportId)
-            if (values.disciplineId) {
-                formData.append("disciplineId", values.disciplineId)
-            }
-
+            // Combine date and time
             const dateTime = new Date(`${values.activityDate}T${values.activityTime}`)
-            formData.append("activityDate", dateTime.toISOString())
 
-            if (values.durationMinutes) {
-                formData.append("durationSeconds", (parseFloat(values.durationMinutes) * 60).toString())
+            // Build activity input
+            const input: CreateActivityInput = {
+                title: values.title,
+                description: values.description || undefined,
+                sportId: values.sportId,
+                disciplineId: values.disciplineId || undefined,
+                activityDate: dateTime,
+                durationSeconds: values.durationMinutes ? parseFloat(values.durationMinutes) * 60 : undefined,
+                distanceMeters: values.distanceKm ? parseFloat(values.distanceKm) * 1000 : undefined,
+                caloriesBurned: values.caloriesBurned ? parseInt(values.caloriesBurned) : undefined,
+                visibility: values.visibility,
+                rpe: values.rpe,
+                // Convert achievements Map to array
+                achievements: Array.from(achievements.entries()).map(([benchmarkId, value]) => ({
+                    benchmarkId,
+                    value,
+                })),
             }
-            if (values.distanceKm) {
-                formData.append("distanceMeters", (parseFloat(values.distanceKm) * 1000).toString())
-            }
-            if (values.caloriesBurned) {
-                formData.append("caloriesBurned", values.caloriesBurned)
-            }
-            formData.append("visibility", values.visibility)
 
-            await createActivity(formData)
-            toast.success("Activity logged!")
+            const result = await createActivityAction(input)
+
+            if (!result.ok) {
+                // Handle different error types
+                const { code, message, details } = result.error
+
+                switch (code) {
+                    case "UNAUTHORIZED":
+                        toast.error(message, {
+                            description: "You'll be redirected to login.",
+                            action: {
+                                label: "Login",
+                                onClick: () => router.push("/login"),
+                            },
+                        })
+                        break
+
+                    case "VALIDATION_ERROR":
+                        // Try to set field-specific errors if available
+                        if (details && typeof details === "object" && "fieldErrors" in details) {
+                            const fieldErrors = (details as { fieldErrors: Record<string, string[]> }).fieldErrors
+                            Object.entries(fieldErrors).forEach(([field, errors]) => {
+                                if (errors?.[0]) {
+                                    form.setError(field as keyof typeof values, { message: errors[0] })
+                                }
+                            })
+                            toast.error("Please fix the highlighted fields")
+                        } else {
+                            toast.error(message)
+                        }
+                        break
+
+                    case "DB_SCHEMA_OUT_OF_SYNC":
+                        toast.error("Database Update Required", {
+                            description: "The database schema is out of date. Please contact support.",
+                            duration: 10000,
+                        })
+                        console.error("[Activity] DB schema error:", details)
+                        break
+
+                    case "DB_CONSTRAINT":
+                        toast.error("Database Error", {
+                            description: message,
+                        })
+                        console.error("[Activity] DB constraint error:", details)
+                        break
+
+                    default:
+                        toast.error(message || "Failed to create activity", {
+                            description: "Please try again or contact support if the problem persists.",
+                        })
+                        console.error("[Activity] Unknown error:", result.error)
+                }
+                return
+            }
+
+            // Success!
+            toast.success("Activity logged!", {
+                description: "Your activity has been recorded.",
+            })
+
+            // Navigate to profile
+            router.push(`/profile/${result.data.username}`)
         } catch (error) {
-            console.error(error)
-            toast.error("Failed to create activity")
+            // Unexpected error (network, etc.)
+            console.error("[Activity] Unexpected error:", error)
+            toast.error("Connection error", {
+                description: "Please check your internet connection and try again.",
+            })
         } finally {
             setIsSubmitting(false)
         }
@@ -349,7 +415,7 @@ export function MissionControlForm({
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" data-testid="activity-form">
                 <div className="grid lg:grid-cols-3 gap-6">
                     {/* Left Column - Main Form (2/3) */}
                     <div className="lg:col-span-2 space-y-6">
@@ -432,6 +498,7 @@ export function MissionControlForm({
                                     <FormControl>
                                         <Input
                                             placeholder="Name your activity..."
+                                            data-testid="activity-title-input"
                                             className="text-4xl font-extrabold h-auto py-4 px-0 border-0 bg-transparent placeholder:text-slate-300 focus-visible:ring-0 focus-visible:ring-offset-0"
                                             {...field}
                                         />
@@ -1159,6 +1226,7 @@ export function MissionControlForm({
                         type="submit"
                         size="lg"
                         disabled={isSubmitting}
+                        data-testid="activity-submit-btn"
                         className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white font-bold px-8 py-6 h-auto rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all"
                     >
                         {isSubmitting ? (

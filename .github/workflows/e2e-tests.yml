@@ -21,6 +21,11 @@ env:
   TEST_BASE_URL: ${{ github.event.inputs.base_url || 'http://localhost:3000' }}
   E2E_ENABLED: 'true'
   E2E_TEST_SECRET: ${{ secrets.E2E_TEST_SECRET }}
+  # Prisma needs these present to parse schema during `prisma generate` in postinstall.
+  # This is a SAFE dummy for CI - no real DB access needed for generate.
+  # The build job overrides with real secrets for actual DB operations.
+  DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres?schema=public'
+  DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/postgres?schema=public'
 
 jobs:
   # Build job - runs once with proper env validation
