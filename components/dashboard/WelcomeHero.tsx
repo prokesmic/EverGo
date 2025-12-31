@@ -7,6 +7,8 @@ import { Plus, Flame, TrendingUp, MapPin, Trophy, ChevronRight } from "lucide-re
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import type { ResolvedHero } from "@/lib/hero/heroResolver"
+import type { UserRankScopes } from "@/lib/leaderboards"
+import { RankStrip } from "@/components/widgets/RankStrip"
 import { useState } from "react"
 
 // Category-specific Unsplash fallbacks (guaranteed to work)
@@ -38,6 +40,7 @@ interface WelcomeHeroProps {
   globalRank?: number
   cityRank?: number
   hero?: ResolvedHero
+  ranks?: UserRankScopes
 }
 
 export function WelcomeHero({
@@ -54,6 +57,7 @@ export function WelcomeHero({
   globalRank,
   cityRank,
   hero,
+  ranks,
 }: WelcomeHeroProps) {
   const formatTime = (minutes: number) => {
     const h = Math.floor(minutes / 60)
@@ -183,6 +187,9 @@ export function WelcomeHero({
                   <p className="text-[10px] uppercase tracking-wider text-slate-400">Day Streak</p>
                 </div>
               </div>
+
+              {/* Rank Strip - Desktop only */}
+              {ranks && <RankStrip ranks={ranks} />}
             </div>
 
             {/* Primary CTA - Log Activity */}

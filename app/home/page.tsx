@@ -13,6 +13,7 @@ import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
 import { getHomeHeroForUser } from "@/lib/hero/getHomeHero"
 import { HighlightsFeed } from "@/components/home/HighlightsFeed"
+import { getUserRankScopes } from "@/lib/leaderboards"
 
 export const dynamic = 'force-dynamic'
 
@@ -85,8 +86,11 @@ export default async function HomePage() {
     const sortedSports = Object.entries(sportStats).sort((a, b) => b[1].distance - a[1].distance)
     const primarySport = sortedSports.length > 0 ? sortedSports[0][0] : "running"
 
-    // Get hero image based on user's primary sport
-    const hero = await getHomeHeroForUser(user.id)
+    // Get hero image and user rank scopes in parallel
+    const [hero, userRanks] = await Promise.all([
+      getHomeHeroForUser(user.id),
+      getUserRankScopes(user.id),
+    ])
 
     return (
       <main className="min-h-screen bg-slate-50 pb-20 md:pb-0" data-testid="home-page">
@@ -110,6 +114,7 @@ export default async function HomePage() {
             globalRank={userStats?.globalRank || undefined}
             cityRank={userStats?.cityRank || undefined}
             hero={hero}
+            ranks={userRanks}
           />
         </div>
 
