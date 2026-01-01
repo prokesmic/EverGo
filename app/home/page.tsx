@@ -12,6 +12,8 @@ import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
 import { getHomeHeroForUser } from "@/lib/hero/getHomeHero"
 import { HighlightsFeed } from "@/components/home/HighlightsFeed"
+import { FollowingFeed } from "@/components/home/FollowingFeed"
+import { HomeFeedTabs } from "@/components/home/HomeFeedTabs"
 import { getUserRankScopes } from "@/lib/leaderboards"
 
 export const dynamic = 'force-dynamic'
@@ -23,7 +25,7 @@ export const dynamic = 'force-dynamic'
  * 1. WelcomeHero (Full-width anchor with stats, RankStrip on desktop, Log Activity CTA)
  * 2. PulseRail (Stories-style friend activity)
  * 3. CompeteNowDeck (Active rivalries, challenges, team battles)
- * 4. HighlightsFeed (High-signal activity highlights)
+ * 4. HomeFeedTabs (Highlights + Following feed with tab switcher)
  * 5. Feed + Sidebar (Planning & Social)
  */
 export default async function HomePage() {
@@ -142,9 +144,12 @@ export default async function HomePage() {
                 <CompeteNowDeckWrapper />
               </div>
 
-              {/* Highlights Feed - High-signal activity highlights */}
-              <div data-testid="home-slot-highlights">
-                <HighlightsFeed userId={user.id} />
+              {/* Feed Tabs: Highlights + Following */}
+              <div data-testid="home-slot-feed-tabs">
+                <HomeFeedTabs
+                  highlightsContent={<HighlightsFeed userId={user.id} />}
+                  followingContent={<FollowingFeed userId={user.id} />}
+                />
               </div>
 
               {/* Consumption Zone - Social Feed */}
