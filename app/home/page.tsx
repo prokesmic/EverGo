@@ -7,15 +7,16 @@ import { PulseRail } from "@/components/vapor/PulseRail"
 import { CompeteNowDeckWrapper } from "@/components/home/CompeteNowDeckWrapper"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
-import { FollowSuggestionsWrapper } from "@/components/widgets/follow-suggestions-wrapper"
+import { PeopleToFollow } from "@/components/widgets/PeopleToFollow"
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
 import { getHomeHeroForUser } from "@/lib/hero/getHomeHero"
-import { HighlightsFeed } from "@/components/home/HighlightsFeed"
-import { FollowingFeed } from "@/components/home/FollowingFeed"
+import { RankingsHighlightsFeed } from "@/components/home/RankingsHighlightsFeed"
+import { VirtualizedFollowingFeed } from "@/components/home/VirtualizedFollowingFeed"
 import { HomeFeedTabs } from "@/components/home/HomeFeedTabs"
 import { getUserRankScopes } from "@/lib/leaderboards"
 import { getHeroRankLensSnapshot, getUserPrimarySport } from "@/lib/rankings/hero-rank-lens"
+import { PerformanceRibbon, type RankCard, type LensOption } from "@/components/home/PerformanceRibbon"
 
 export const dynamic = 'force-dynamic'
 
@@ -104,12 +105,95 @@ export default async function HomePage() {
         : Promise.resolve(null),
     ])
 
+    // Build Performance Ribbon data
+    const sportIndexValue = userStats?.sportIndex ?? 0
+
+    // Build lens options - start with Sport Index, add primary sport if available
+    const lensOptions: LensOption[] = [
+      { id: 'sport_index', label: 'Sport Index', kind: 'sport_index' },
+      { id: 'fitness_score', label: 'Fitness Score', kind: 'fitness_score' },
+    ]
+
+    // Add primary sport discipline if available
+    if (userPrimarySport) {
+      lensOptions.push({
+        id: `sport-${userPrimarySport.id}`,
+        label: userPrimarySport.name,
+        kind: 'sport_discipline',
+        sportSlug: userPrimarySport.slug || null,
+        disciplineSlug: null,
+      })
+    }
+
+    // Build rank cards from rankLensSnapshot tiles
+    const buildRankCards = (): RankCard[] => {
+      const cards: RankCard[] = []
+
+      if (!rankLensSnapshot?.tiles) return cards
+
+      const tiles = rankLensSnapshot.tiles
+
+      // Global rank
+      if (tiles.global) {
+        cards.push({
+          scope: 'global',
+          rank: tiles.global.rank,
+          total: tiles.global.total ?? null,
+          delta: null, // No delta in current type
+        })
+      }
+
+      // Country rank
+      if (tiles.country) {
+        cards.push({
+          scope: 'country',
+          rank: tiles.country.rank,
+          total: tiles.country.total ?? null,
+          label: tiles.country.scopeValue ?? user.country ?? null,
+          delta: null,
+        })
+      }
+
+      // City rank
+      if (tiles.city) {
+        cards.push({
+          scope: 'city',
+          rank: tiles.city.rank,
+          total: tiles.city.total ?? null,
+          label: tiles.city.scopeValue ?? user.city ?? null,
+          delta: null,
+        })
+      }
+
+      // Team rank
+      if (tiles.team) {
+        cards.push({
+          scope: 'team',
+          rank: tiles.team.rank,
+          total: tiles.team.total ?? null,
+          label: tiles.team.scopeValue ?? null,
+          delta: null,
+        })
+      }
+
+      return cards
+    }
+
+    const ranksByLens: Record<string, RankCard[]> = {
+      'sport_index': buildRankCards(),
+      'fitness_score': buildRankCards(), // Same ranks for now, can differentiate later
+    }
+
+    // Add sport-specific ranks if available
+    if (userPrimarySport) {
+      ranksByLens[`sport-${userPrimarySport.id}`] = buildRankCards()
+    }
+
     return (
       <main className="min-h-screen bg-slate-50 pb-20 md:pb-0" data-testid="home-page">
         {/* ============================================
-            SECTION 1: THE ANCHOR - Welcome Hero
-            Full-width, dark background, primary CTA
-            Contains: Stats + Log Activity CTA
+            SECTION 1: THE ANCHOR - Slim Hero (Identity Only)
+            Full-width, dark background, avatar + name + location
         ============================================ */}
         <div data-testid="home-slot-hero">
           <WelcomeHero
@@ -122,7 +206,20 @@ export default async function HomePage() {
         </div>
 
         {/* ============================================
-            SECTION 2: THE PULSE - Friend Activity Rail
+            SECTION 2: PERFORMANCE RIBBON
+            Compact rankings strip with lens selector
+            Overlaps hero bottom for visual connection
+        ============================================ */}
+        <PerformanceRibbon
+          sportIndex={{ value: sportIndexValue, delta: null }}
+          fitnessScore={null}
+          lensOptions={lensOptions}
+          initialLensId="sport_index"
+          ranksByLens={ranksByLens}
+        />
+
+        {/* ============================================
+            SECTION 3: THE PULSE - Friend Activity Rail
             Stories-style horizontal scroll (The Hook)
         ============================================ */}
         <div className="border-b border-slate-200/60 bg-white/80 backdrop-blur-sm">
@@ -150,8 +247,8 @@ export default async function HomePage() {
               {/* Feed Tabs: Highlights + Following */}
               <div data-testid="home-slot-feed-tabs">
                 <HomeFeedTabs
-                  highlightsContent={<HighlightsFeed userId={user.id} />}
-                  followingContent={<FollowingFeed userId={user.id} />}
+                  highlightsContent={<RankingsHighlightsFeed />}
+                  followingContent={<VirtualizedFollowingFeed />}
                 />
               </div>
 
@@ -172,9 +269,9 @@ export default async function HomePage() {
               {/* 2. Partner Finder (Social Planning) */}
               <PartnerFinderWidget />
 
-              {/* 3. Follow Suggestions (Discovery) */}
+              {/* 3. People to Follow (Discovery) */}
               <div className="hidden lg:block">
-                <FollowSuggestionsWrapper />
+                <PeopleToFollow />
               </div>
             </aside>
 

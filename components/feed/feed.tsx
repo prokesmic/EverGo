@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { ActivityPostCard } from "./activity-post-card"
-import { SuggestedAthletes } from "@/components/recommendations/SuggestedAthletes"
 import { ActivityCardSkeleton } from "@/components/ui/skeleton"
 import { Loader2 } from "lucide-react"
 
@@ -73,9 +72,15 @@ export function Feed({ type = "all", refreshTrigger }: FeedProps) {
     }
 
     if (posts.length === 0) {
-        // Show SuggestedAthletes instead of generic empty state
-        // This drives engagement by helping users build their network
-        return <SuggestedAthletes variant="cards" title="Build Your Network" />
+        // Show simple empty state - suggestions are now in sidebar only
+        return (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+                <div className="text-sm font-medium text-slate-700">No posts yet</div>
+                <div className="mt-1 text-xs text-slate-500">
+                    Follow athletes using the &quot;People to follow&quot; widget to see their activity here.
+                </div>
+            </div>
+        )
     }
 
     return (

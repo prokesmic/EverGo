@@ -21,9 +21,12 @@ export interface SuggestedAthlete {
   reason: string
 }
 
+type FilterMode = "near" | "sport" | "fof"
+
 interface GetSuggestedAthletesOptions {
   limit?: number
   minScore?: number
+  mode?: FilterMode
 }
 
 /**
@@ -39,7 +42,7 @@ export async function getSuggestedAthletes(
   userId: string,
   options: GetSuggestedAthletesOptions = {}
 ): Promise<SuggestedAthlete[]> {
-  const { limit = 12, minScore = 10 } = options
+  const { limit = 12, minScore = 10, mode } = options
 
   // 1. Get current user's profile for scoring context
   const currentUser = await prisma.user.findUnique({
@@ -217,7 +220,41 @@ export async function getSuggestedAthletes(
       activities30d: activityData?.count30d ?? 0,
       suggestCandidate,
     }
-  }).sort((a, b) => b.score - a.score)
+  })
+
+  // Apply mode-based sorting/boosting
+  if (mode === "near") {
+    // Prioritize users from same city/country
+    initialScores.sort((a, b) => {
+      const aLocal =
+        (a.candidate.city && a.candidate.city === currentUser.city ? 100 : 0) +
+        (a.candidate.country && a.candidate.country === currentUser.country ? 50 : 0)
+      const bLocal =
+        (b.candidate.city && b.candidate.city === currentUser.city ? 100 : 0) +
+        (b.candidate.country && b.candidate.country === currentUser.country ? 50 : 0)
+      if (aLocal !== bLocal) return bLocal - aLocal
+      return b.score - a.score
+    })
+  } else if (mode === "sport") {
+    // Prioritize users with same primary sport and higher activity
+    initialScores.sort((a, b) => {
+      const aSameSport = a.suggestCandidate.primarySport === meProfile.primarySport ? 100 : 0
+      const bSameSport = b.suggestCandidate.primarySport === meProfile.primarySport ? 100 : 0
+      if (aSameSport !== bSameSport) return bSameSport - aSameSport
+      // Then by activity count
+      if (a.activities30d !== b.activities30d) return b.activities30d - a.activities30d
+      return b.score - a.score
+    })
+  } else if (mode === "fof") {
+    // Prioritize users followed by people I follow (mutual count)
+    initialScores.sort((a, b) => {
+      if (a.mutuals !== b.mutuals) return b.mutuals - a.mutuals
+      return b.score - a.score
+    })
+  } else {
+    // Default: sort by score
+    initialScores.sort((a, b) => b.score - a.score)
+  }
 
   // Second pass: select top candidates with diversity tracking
   const finalCtx = createScoreContext()

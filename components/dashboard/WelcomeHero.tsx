@@ -5,8 +5,6 @@ import { motion } from "framer-motion"
 import { MapPin } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { ResolvedHero } from "@/lib/hero/heroResolver"
-import { HeroRankBar } from "@/components/rankings/HeroRankBar"
-import { RankLensProvider } from "@/components/rankings/RankLensProvider"
 import { useState } from "react"
 
 // Category-specific Unsplash fallbacks (guaranteed to work)
@@ -70,7 +68,7 @@ export function WelcomeHero({
   }
 
   return (
-    <section className="relative w-full overflow-hidden min-h-[280px] md:min-h-[320px]">
+    <section className="relative w-full overflow-hidden h-[170px] sm:h-[190px] md:h-[220px] lg:h-[240px]">
       {/* Sport-specific background image */}
       <div className="absolute inset-0">
         <Image
@@ -98,56 +96,49 @@ export function WelcomeHero({
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
 
-      {/* Content */}
-      <div className="relative max-w-6xl mx-auto px-6 py-8 md:py-10">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          {/* Left: User Info */}
-          <div className="flex items-start gap-4">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Avatar className="h-16 w-16 md:h-20 md:w-20 ring-2 ring-orange-500/50 ring-offset-2 ring-offset-slate-900">
-                <AvatarImage src={avatarUrl} alt={name} />
-                <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-xl font-bold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </motion.div>
+      {/* Content - Identity only, compact layout */}
+      <div className="relative max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-6 pb-10 md:pb-12">
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Avatar className="h-14 w-14 md:h-16 md:w-16 ring-2 ring-orange-500/50 ring-offset-2 ring-offset-slate-900">
+              <AvatarImage src={avatarUrl} alt={name} />
+              <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-lg font-bold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </motion.div>
 
-            <div className="flex-1">
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-400 mb-1">
-                {greeting}
-              </p>
-              <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-1">
-                {name}
-              </h1>
-              <div className="flex items-center gap-3 text-sm text-slate-300">
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  {location}
-                </span>
-                <span className="text-slate-600">·</span>
-                <span className="capitalize text-emerald-400 font-medium">{primarySport}</span>
-              </div>
+          {/* User Info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400 mb-0.5">
+              {greeting}
+            </p>
+            <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight truncate">
+              {name}
+            </h1>
+            <div className="flex items-center gap-2 text-sm text-slate-300 mt-0.5">
+              <span className="flex items-center gap-1 truncate">
+                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                <span className="truncate">{location}</span>
+              </span>
+              <span className="text-slate-600 shrink-0">·</span>
+              <span className="capitalize text-emerald-400 font-medium shrink-0">{primarySport}</span>
             </div>
           </div>
-
         </div>
 
-        {/* Hero RankBar - Compact rankings with lens selector */}
-        <RankLensProvider>
-          <HeroRankBar className="mt-6" />
-        </RankLensProvider>
-
-        {/* Photo credit */}
+        {/* Photo credit - subtle, positioned at bottom */}
         {hero?.image?.credit?.name && (
-          <div className="mt-4 text-[10px] text-white/40">
+          <div className="absolute bottom-2 right-4 text-[9px] text-white/30">
             Photo:{" "}
             {hero.image.credit.url ? (
               <a
-                className="underline hover:text-white/60 transition-colors"
+                className="hover:text-white/50 transition-colors"
                 href={hero.image.credit.url}
                 target="_blank"
                 rel="noreferrer"
@@ -157,43 +148,6 @@ export function WelcomeHero({
             ) : (
               hero.image.credit.name
             )}
-          </div>
-        )}
-
-        {/* Debug info (development only) */}
-        {hero?.debug && process.env.NODE_ENV !== "production" && (
-          <div className="mt-2 px-3 py-2 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-[10px] font-mono text-white/70 space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">
-                slug: {hero.sportSlug}
-              </span>
-              <span className="px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">
-                category: {hero.category}
-              </span>
-              {hero.debug.usedSupabase && (
-                <span className="px-1.5 py-0.5 rounded bg-emerald-800 text-emerald-300">
-                  Supabase
-                </span>
-              )}
-              {hero.debug.usedSportFallback && (
-                <span className="px-1.5 py-0.5 rounded bg-amber-800 text-amber-300">
-                  Sport Fallback
-                </span>
-              )}
-              {hero.debug.usedCategoryFallback && (
-                <span className="px-1.5 py-0.5 rounded bg-orange-800 text-orange-300">
-                  Category Fallback
-                </span>
-              )}
-              {hasError && (
-                <span className="px-1.5 py-0.5 rounded bg-red-800 text-red-300">
-                  Image Error (using client fallback)
-                </span>
-              )}
-            </div>
-            <div className="truncate opacity-60">
-              src: {imageSrc.slice(0, 80)}...
-            </div>
           </div>
         )}
       </div>
