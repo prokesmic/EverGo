@@ -355,7 +355,7 @@ export function LandingHowItWorks() {
               <div className="relative lg:sticky lg:top-24">
                 <div className="relative">
                   {/* Background glow */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-orange-100 via-slate-100 to-red-100 rounded-3xl blur-xl opacity-70" />
 
                   {/* Mockup container */}
                   <div className="relative transition-all duration-500">

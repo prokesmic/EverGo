@@ -206,6 +206,9 @@ async function main(): Promise<void> {
         const categoryResults = await mike.runCategory(options.category)
         const catPassed = categoryResults.filter(r => r.status === 'passed').length
 
+        // Generate report for category run
+        await mike.generateReport()
+
         console.log(chalk.blue(`\nResults: ${catPassed}/${categoryResults.length} passed`))
 
         if (catPassed < categoryResults.length) {
