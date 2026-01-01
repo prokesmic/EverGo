@@ -58,32 +58,65 @@ export function SlimHero({
   };
 
   return (
-    <div className="relative w-full">
-      {/* Zone A: The Vibe - Slim Hero Image (220px) */}
-      <div className="h-[180px] sm:h-[200px] md:h-[220px] w-full relative overflow-hidden">
+    <div className="w-full">
+      {/* Hero Banner with Identity Inside (Cinema Effect) */}
+      <div className="relative h-[240px] sm:h-[260px] md:h-[280px] w-full group overflow-hidden">
+        {/* Background Image with subtle hover zoom */}
         <Image
           src={imageSrc}
           alt={`${primarySport} background`}
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
           style={{ objectPosition: '50% 30%' }}
           onError={handleImageError}
         />
-        {/* Gradient overlay - bottom fade for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-        {/* Photo credit */}
+        {/* The Gradient Scrim - Crucial for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+        {/* Identity Block - Inside the banner */}
+        <div className="absolute bottom-5 md:bottom-6 left-0 w-full px-4 md:px-6">
+          <div className="max-w-6xl mx-auto flex items-end gap-4 md:gap-5">
+            {/* Avatar with gradient glow ring */}
+            <div className="relative flex-shrink-0">
+              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-purple-600 rounded-full blur-sm opacity-75" />
+              <Avatar className="w-20 h-20 md:w-24 md:h-24 border-2 border-white/20 relative z-10 shadow-2xl">
+                <AvatarImage src={avatarUrl} alt={name} />
+                <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white text-xl md:text-2xl font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+
+            {/* Text - White, legible, compact */}
+            <div className="mb-1 min-w-0 flex-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-md truncate">
+                {name}
+              </h1>
+              <div className="flex items-center gap-2 text-white/80 text-sm font-medium mt-1 flex-wrap">
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{location}</span>
+                </span>
+                <span className="text-white/30">•</span>
+                <span className="text-amber-400 capitalize">{primarySport}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Photo credit - subtle, top right */}
         {imageCredit?.name && (
-          <div className="absolute bottom-2 right-4 text-[9px] text-white/40">
+          <div className="absolute top-3 right-4 text-[9px] text-white/30">
             Photo:{' '}
             {imageCredit.url ? (
               <a
                 href={imageCredit.url}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-white/60 transition-colors"
+                className="hover:text-white/50 transition-colors"
               >
                 {imageCredit.name}
               </a>
@@ -92,34 +125,6 @@ export function SlimHero({
             )}
           </div>
         )}
-      </div>
-
-      {/* Zone B: The Bridge - Avatar & Identity */}
-      <div className="max-w-6xl mx-auto px-4 md:px-6 relative -mt-16 mb-6">
-        <div className="flex items-end gap-4 md:gap-6">
-          {/* Avatar - Large with ring */}
-          <Avatar className="w-24 h-24 md:w-28 md:h-28 border-4 border-white shadow-2xl ring-4 ring-white/20">
-            <AvatarImage src={avatarUrl} alt={name} />
-            <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white text-2xl md:text-3xl font-bold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-
-          {/* Identity text */}
-          <div className="pb-2 md:pb-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg tracking-tight">
-              {name}
-            </h1>
-            <div className="flex items-center gap-2 text-sm text-white/80 drop-shadow-md mt-0.5">
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5" />
-                {location}
-              </span>
-              <span className="text-white/50">•</span>
-              <span className="font-medium text-amber-300 capitalize">{primarySport}</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

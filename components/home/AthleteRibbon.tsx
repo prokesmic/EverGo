@@ -249,10 +249,10 @@ export function AthleteRibbon({
   });
 
   return (
-    <div className="border-b border-slate-100 bg-white/80 backdrop-blur-md">
-      <div className="max-w-6xl mx-auto py-4 px-4">
+    <div className="bg-white border-b border-slate-100 shadow-sm z-10 relative">
+      <div className="max-w-6xl mx-auto py-4 px-4 md:px-6">
         {/* Scrollable container */}
-        <div className="flex items-stretch gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory -mx-1 px-1">
+        <div className="flex items-stretch gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory -mx-1 px-1">
           {/* Sport Index - The Anchor */}
           <div className="snap-start">
             <SportIndexCard
