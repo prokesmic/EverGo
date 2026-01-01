@@ -1,14 +1,12 @@
 "use client"
 
-import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { Plus, Flame, TrendingUp, MapPin, Trophy, ChevronRight } from "lucide-react"
+import { MapPin } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { cn } from "@/lib/utils"
 import type { ResolvedHero } from "@/lib/hero/heroResolver"
 import type { UserRankScopes } from "@/lib/leaderboards"
-import { RankStrip } from "@/components/widgets/RankStrip"
+import { HeroKpiDock } from "@/components/hero/HeroKpiDock"
 import { useState } from "react"
 
 // Category-specific Unsplash fallbacks (guaranteed to work)
@@ -59,12 +57,6 @@ export function WelcomeHero({
   hero,
   ranks,
 }: WelcomeHeroProps) {
-  const formatTime = (minutes: number) => {
-    const h = Math.floor(minutes / 60)
-    const m = Math.round(minutes % 60)
-    return h > 0 ? `${h}h ${m}m` : `${m}m`
-  }
-
   const initials = name.substring(0, 2).toUpperCase()
   const greeting = getGreeting()
 
@@ -160,81 +152,23 @@ export function WelcomeHero({
             </div>
           </div>
 
-          {/* Right: CTA + Quick Stats */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            {/* Quick Stats Pills */}
-            <div className="flex items-center gap-3">
-              {/* Sport Index */}
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-                <Trophy className="w-4 h-4 text-orange-400" />
-                <div>
-                  <p className="text-lg font-bold text-white tabular-nums">{sportIndex}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-slate-400">Sport Index</p>
-                </div>
-                {sportIndexTrend > 0 && (
-                  <span className="flex items-center gap-0.5 text-xs text-emerald-400 font-medium ml-1">
-                    <TrendingUp className="w-3 h-3" />
-                    +{sportIndexTrend}
-                  </span>
-                )}
-              </div>
-
-              {/* Streak */}
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 backdrop-blur-sm border border-orange-500/20">
-                <Flame className="w-4 h-4 text-orange-400" />
-                <div>
-                  <p className="text-lg font-bold text-white tabular-nums">{streakDays}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-slate-400">Day Streak</p>
-                </div>
-              </div>
-
-              {/* Rank Strip - Desktop only */}
-              {ranks && <RankStrip ranks={ranks} />}
-            </div>
-
-            {/* Primary CTA - Log Activity */}
-            <Link
-              href="/activity/create"
-              className={cn(
-                "relative z-10 inline-flex items-center justify-center gap-2",
-                "px-6 py-3 rounded-full",
-                "bg-gradient-to-r from-orange-500 to-orange-600",
-                "text-white font-semibold text-sm",
-                "shadow-lg shadow-orange-500/30",
-                "hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5",
-                "transition-all duration-200"
-              )}
-            >
-              <Plus className="w-4 h-4" />
-              Log Activity
-              <ChevronRight className="w-4 h-4 -mr-1 opacity-70" />
-            </Link>
-          </div>
         </div>
 
-        {/* Weekly Summary Strip - De-emphasized, secondary info */}
-        <div className="mt-4 pt-4 border-t border-white/5">
-          <div className="flex items-center gap-6 text-sm">
-            <span className="text-slate-400/80">
-              <span className="font-medium text-white/80">{weeklyDistance.toFixed(1)}</span>
-              <span className="ml-1 text-slate-500">km</span>
-            </span>
-            <span className="text-slate-400/80">
-              <span className="font-medium text-white/80">{formatTime(weeklyTime)}</span>
-              <span className="ml-1 text-slate-500">active</span>
-            </span>
-            <span className="text-slate-400/80">
-              <span className="font-medium text-white/80">{weeklyActivities}</span>
-              <span className="ml-1 text-slate-500">activities</span>
-            </span>
-            <Link
-              href="/profile/me"
-              className="text-xs text-slate-400 hover:text-orange-400 transition-colors ml-auto flex items-center gap-1"
-            >
-              View stats <ChevronRight className="w-3 h-3" />
-            </Link>
-          </div>
-        </div>
+        {/* Hero KPI Dock - Unified stats bar */}
+        {ranks && (
+          <HeroKpiDock
+            sportIndex={sportIndex}
+            sportIndexDelta={sportIndexTrend}
+            streakDays={streakDays}
+            ranks={ranks}
+            weeklyStats={{
+              sessions: weeklyActivities,
+              minutes: weeklyTime,
+              distance: weeklyDistance,
+            }}
+            className="mt-6"
+          />
+        )}
 
         {/* Photo credit */}
         {hero?.image?.credit?.name && (
