@@ -2,7 +2,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
-import { WelcomeHero } from "@/components/dashboard/WelcomeHero"
+import { SlimHero } from "@/components/home/SlimHero"
+import { AthleteRibbon, type RankCardData } from "@/components/home/AthleteRibbon"
 import { PulseRail } from "@/components/vapor/PulseRail"
 import { CompeteNowDeckWrapper } from "@/components/home/CompeteNowDeckWrapper"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
@@ -16,7 +17,6 @@ import { VirtualizedFollowingFeed } from "@/components/home/VirtualizedFollowing
 import { HomeFeedTabs } from "@/components/home/HomeFeedTabs"
 import { getUserRankScopes } from "@/lib/leaderboards"
 import { getHeroRankLensSnapshot, getUserPrimarySport } from "@/lib/rankings/hero-rank-lens"
-import { PerformanceRibbon, type RankCard, type LensOption } from "@/components/home/PerformanceRibbon"
 
 export const dynamic = 'force-dynamic'
 
@@ -105,29 +105,12 @@ export default async function HomePage() {
         : Promise.resolve(null),
     ])
 
-    // Build Performance Ribbon data
+    // Build Athlete Ribbon data
     const sportIndexValue = userStats?.sportIndex ?? 0
 
-    // Build lens options - start with Sport Index, add primary sport if available
-    const lensOptions: LensOption[] = [
-      { id: 'sport_index', label: 'Sport Index', kind: 'sport_index' },
-      { id: 'fitness_score', label: 'Fitness Score', kind: 'fitness_score' },
-    ]
-
-    // Add primary sport discipline if available
-    if (userPrimarySport) {
-      lensOptions.push({
-        id: `sport-${userPrimarySport.id}`,
-        label: userPrimarySport.name,
-        kind: 'sport_discipline',
-        sportSlug: userPrimarySport.slug || null,
-        disciplineSlug: null,
-      })
-    }
-
     // Build rank cards from rankLensSnapshot tiles
-    const buildRankCards = (): RankCard[] => {
-      const cards: RankCard[] = []
+    const buildRankCards = (): RankCardData[] => {
+      const cards: RankCardData[] = []
 
       if (!rankLensSnapshot?.tiles) return cards
 
@@ -139,7 +122,7 @@ export default async function HomePage() {
           scope: 'global',
           rank: tiles.global.rank,
           total: tiles.global.total ?? null,
-          delta: null, // No delta in current type
+          delta: null,
         })
       }
 
@@ -179,43 +162,35 @@ export default async function HomePage() {
       return cards
     }
 
-    const ranksByLens: Record<string, RankCard[]> = {
-      'sport_index': buildRankCards(),
-      'fitness_score': buildRankCards(), // Same ranks for now, can differentiate later
-    }
-
-    // Add sport-specific ranks if available
-    if (userPrimarySport) {
-      ranksByLens[`sport-${userPrimarySport.id}`] = buildRankCards()
-    }
+    const rankCards = buildRankCards()
 
     return (
       <main className="min-h-screen bg-slate-50 pb-20 md:pb-0" data-testid="home-page">
         {/* ============================================
-            SECTION 1: THE ANCHOR - Slim Hero (Identity Only)
-            Full-width, dark background, avatar + name + location
+            ZONE A: THE VIBE - Slim Hero + Avatar Bridge
+            Atmospheric background + overlapping avatar identity
         ============================================ */}
         <div data-testid="home-slot-hero">
-          <WelcomeHero
+          <SlimHero
             name={user.displayName || "Athlete"}
             avatarUrl={user.avatarUrl || undefined}
             location={user.city || "Prague, Czech Republic"}
             primarySport={hero.sportName || primarySport}
-            hero={hero}
+            imageUrl={hero.imageUrl}
+            imageCategory={hero.category}
+            imageCredit={hero.image?.credit}
           />
         </div>
 
         {/* ============================================
-            SECTION 2: PERFORMANCE RIBBON
-            Compact rankings strip with lens selector
-            Overlaps hero bottom for visual connection
+            ZONE B: THE ATHLETE RIBBON
+            High-definition cards with Sport Index anchor
+            + Global/Country/City/Team orbit cards
         ============================================ */}
-        <PerformanceRibbon
-          sportIndex={{ value: sportIndexValue, delta: null }}
-          fitnessScore={null}
-          lensOptions={lensOptions}
-          initialLensId="sport_index"
-          ranksByLens={ranksByLens}
+        <AthleteRibbon
+          sportIndex={sportIndexValue}
+          sportIndexDelta={null}
+          rankCards={rankCards}
         />
 
         {/* ============================================
