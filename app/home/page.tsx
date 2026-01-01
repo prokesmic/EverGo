@@ -15,6 +15,7 @@ import { HighlightsFeed } from "@/components/home/HighlightsFeed"
 import { FollowingFeed } from "@/components/home/FollowingFeed"
 import { HomeFeedTabs } from "@/components/home/HomeFeedTabs"
 import { getUserRankScopes } from "@/lib/leaderboards"
+import { getHeroRankLensSnapshot, getUserPrimarySport } from "@/lib/rankings/hero-rank-lens"
 
 export const dynamic = 'force-dynamic'
 
@@ -86,10 +87,21 @@ export default async function HomePage() {
     const sortedSports = Object.entries(sportStats).sort((a, b) => b[1].distance - a[1].distance)
     const primarySport = sortedSports.length > 0 ? sortedSports[0][0] : "running"
 
-    // Get hero image and user rank scopes in parallel
-    const [hero, userRanks] = await Promise.all([
+    // Get user's primary sport for rank lens
+    const userPrimarySport = await getUserPrimarySport(user.id)
+
+    // Get hero image, user rank scopes, and rank lens snapshot in parallel
+    const [hero, userRanks, rankLensSnapshot] = await Promise.all([
       getHomeHeroForUser(user.id),
       getUserRankScopes(user.id),
+      // Only fetch rank lens if user has a primary sport
+      userPrimarySport
+        ? getHeroRankLensSnapshot({
+            userId: user.id,
+            sportId: userPrimarySport.id,
+            benchmarkId: null, // Default to Sport Index; client can switch via API
+          })
+        : Promise.resolve(null),
     ])
 
     return (
@@ -115,6 +127,7 @@ export default async function HomePage() {
             cityRank={userStats?.cityRank || undefined}
             hero={hero}
             ranks={userRanks}
+            rankLensSnapshot={rankLensSnapshot ?? undefined}
           />
         </div>
 

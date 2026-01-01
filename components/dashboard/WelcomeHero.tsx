@@ -6,7 +6,9 @@ import { MapPin } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { ResolvedHero } from "@/lib/hero/heroResolver"
 import type { UserRankScopes } from "@/lib/leaderboards"
+import type { HeroRankLensSnapshot } from "@/lib/rankings/hero-rank-lens"
 import { HeroKpiDock } from "@/components/hero/HeroKpiDock"
+import { HeroRankLens } from "@/components/home/HeroRankLens"
 import { useState } from "react"
 
 // Category-specific Unsplash fallbacks (guaranteed to work)
@@ -39,6 +41,7 @@ interface WelcomeHeroProps {
   cityRank?: number
   hero?: ResolvedHero
   ranks?: UserRankScopes
+  rankLensSnapshot?: HeroRankLensSnapshot
 }
 
 export function WelcomeHero({
@@ -56,6 +59,7 @@ export function WelcomeHero({
   cityRank,
   hero,
   ranks,
+  rankLensSnapshot,
 }: WelcomeHeroProps) {
   const initials = name.substring(0, 2).toUpperCase()
   const greeting = getGreeting()
@@ -154,8 +158,11 @@ export function WelcomeHero({
 
         </div>
 
-        {/* Hero KPI Dock - Unified stats bar */}
-        {ranks && (
+        {/* Hero Rank Lens - New benchmark-aware ranking display */}
+        {rankLensSnapshot ? (
+          <HeroRankLens snapshot={rankLensSnapshot} className="mt-6" />
+        ) : ranks ? (
+          /* Fallback to old HeroKpiDock if no rank lens snapshot */
           <HeroKpiDock
             sportIndex={sportIndex}
             sportIndexDelta={sportIndexTrend}
@@ -168,7 +175,7 @@ export function WelcomeHero({
             }}
             className="mt-6"
           />
-        )}
+        ) : null}
 
         {/* Photo credit */}
         {hero?.image?.credit?.name && (
