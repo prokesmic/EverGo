@@ -5,10 +5,8 @@ import { motion } from "framer-motion"
 import { MapPin } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { ResolvedHero } from "@/lib/hero/heroResolver"
-import type { UserRankScopes } from "@/lib/leaderboards"
-import type { HeroRankLensSnapshot } from "@/lib/rankings/hero-rank-lens"
-import { HeroKpiDock } from "@/components/hero/HeroKpiDock"
-import { HeroRankingsStrip } from "@/components/hero/HeroRankingsStrip"
+import { HeroRankBar } from "@/components/rankings/HeroRankBar"
+import { RankLensProvider } from "@/components/rankings/RankLensProvider"
 import { useState } from "react"
 
 // Category-specific Unsplash fallbacks (guaranteed to work)
@@ -31,17 +29,7 @@ interface WelcomeHeroProps {
   avatarUrl?: string
   location: string
   primarySport: string
-  sportIndex: number
-  sportIndexTrend: number
-  streakDays: number
-  weeklyDistance: number
-  weeklyTime: number
-  weeklyActivities: number
-  globalRank?: number
-  cityRank?: number
   hero?: ResolvedHero
-  ranks?: UserRankScopes
-  rankLensSnapshot?: HeroRankLensSnapshot
 }
 
 export function WelcomeHero({
@@ -49,17 +37,7 @@ export function WelcomeHero({
   avatarUrl,
   location,
   primarySport,
-  sportIndex,
-  sportIndexTrend,
-  streakDays,
-  weeklyDistance,
-  weeklyTime,
-  weeklyActivities,
-  globalRank,
-  cityRank,
   hero,
-  ranks,
-  rankLensSnapshot,
 }: WelcomeHeroProps) {
   const initials = name.substring(0, 2).toUpperCase()
   const greeting = getGreeting()
@@ -158,24 +136,10 @@ export function WelcomeHero({
 
         </div>
 
-        {/* Hero Rankings Strip - Compact benchmark-aware ranking display */}
-        {rankLensSnapshot ? (
-          <HeroRankingsStrip snapshot={rankLensSnapshot} className="mt-6" />
-        ) : ranks ? (
-          /* Fallback to old HeroKpiDock if no rank lens snapshot */
-          <HeroKpiDock
-            sportIndex={sportIndex}
-            sportIndexDelta={sportIndexTrend}
-            streakDays={streakDays}
-            ranks={ranks}
-            weeklyStats={{
-              sessions: weeklyActivities,
-              minutes: weeklyTime,
-              distance: weeklyDistance,
-            }}
-            className="mt-6"
-          />
-        ) : null}
+        {/* Hero RankBar - Compact rankings with lens selector */}
+        <RankLensProvider>
+          <HeroRankBar className="mt-6" />
+        </RankLensProvider>
 
         {/* Photo credit */}
         {hero?.image?.credit?.name && (

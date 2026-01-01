@@ -117,17 +117,7 @@ export default async function HomePage() {
             avatarUrl={user.avatarUrl || undefined}
             location={user.city || "Prague, Czech Republic"}
             primarySport={hero.sportName || primarySport}
-            sportIndex={userStats?.sportIndex || 742}
-            sportIndexTrend={38}
-            streakDays={14}
-            weeklyDistance={weeklyDistance}
-            weeklyTime={weeklyTime}
-            weeklyActivities={weeklyActivities.length}
-            globalRank={userStats?.globalRank || undefined}
-            cityRank={userStats?.cityRank || undefined}
             hero={hero}
-            ranks={userRanks}
-            rankLensSnapshot={rankLensSnapshot ?? undefined}
           />
         </div>
 
