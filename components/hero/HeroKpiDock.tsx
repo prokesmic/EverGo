@@ -15,6 +15,7 @@ import {
   Users,
   Timer,
   Route,
+  ArrowUpRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { UserRankScopes, RankScopeData } from "@/lib/leaderboards"
@@ -59,86 +60,83 @@ export function HeroKpiDock({
   return (
     <div
       className={cn(
-        "w-full rounded-2xl",
-        "bg-white/10 backdrop-blur-md border border-white/15",
-        "shadow-xl shadow-black/10",
+        // Premium centered glass dock
+        "mx-auto w-full max-w-[1100px]",
+        "rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl",
+        "shadow-2xl shadow-black/20",
+        "overflow-hidden",
         className
       )}
       data-testid="hero-kpi-dock"
     >
-      {/* Desktop: 4-column grid */}
-      <div className="hidden lg:grid lg:grid-cols-4 lg:divide-x lg:divide-white/10">
-        {/* Column 1: Sport Index */}
-        <div className="p-4">
-          <SportIndexCard
-            value={sportIndex}
-            delta={sportIndexDelta}
-          />
-        </div>
-
-        {/* Column 2: Rank with Scope Switcher */}
-        <div className="p-4">
-          <RankCard
-            activeScope={activeScope}
-            onScopeChange={setActiveScope}
-            rank={activeRank}
-          />
-        </div>
-
-        {/* Column 3: Streak + Weekly Stats */}
-        <div className="p-4">
-          <MomentumCard
-            streakDays={streakDays}
-            weeklyStats={weeklyStats}
-          />
-        </div>
-
-        {/* Column 4: CTA */}
-        <div className="p-4 flex items-center justify-center">
-          <CtaCard
-            primaryHref={primaryCtaHref}
-            secondaryHref={secondaryHref}
-          />
-        </div>
-      </div>
-
-      {/* Mobile: 2-row stacked layout */}
-      <div className="lg:hidden">
-        {/* Row 1: Sport Index + Rank */}
-        <div className="grid grid-cols-2 divide-x divide-white/10">
-          <div className="p-3">
-            <SportIndexCard
-              value={sportIndex}
-              delta={sportIndexDelta}
-              compact
-            />
+      {/* Desktop: Clean grid layout */}
+      <div className="hidden lg:block">
+        <div className="grid grid-cols-12 divide-x divide-white/10">
+          {/* Sport Index - 3 cols */}
+          <div className="col-span-3 p-5">
+            <SportIndexCard value={sportIndex} delta={sportIndexDelta} />
           </div>
-          <div className="p-3">
+
+          {/* Rank with Scope Switcher - 5 cols */}
+          <div className="col-span-5 p-5">
             <RankCard
               activeScope={activeScope}
               onScopeChange={setActiveScope}
               rank={activeRank}
-              compact
             />
+          </div>
+
+          {/* Streak - 2 cols */}
+          <div className="col-span-2 p-5">
+            <StreakCard streakDays={streakDays} weeklyStats={weeklyStats} />
+          </div>
+
+          {/* CTA - 2 cols */}
+          <div className="col-span-2 p-5 flex items-center justify-center">
+            <CtaCard primaryHref={primaryCtaHref} secondaryHref={secondaryHref} />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: Clean stacked layout */}
+      <div className="lg:hidden">
+        {/* Top row: Sport Index + Streak */}
+        <div className="grid grid-cols-2 divide-x divide-white/10">
+          <div className="p-4">
+            <SportIndexCard value={sportIndex} delta={sportIndexDelta} compact />
+          </div>
+          <div className="p-4">
+            <StreakCard streakDays={streakDays} compact />
           </div>
         </div>
 
-        {/* Row 2: Streak + CTA */}
-        <div className="grid grid-cols-2 divide-x divide-white/10 border-t border-white/10">
-          <div className="p-3">
-            <MomentumCard
-              streakDays={streakDays}
-              weeklyStats={weeklyStats}
-              compact
-            />
-          </div>
-          <div className="p-3 flex items-center justify-center">
-            <CtaCard
-              primaryHref={primaryCtaHref}
-              secondaryHref={secondaryHref}
-              compact
-            />
-          </div>
+        {/* Rank section - full width */}
+        <div className="border-t border-white/10 p-4">
+          <RankCard
+            activeScope={activeScope}
+            onScopeChange={setActiveScope}
+            rank={activeRank}
+            compact
+          />
+        </div>
+
+        {/* CTA - full width */}
+        <div className="border-t border-white/10 p-4">
+          <Link
+            href={primaryCtaHref}
+            className={cn(
+              "flex w-full items-center justify-center gap-2",
+              "rounded-2xl bg-orange-500 px-5 py-3",
+              "text-sm font-semibold text-white",
+              "shadow-lg shadow-orange-500/20",
+              "hover:bg-orange-400 hover:-translate-y-0.5",
+              "transition-all duration-200"
+            )}
+            data-testid="log-activity-cta"
+          >
+            <Plus className="h-4 w-4" />
+            Log Activity
+          </Link>
         </div>
       </div>
     </div>
@@ -158,48 +156,52 @@ function SportIndexCard({
   const hasDelta = delta !== null && delta !== undefined && delta !== 0
 
   return (
-    <div className={cn("flex items-center gap-3", compact && "gap-2")}>
-      <div className={cn(
-        "flex items-center justify-center rounded-xl bg-orange-500/20",
-        compact ? "w-10 h-10" : "w-12 h-12"
-      )}>
-        <Trophy className={cn("text-orange-400", compact ? "w-5 h-5" : "w-6 h-6")} />
+    <div className="flex items-center gap-3">
+      <div
+        className={cn(
+          "flex items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/10",
+          compact ? "h-10 w-10" : "h-11 w-11"
+        )}
+      >
+        <Trophy className={cn("text-white/90", compact ? "h-4 w-4" : "h-5 w-5")} />
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2">
-          <span className={cn(
-            "font-bold text-white tabular-nums",
-            compact ? "text-xl" : "text-2xl"
-          )}>
+      <div className="min-w-0 flex-1">
+        <div className="text-xs font-medium uppercase tracking-wide text-white/60">
+          Sport Index
+        </div>
+        <div className="mt-0.5 flex items-baseline gap-2">
+          <span
+            className={cn(
+              "font-semibold tabular-nums text-white",
+              compact ? "text-xl" : "text-2xl"
+            )}
+          >
             {value}
           </span>
           {hasDelta && (
-            <span className={cn(
-              "flex items-center gap-0.5 font-medium",
-              compact ? "text-xs" : "text-sm",
-              delta > 0 ? "text-emerald-400" : "text-red-400"
-            )}>
-              {delta > 0 ? (
-                <TrendingUp className="w-3 h-3" />
-              ) : (
-                <TrendingDown className="w-3 h-3" />
+            <span
+              className={cn(
+                "flex items-center gap-0.5 font-medium",
+                compact ? "text-xs" : "text-sm",
+                delta! > 0 ? "text-emerald-300" : "text-red-400"
               )}
-              {delta > 0 ? "+" : ""}{delta}
+            >
+              {delta! > 0 ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : (
+                <TrendingDown className="h-3 w-3" />
+              )}
+              {delta! > 0 ? "+" : ""}
+              {delta}
             </span>
           )}
         </div>
-        <p className={cn(
-          "uppercase tracking-wider text-slate-400",
-          compact ? "text-[9px]" : "text-[10px]"
-        )}>
-          Sport Index
-        </p>
       </div>
     </div>
   )
 }
 
-// Rank Card with Scope Switcher
+// Rank Card with robust scope tabs
 function RankCard({
   activeScope,
   onScopeChange,
@@ -216,79 +218,107 @@ function RankCard({
   const hasRank = rank.rank !== null
 
   return (
-    <div className="space-y-2">
-      {/* Scope Switcher - Desktop shows all 4, Mobile shows active with dropdown feel */}
-      <div className={cn(
-        "flex rounded-lg bg-white/5 p-0.5",
-        compact ? "gap-0.5" : "gap-1"
-      )}>
-        {(Object.keys(SCOPE_CONFIG) as ScopeId[]).map((scope) => {
-          const scopeConfig = SCOPE_CONFIG[scope]
-          const ScopeIcon = scopeConfig.icon
-          const isActive = scope === activeScope
+    <div className="space-y-3">
+      {/* Header with link */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-xs font-medium uppercase tracking-wide text-white/60">
+          Your Rank
+        </div>
+        <Link
+          href="/leaderboard"
+          className="inline-flex items-center gap-1 text-xs font-medium text-white/60 hover:text-white transition-colors"
+        >
+          Full rankings <ArrowUpRight className="h-3 w-3" />
+        </Link>
+      </div>
 
-          return (
-            <button
-              key={scope}
-              onClick={() => onScopeChange(scope)}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-1 rounded-md transition-all",
-                compact ? "py-1 px-1.5" : "py-1.5 px-2",
-                isActive
-                  ? "bg-white/15 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-              )}
-              data-testid={`scope-${scope}`}
-            >
-              <ScopeIcon className={cn(
-                compact ? "w-3 h-3" : "w-3.5 h-3.5",
-                isActive && scopeConfig.color
-              )} />
-              {!compact && (
-                <span className="text-[10px] font-medium">
+      {/* Scope Tabs - FIXED overflow */}
+      <div
+        className={cn(
+          // CRITICAL: overflow-hidden keeps tabs inside the rounded container
+          "max-w-full overflow-hidden rounded-full",
+          "border border-white/10 bg-white/10 p-1 backdrop-blur-md"
+        )}
+      >
+        {/* overflow-x-auto as fallback for very narrow widths */}
+        <div className="flex max-w-full items-center gap-1 overflow-x-auto whitespace-nowrap">
+          {(Object.keys(SCOPE_CONFIG) as ScopeId[]).map((scope) => {
+            const scopeConfig = SCOPE_CONFIG[scope]
+            const ScopeIcon = scopeConfig.icon
+            const isActive = scope === activeScope
+
+            return (
+              <button
+                key={scope}
+                type="button"
+                onClick={() => onScopeChange(scope)}
+                className={cn(
+                  "inline-flex flex-1 items-center justify-center gap-1.5 rounded-full transition-all",
+                  "min-w-0", // Critical: allows button to shrink inside flex
+                  compact ? "px-2 py-1.5" : "px-3 py-1.5",
+                  isActive
+                    ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                )}
+                aria-pressed={isActive}
+                data-testid={`scope-${scope}`}
+              >
+                <ScopeIcon
+                  className={cn(
+                    "shrink-0 opacity-90",
+                    compact ? "h-3 w-3" : "h-3.5 w-3.5",
+                    isActive && scopeConfig.color
+                  )}
+                />
+                {/* truncate prevents label from spilling out */}
+                <span
+                  className={cn(
+                    "font-medium truncate",
+                    compact ? "text-[10px] max-w-[48px]" : "text-xs max-w-[72px] sm:max-w-none"
+                  )}
+                >
                   {scopeConfig.label}
                 </span>
-              )}
-            </button>
-          )
-        })}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Rank Display */}
-      <div className="flex items-center gap-2">
-        <div className={cn(
-          "flex items-center justify-center rounded-xl",
-          compact ? "w-10 h-10" : "w-12 h-12",
-          hasRank ? "bg-white/10" : "bg-white/5"
-        )}>
-          <Icon className={cn(
-            compact ? "w-5 h-5" : "w-6 h-6",
-            hasRank ? config.color : "text-slate-500"
-          )} />
+      <div className="flex items-center gap-3">
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-2xl ring-1 ring-white/10",
+            compact ? "h-10 w-10" : "h-11 w-11",
+            hasRank ? "bg-white/10" : "bg-white/5"
+          )}
+        >
+          <Icon
+            className={cn(
+              compact ? "h-4 w-4" : "h-5 w-5",
+              hasRank ? config.color : "text-slate-500"
+            )}
+          />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {hasRank ? (
             <>
-              <div className="flex items-baseline gap-1.5">
-                <span className={cn(
-                  "font-bold text-white tabular-nums",
+              <div
+                className={cn(
+                  "font-semibold tabular-nums text-white",
                   compact ? "text-xl" : "text-2xl"
-                )}>
-                  #{rank.rank}
-                </span>
-                <span className={cn(
-                  "text-slate-400",
-                  compact ? "text-[10px]" : "text-xs"
-                )}>
-                  of {rank.total.toLocaleString()}
+                )}
+              >
+                #{rank.rank}
+              </div>
+              <div className="flex items-center gap-1.5 text-sm text-white/60">
+                <span>of {rank.total.toLocaleString()}</span>
+                <span className="text-white/30">•</span>
+                <span className="truncate max-w-[120px]">
+                  {rank.scopeValue || rank.label}
                 </span>
               </div>
-              <p className={cn(
-                "text-slate-400 truncate",
-                compact ? "text-[9px]" : "text-[10px]"
-              )}>
-                {rank.scopeValue || rank.label}
-              </p>
             </>
           ) : (
             <>
@@ -296,7 +326,7 @@ function RankCard({
                 href="/settings/profile"
                 className={cn(
                   "font-medium text-orange-400 hover:text-orange-300 transition-colors",
-                  compact ? "text-xs" : "text-sm"
+                  compact ? "text-sm" : "text-base"
                 )}
               >
                 {rank.missingField === "country" && "Set location"}
@@ -304,12 +334,7 @@ function RankCard({
                 {rank.missingField === "team" && "Join a team"}
                 {!rank.missingField && "Complete profile"}
               </Link>
-              <p className={cn(
-                "text-slate-500",
-                compact ? "text-[9px]" : "text-[10px]"
-              )}>
-                to see your rank
-              </p>
+              <p className="text-sm text-white/50">to see your rank</p>
             </>
           )}
         </div>
@@ -318,8 +343,8 @@ function RankCard({
   )
 }
 
-// Momentum Card (Streak + Weekly Stats)
-function MomentumCard({
+// Streak Card
+function StreakCard({
   streakDays,
   weeklyStats,
   compact = false,
@@ -333,96 +358,79 @@ function MomentumCard({
   compact?: boolean
 }) {
   return (
-    <div className={cn("flex items-center gap-3", compact && "gap-2")}>
-      {/* Streak */}
-      <div className={cn(
-        "flex items-center justify-center rounded-xl bg-orange-500/20",
-        compact ? "w-10 h-10" : "w-12 h-12"
-      )}>
-        <Flame className={cn("text-orange-400", compact ? "w-5 h-5" : "w-6 h-6")} />
+    <div className="flex items-center gap-3">
+      <div
+        className={cn(
+          "flex items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/10",
+          compact ? "h-10 w-10" : "h-11 w-11"
+        )}
+      >
+        <Flame className={cn("text-white/90", compact ? "h-4 w-4" : "h-5 w-5")} />
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-1.5">
-          <span className={cn(
-            "font-bold text-white tabular-nums",
-            compact ? "text-xl" : "text-2xl"
-          )}>
+      <div className="min-w-0 flex-1">
+        <div className="text-xs font-medium uppercase tracking-wide text-white/60">
+          Streak
+        </div>
+        <div className="mt-0.5 flex items-baseline gap-1.5">
+          <span
+            className={cn(
+              "font-semibold tabular-nums text-white",
+              compact ? "text-xl" : "text-2xl"
+            )}
+          >
             {streakDays}
           </span>
-          <span className={cn(
-            "text-slate-400",
-            compact ? "text-[10px]" : "text-xs"
-          )}>
-            day streak
-          </span>
+          <span className="text-sm text-white/60">days</span>
         </div>
-
         {/* Weekly mini stats - only on desktop */}
         {!compact && weeklyStats && (
-          <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+          <div className="mt-1 flex items-center gap-2 text-xs text-white/50">
             <span className="flex items-center gap-1">
-              <Timer className="w-3 h-3" />
+              <Timer className="h-3 w-3" />
               {Math.round(weeklyStats.minutes)}m
             </span>
             <span className="flex items-center gap-1">
-              <Route className="w-3 h-3" />
+              <Route className="h-3 w-3" />
               {weeklyStats.distance.toFixed(1)}km
             </span>
           </div>
-        )}
-
-        {compact && (
-          <p className="text-[9px] uppercase tracking-wider text-slate-500">
-            Keep it going
-          </p>
         )}
       </div>
     </div>
   )
 }
 
-// CTA Card
+// Desktop CTA Card
 function CtaCard({
   primaryHref,
   secondaryHref,
-  compact = false,
 }: {
   primaryHref: string
   secondaryHref: string
-  compact?: boolean
 }) {
   return (
-    <div className={cn(
-      "flex flex-col items-center gap-2",
-      compact && "w-full"
-    )}>
+    <div className="flex flex-col items-center gap-2">
       <Link
         href={primaryHref}
         className={cn(
           "inline-flex items-center justify-center gap-2",
-          "rounded-full",
-          "bg-gradient-to-r from-orange-500 to-orange-600",
-          "text-white font-semibold",
-          "shadow-lg shadow-orange-500/30",
-          "hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5",
-          "transition-all duration-200",
-          compact ? "px-4 py-2 text-sm w-full" : "px-6 py-3 text-sm"
+          "rounded-2xl bg-orange-500 px-5 py-3",
+          "text-sm font-semibold text-white",
+          "shadow-lg shadow-orange-500/20",
+          "hover:bg-orange-400 hover:-translate-y-0.5",
+          "transition-all duration-200"
         )}
-        data-testid="log-activity-cta"
+        data-testid="log-activity-cta-desktop"
       >
-        <Plus className={cn(compact ? "w-4 h-4" : "w-4 h-4")} />
+        <Plus className="h-4 w-4" />
         Log Activity
-        {!compact && <ChevronRight className="w-4 h-4 -mr-1 opacity-70" />}
       </Link>
-
-      {!compact && (
-        <Link
-          href={secondaryHref}
-          className="text-xs text-slate-400 hover:text-white transition-colors flex items-center gap-1"
-        >
-          View stats <ChevronRight className="w-3 h-3" />
-        </Link>
-      )}
+      <Link
+        href={secondaryHref}
+        className="flex items-center gap-1 text-xs font-medium text-white/60 hover:text-white transition-colors"
+      >
+        View stats <ChevronRight className="h-3 w-3" />
+      </Link>
     </div>
   )
 }
