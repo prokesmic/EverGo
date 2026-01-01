@@ -8,7 +8,7 @@ import type { ResolvedHero } from "@/lib/hero/heroResolver"
 import type { UserRankScopes } from "@/lib/leaderboards"
 import type { HeroRankLensSnapshot } from "@/lib/rankings/hero-rank-lens"
 import { HeroKpiDock } from "@/components/hero/HeroKpiDock"
-import { HeroRankLens } from "@/components/home/HeroRankLens"
+import { HeroRankingsStrip } from "@/components/hero/HeroRankingsStrip"
 import { useState } from "react"
 
 // Category-specific Unsplash fallbacks (guaranteed to work)
@@ -158,9 +158,9 @@ export function WelcomeHero({
 
         </div>
 
-        {/* Hero Rank Lens - New benchmark-aware ranking display */}
+        {/* Hero Rankings Strip - Compact benchmark-aware ranking display */}
         {rankLensSnapshot ? (
-          <HeroRankLens snapshot={rankLensSnapshot} className="mt-6" />
+          <HeroRankingsStrip snapshot={rankLensSnapshot} className="mt-6" />
         ) : ranks ? (
           /* Fallback to old HeroKpiDock if no rank lens snapshot */
           <HeroKpiDock
