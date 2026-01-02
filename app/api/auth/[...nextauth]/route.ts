@@ -8,7 +8,9 @@ import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
-    adapter: PrismaAdapter(prisma),
+    // Note: PrismaAdapter is removed because it conflicts with Credentials provider + JWT strategy
+    // For OAuth providers to work, we'd need to handle user creation manually in the signIn callback
+    // adapter: PrismaAdapter(prisma),
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID || "",
