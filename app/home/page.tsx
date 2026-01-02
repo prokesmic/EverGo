@@ -12,6 +12,7 @@ import { PeopleToFollow } from "@/components/widgets/PeopleToFollow"
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
 import { getHomeHeroForUser } from "@/lib/hero/getHomeHero"
+import type { ResolvedHero } from "@/lib/hero/heroResolver"
 import { RankingsHighlightsFeed } from "@/components/home/RankingsHighlightsFeed"
 import { VirtualizedFollowingFeed } from "@/components/home/VirtualizedFollowingFeed"
 import { HomeFeedTabs } from "@/components/home/HomeFeedTabs"
@@ -45,16 +46,23 @@ export default async function HomePage() {
     redirect("/login")
   }
 
-    // Fetch user stats for Sport Index
-    const userStats = await prisma.userStats.findUnique({
+    // Fetch user stats for Sport Index - with fallback
+  let userStats = null
+  try {
+    userStats = await prisma.userStats.findUnique({
       where: { userId: user.id },
     })
+  } catch (e) {
+    console.error("[Home] Failed to fetch userStats:", e)
+  }
 
-    // Simplified data - fetch in parallel
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  // Simplified data - fetch in parallel with fallback
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-    const weeklyActivities = await prisma.activity.findMany({
+  let weeklyActivities: any[] = []
+  try {
+    weeklyActivities = await prisma.activity.findMany({
       where: {
         userId: user.id,
         activityDate: { gte: sevenDaysAgo }
@@ -66,43 +74,69 @@ export default async function HomePage() {
       },
       take: 50
     })
+  } catch (e) {
+    console.error("[Home] Failed to fetch weeklyActivities:", e)
+  }
 
-    // Calculate Weekly Stats for Hero
-    let weeklyDistance = 0
-    let weeklyTime = 0
-    const sportStats: Record<string, { distance: number }> = {}
+  // Calculate Weekly Stats for Hero
+  let weeklyDistance = 0
+  let weeklyTime = 0
+  const sportStats: Record<string, { distance: number }> = {}
 
-    weeklyActivities.forEach((activity: any) => {
-      weeklyDistance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
-      weeklyTime += activity.durationSeconds ? activity.durationSeconds / 60 : 0
+  weeklyActivities.forEach((activity: any) => {
+    weeklyDistance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
+    weeklyTime += activity.durationSeconds ? activity.durationSeconds / 60 : 0
 
-      const sportName = activity.discipline?.sport?.name?.toLowerCase() || 'other'
-      if (!sportStats[sportName]) {
-        sportStats[sportName] = { distance: 0 }
-      }
-      sportStats[sportName].distance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
-    })
+    const sportName = activity.discipline?.sport?.name?.toLowerCase() || 'other'
+    if (!sportStats[sportName]) {
+      sportStats[sportName] = { distance: 0 }
+    }
+    sportStats[sportName].distance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
+  })
 
-    // Determine primary sport by distance
-    const sortedSports = Object.entries(sportStats).sort((a, b) => b[1].distance - a[1].distance)
-    const primarySport = sortedSports.length > 0 ? sortedSports[0][0] : "running"
+  // Determine primary sport by distance
+  const sortedSports = Object.entries(sportStats).sort((a, b) => b[1].distance - a[1].distance)
+  const primarySport = sortedSports.length > 0 ? sortedSports[0][0] : "running"
 
-    // Get user's primary sport for rank lens
-    const userPrimarySport = await getUserPrimarySport(user.id)
+  // Get user's primary sport for rank lens - with fallback
+  let userPrimarySport = null
+  try {
+    userPrimarySport = await getUserPrimarySport(user.id)
+  } catch (e) {
+    console.error("[Home] Failed to fetch userPrimarySport:", e)
+  }
 
-    // Get hero image, user rank scopes, and rank lens snapshot in parallel
-    const [hero, userRanks, rankLensSnapshot] = await Promise.all([
+  // Get hero image, user rank scopes, and rank lens snapshot in parallel - with fallbacks
+  let hero: Partial<ResolvedHero> = { sportName: "Sport" }
+  let userRanks = null
+  let rankLensSnapshot = null
+
+  try {
+    const results = await Promise.allSettled([
       getHomeHeroForUser(user.id),
       getUserRankScopes(user.id),
-      // Only fetch rank lens if user has a primary sport
       userPrimarySport
         ? getHeroRankLensSnapshot({
             userId: user.id,
             sportId: userPrimarySport.id,
-            benchmarkId: null, // Default to Sport Index; client can switch via API
+            benchmarkId: null,
           })
         : Promise.resolve(null),
     ])
+
+    if (results[0].status === 'fulfilled') hero = results[0].value as any
+    if (results[1].status === 'fulfilled') userRanks = results[1].value
+    if (results[2].status === 'fulfilled') rankLensSnapshot = results[2].value
+
+    // Log any failures
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.error(`[Home] Promise ${i} failed:`, r.reason)
+      }
+    })
+  } catch (e) {
+    console.error("[Home] Failed in Promise.allSettled:", e)
+  }
 
     // Build Athlete Ribbon data
     const sportIndexValue = userStats?.sportIndex ?? 0
