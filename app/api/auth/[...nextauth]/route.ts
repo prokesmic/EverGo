@@ -79,6 +79,7 @@ export const authOptions: NextAuthOptions = {
                         username: user.username,
                         name: user.displayName,
                         image: user.avatarUrl,
+                        onboardingCompleted: user.onboardingCompleted,
                     }
                 } catch (error) {
                     console.error("[Auth] Error:", error)
@@ -94,15 +95,30 @@ export const authOptions: NextAuthOptions = {
         signIn: "/login",
     },
     callbacks: {
-        async jwt({ token, user }) {
-            console.log("[Auth JWT] Called with user:", user?.id, "token.sub:", token.sub)
+        async jwt({ token, user, trigger }) {
+            console.log("[Auth JWT] Called with user:", user?.id, "token.sub:", token.sub, "trigger:", trigger)
             if (user) {
                 token.id = user.id
                 token.email = user.email ?? token.email // Explicitly preserve email
                 token.username = user.username
                 token.picture = user.image ?? undefined // Use image (from authorize return)
+                token.onboardingCompleted = user.onboardingCompleted ?? false
             }
-            console.log("[Auth JWT] Returning token with email:", token.email)
+            // On update trigger (e.g., after completing onboarding), refresh user data
+            if (trigger === "update" && token.email) {
+                try {
+                    const freshUser = await prisma.user.findUnique({
+                        where: { email: token.email as string },
+                        select: { onboardingCompleted: true }
+                    })
+                    if (freshUser) {
+                        token.onboardingCompleted = freshUser.onboardingCompleted
+                    }
+                } catch (e) {
+                    console.error("[Auth JWT] Error refreshing user:", e)
+                }
+            }
+            console.log("[Auth JWT] Returning token with email:", token.email, "onboardingCompleted:", token.onboardingCompleted)
             return token
         },
         async session({ session, token }) {
@@ -112,8 +128,9 @@ export const authOptions: NextAuthOptions = {
                 session.user.email = token.email as string // Ensure email is in session
                 session.user.username = token.username as string
                 session.user.image = token.picture as string
+                session.user.onboardingCompleted = token.onboardingCompleted as boolean
             }
-            console.log("[Auth Session] Returning session with email:", session.user?.email)
+            console.log("[Auth Session] Returning session with email:", session.user?.email, "onboardingCompleted:", session.user?.onboardingCompleted)
             return session
         }
     }

@@ -17,13 +17,31 @@ model User {
   avatarUrl       String?
   coverPhotoUrl   String?
   bio             String?
+
+  // Onboarding state
+  onboardingCompleted Boolean @default(false)
+  primarySportId  String?   // User's primary sport for default ranking lens
+
+  // Location - legacy string fields (for display/backwards compat)
   city            String?
   country         String?
+
+  // Location - normalized fields (ISO codes + relations)
+  countryCode     String?   // ISO 3166-1 alpha-2 (e.g., "CZ")
+  countryName     String?   // Display name (e.g., "Czech Republic")
+  cityId          String?   // Reference to City table
+  cityName        String?   // Display name (e.g., "Prague")
+  cityRef         City?     @relation(fields: [cityId], references: [id], onDelete: SetNull)
+
   dateOfBirth     DateTime?
   gender          String?   // Enum: Gender
   privacyLevel    String    @default("PUBLIC") // Enum: PrivacyLevel
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@index([countryCode])
+  @@index([cityId])
+  @@index([onboardingCompleted])
   
   sports          UserSport[]
   activities      Activity[]
@@ -2149,4 +2167,24 @@ model AnalyticsEvent {
 
   @@index([eventName, createdAt(sort: Desc)])
   @@index([userId, createdAt(sort: Desc)])
+}
+
+// =============================================================================
+// LOCATION (Cities for normalized location data)
+// =============================================================================
+
+model City {
+  id          String  @id @default(cuid())
+  countryCode String  // ISO 3166-1 alpha-2
+  name        String  // Display name (e.g., "Prague")
+  normalized  String  // Lowercase ASCII for search (e.g., "prague")
+  lat         Float?  // Latitude
+  lon         Float?  // Longitude
+  population  Int?    // For sorting by importance
+
+  users       User[]
+
+  @@unique([countryCode, name])
+  @@index([countryCode, normalized])
+  @@index([countryCode, population(sort: Desc)])
 }

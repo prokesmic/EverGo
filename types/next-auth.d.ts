@@ -8,6 +8,7 @@ declare module "next-auth" {
         user: {
             id: string
             username: string
+            onboardingCompleted: boolean
         } & DefaultSession["user"]
     }
 
@@ -15,6 +16,7 @@ declare module "next-auth" {
         id: string
         username: string
         avatarUrl?: string | null
+        onboardingCompleted?: boolean
     }
 }
 
@@ -24,5 +26,6 @@ declare module "next-auth/jwt" {
         email?: string
         username?: string
         picture?: string
+        onboardingCompleted?: boolean
     }
 }

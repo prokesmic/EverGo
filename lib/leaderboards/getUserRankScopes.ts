@@ -19,8 +19,10 @@ export type UserRankScopes = {
 
 type UserContext = {
   id: string
-  country: string | null
-  city: string | null
+  countryCode: string | null
+  countryName: string | null
+  cityId: string | null
+  cityName: string | null
   sportIndex: number
   primaryTeamId: string | null
   primaryTeamName: string | null
@@ -34,8 +36,10 @@ async function getUserContext(userId: string): Promise<UserContext | null> {
     where: { id: userId },
     select: {
       id: true,
-      country: true,
-      city: true,
+      countryCode: true,
+      countryName: true,
+      cityId: true,
+      cityName: true,
       stats: {
         select: { sportIndex: true },
       },
@@ -55,8 +59,10 @@ async function getUserContext(userId: string): Promise<UserContext | null> {
 
   return {
     id: user.id,
-    country: user.country,
-    city: user.city,
+    countryCode: user.countryCode,
+    countryName: user.countryName,
+    cityId: user.cityId,
+    cityName: user.cityName,
     sportIndex: user.stats?.sportIndex ?? 0,
     primaryTeamId: user.teamMemberships[0]?.team?.id ?? null,
     primaryTeamName: user.teamMemberships[0]?.team?.name ?? null,
@@ -120,19 +126,19 @@ async function _getUserRankScopes(userId: string): Promise<UserRankScopes> {
     }
   }
 
-  // Parallel rank calculations
+  // Parallel rank calculations (using normalized countryCode and cityId)
   const [globalRank, countryRank, cityRank, teamRank] = await Promise.all([
     // GLOBAL: No filter
     computeRank(ctx.sportIndex, {}),
 
-    // COUNTRY: Filter by user's country
-    ctx.country
-      ? computeRank(ctx.sportIndex, { country: ctx.country })
+    // COUNTRY: Filter by user's countryCode
+    ctx.countryCode
+      ? computeRank(ctx.sportIndex, { countryCode: ctx.countryCode })
       : Promise.resolve(null),
 
-    // CITY: Filter by user's city (and country for disambiguation)
-    ctx.city
-      ? computeRank(ctx.sportIndex, { city: ctx.city, country: ctx.country })
+    // CITY: Filter by user's cityId (unique, no need for country disambiguation)
+    ctx.cityId
+      ? computeRank(ctx.sportIndex, { cityId: ctx.cityId })
       : Promise.resolve(null),
 
     // TEAM: Filter by team members
@@ -161,7 +167,7 @@ async function _getUserRankScopes(userId: string): Promise<UserRankScopes> {
           total: countryRank.total,
           score: ctx.sportIndex,
           label: "Country",
-          scopeValue: ctx.country ?? undefined,
+          scopeValue: ctx.countryName ?? undefined,
         }
       : defaultScope("Country", "country"),
     city: cityRank
@@ -170,7 +176,7 @@ async function _getUserRankScopes(userId: string): Promise<UserRankScopes> {
           total: cityRank.total,
           score: ctx.sportIndex,
           label: "City",
-          scopeValue: ctx.city ?? undefined,
+          scopeValue: ctx.cityName ?? undefined,
         }
       : defaultScope("City", "city"),
     team: teamRank

@@ -7,10 +7,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Camera, Loader2, Save } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { CountrySelect } from "./CountrySelect"
+import { CitySelect } from "./CitySelect"
+import { getCountryNameByCode } from "@/lib/location/countries"
 
 interface ProfileSettingsProps {
   user: {
@@ -23,9 +33,18 @@ interface ProfileSettingsProps {
     coverPhotoUrl: string | null
     city: string | null
     country: string | null
+    countryCode: string | null
+    countryName: string | null
+    cityId: string | null
+    cityName: string | null
     dateOfBirth: Date | null
     gender: string | null
   }
+}
+
+interface CityValue {
+  id: string
+  name: string
 }
 
 export function ProfileSettings({ user }: ProfileSettingsProps) {
@@ -38,25 +57,35 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
     displayName: user.displayName || "",
     username: user.username || "",
     bio: user.bio || "",
-    city: user.city || "",
-    country: user.country || "",
     gender: user.gender || "",
   })
 
+  // Location state - normalized
+  const [countryCode, setCountryCode] = useState(user.countryCode || "")
+  const [city, setCity] = useState<CityValue | null>(
+    user.cityId && user.cityName
+      ? { id: user.cityId, name: user.cityName }
+      : null
+  )
+
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl)
   const [coverPhotoUrl, setCoverPhotoUrl] = useState(user.coverPhotoUrl)
+
+  const handleCountryChange = (newCountryCode: string) => {
+    setCountryCode(newCountryCode)
+    // Clear city when country changes
+    setCity(null)
+  }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File size must be less than 5MB")
       return
     }
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("File must be an image")
       return
@@ -70,7 +99,6 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
         return
       }
 
-      // Upload to Supabase Storage
       const fileExt = file.name.split(".").pop()
       const fileName = `${user.id}-${Date.now()}.${fileExt}`
       const filePath = `avatars/${fileName}`
@@ -84,14 +112,12 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
 
       if (uploadError) throw uploadError
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from("profile-photos")
         .getPublicUrl(filePath)
 
       const publicUrl = urlData.publicUrl
 
-      // Update database
       const response = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -176,10 +202,22 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
     setLoading(true)
 
     try {
+      const countryName = countryCode ? getCountryNameByCode(countryCode) : null
+
       const response = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          // Normalized location fields
+          countryCode: countryCode || null,
+          countryName: countryName || null,
+          cityId: city?.id || null,
+          cityName: city?.name || null,
+          // Legacy fields for backward compatibility
+          country: countryName || null,
+          city: city?.name || null,
+        }),
       })
 
       if (!response.ok) throw new Error("Failed to update profile")
@@ -295,10 +333,12 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="displayName">Display Name</Label>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="displayName" className="text-sm font-medium text-slate-700">
+                Display Name
+              </Label>
               <Input
                 id="displayName"
                 value={formData.displayName}
@@ -307,10 +347,13 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
                 }
                 placeholder="Your name"
                 required
+                className="h-11"
               />
             </div>
-            <div>
-              <Label htmlFor="username">Username</Label>
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-sm font-medium text-slate-700">
+                Username
+              </Label>
               <Input
                 id="username"
                 value={formData.username}
@@ -319,12 +362,15 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
                 }
                 placeholder="@username"
                 required
+                className="h-11"
               />
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="bio">Bio</Label>
+          <div className="space-y-2">
+            <Label htmlFor="bio" className="text-sm font-medium text-slate-700">
+              Bio
+            </Label>
             <Textarea
               id="bio"
               value={formData.bio}
@@ -332,47 +378,57 @@ export function ProfileSettings({ user }: ProfileSettingsProps) {
               placeholder="Tell us about yourself..."
               rows={4}
             />
+            <p className="text-xs text-slate-500">Brief description for your profile</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="Prague"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-slate-700">
+                Country
+              </Label>
+              <CountrySelect
+                value={countryCode}
+                onChange={handleCountryChange}
+                placeholder="Select your country"
               />
+              <p className="text-xs text-slate-500">Used for country rankings</p>
             </div>
-            <div>
-              <Label htmlFor="country">Country</Label>
-              <Input
-                id="country"
-                value={formData.country}
-                onChange={(e) =>
-                  setFormData({ ...formData, country: e.target.value })
-                }
-                placeholder="Czech Republic"
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-slate-700">
+                City
+              </Label>
+              <CitySelect
+                countryCode={countryCode}
+                value={city}
+                onChange={setCity}
+                disabled={!countryCode}
+                placeholder={countryCode ? "Select your city" : "Select country first"}
               />
+              <p className="text-xs text-slate-500">Used for local rankings</p>
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="gender">Gender</Label>
-            <select
-              id="gender"
+          <div className="space-y-2">
+            <Label htmlFor="gender" className="text-sm font-medium text-slate-700">
+              Gender
+            </Label>
+            <Select
               value={formData.gender}
-              onChange={(e) =>
-                setFormData({ ...formData, gender: e.target.value })
+              onValueChange={(value) =>
+                setFormData({ ...formData, gender: value })
               }
-              className="w-full px-3 py-2 border border-border-subtle rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent"
             >
-              <option value="">Prefer not to say</option>
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-              <option value="NON_BINARY">Non-binary</option>
-              <option value="OTHER">Other</option>
-            </select>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Prefer not to say" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PREFER_NOT_TO_SAY">Prefer not to say</SelectItem>
+                <SelectItem value="MALE">Male</SelectItem>
+                <SelectItem value="FEMALE">Female</SelectItem>
+                <SelectItem value="NON_BINARY">Non-binary</SelectItem>
+                <SelectItem value="OTHER">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>

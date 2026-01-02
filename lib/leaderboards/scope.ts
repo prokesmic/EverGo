@@ -30,10 +30,10 @@ export async function resolveScopeWhere(
     }
   }
 
-  // Get user's location for COUNTRY/CITY scopes
+  // Get user's location for COUNTRY/CITY scopes (using normalized fields)
   const me = await prisma.user.findUnique({
     where: { id: userId },
-    select: { country: true, city: true },
+    select: { countryCode: true, countryName: true, cityId: true, cityName: true },
   })
 
   if (!me) {
@@ -41,7 +41,7 @@ export async function resolveScopeWhere(
   }
 
   if (input.scope === "COUNTRY") {
-    if (!me.country) {
+    if (!me.countryCode) {
       return {
         userIds: [],
         whereUser: { id: { in: [] } },
@@ -51,14 +51,14 @@ export async function resolveScopeWhere(
     }
     return {
       userIds: null,
-      whereUser: { country: me.country },
+      whereUser: { countryCode: me.countryCode },
       scopeKey: "COUNTRY",
-      scopeLabel: me.country,
+      scopeLabel: me.countryName || me.countryCode,
     }
   }
 
   if (input.scope === "CITY") {
-    if (!me.city) {
+    if (!me.cityId) {
       return {
         userIds: [],
         whereUser: { id: { in: [] } },
@@ -68,9 +68,9 @@ export async function resolveScopeWhere(
     }
     return {
       userIds: null,
-      whereUser: { city: me.city },
+      whereUser: { cityId: me.cityId },
       scopeKey: "CITY",
-      scopeLabel: me.city,
+      scopeLabel: me.cityName || "City",
     }
   }
 
@@ -121,13 +121,15 @@ export async function getUserTeams(userId: string) {
 export async function getUserLocationInfo(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { country: true, city: true },
+    select: { countryCode: true, countryName: true, cityId: true, cityName: true },
   })
 
   return {
-    hasCountry: !!user?.country,
-    hasCity: !!user?.city,
-    country: user?.country ?? null,
-    city: user?.city ?? null,
+    hasCountry: !!user?.countryCode,
+    hasCity: !!user?.cityId,
+    country: user?.countryName ?? null,
+    city: user?.cityName ?? null,
+    countryCode: user?.countryCode ?? null,
+    cityId: user?.cityId ?? null,
   }
 }
