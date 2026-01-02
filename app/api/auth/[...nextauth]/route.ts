@@ -30,38 +30,43 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials) {
                 console.log("[Auth] Authorize called with email:", credentials?.email)
+                console.log("[Auth] Password length:", credentials?.password?.length)
 
                 if (!credentials?.email || !credentials?.password) {
-                    console.log("[Auth] Missing credentials")
+                    console.log("[Auth] Missing credentials - email:", !!credentials?.email, "password:", !!credentials?.password)
                     return null
                 }
 
                 try {
-                    console.log("[Auth] Looking up user...")
+                    console.log("[Auth] Looking up user in database...")
                     const user = await prisma.user.findUnique({
                         where: {
-                            email: credentials.email
+                            email: credentials.email.toLowerCase().trim()
                         }
                     })
 
                     if (!user) {
-                        console.log("[Auth] User not found")
+                        console.log("[Auth] User not found for email:", credentials.email)
                         return null
                     }
+
+                    console.log("[Auth] User found:", user.id, "has password:", !!user.password)
 
                     if (!user.password) {
                         console.log("[Auth] User has no password (OAuth account?)")
                         return null
                     }
 
+                    console.log("[Auth] Password hash prefix:", user.password.substring(0, 20))
                     console.log("[Auth] Comparing passwords...")
                     const isPasswordValid = await bcrypt.compare(
                         credentials.password,
                         user.password
                     )
+                    console.log("[Auth] Password valid:", isPasswordValid)
 
                     if (!isPasswordValid) {
-                        console.log("[Auth] Invalid password")
+                        console.log("[Auth] Invalid password for user:", user.id)
                         return null
                     }
 
