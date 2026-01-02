@@ -3,7 +3,21 @@
 import Image from 'next/image';
 import { MapPin } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+
+// 5 stunning default hero images for new users (randomly selected)
+const DEFAULT_HERO_IMAGES = [
+  // Epic mountain trail runner at golden hour
+  'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=1920&q=80',
+  // Swimmer in crystal blue water - dynamic action shot
+  'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=1920&q=80',
+  // Cyclist silhouette against dramatic sunset sky
+  'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80',
+  // Runner on misty mountain trail - atmospheric
+  'https://images.unsplash.com/photo-1483721310020-03333e577078?auto=format&fit=crop&w=1920&q=80',
+  // Athlete stretching at sunrise - inspirational
+  'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=1920&q=80',
+];
 
 // Category-specific fallback images
 const CATEGORY_FALLBACKS: Record<string, string> = {
@@ -16,8 +30,13 @@ const CATEGORY_FALLBACKS: Record<string, string> = {
   combat: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=1920&q=80',
   outdoor: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1920&q=80',
   mindbody: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1920&q=80',
-  generic: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1920&q=80',
 };
+
+// Get a random default hero image
+function getRandomDefaultHero(): string {
+  const index = Math.floor(Math.random() * DEFAULT_HERO_IMAGES.length);
+  return DEFAULT_HERO_IMAGES[index];
+}
 
 interface SlimHeroProps {
   name: string;
@@ -43,9 +62,14 @@ export function SlimHero({
 }: SlimHeroProps) {
   const initials = name.substring(0, 2).toUpperCase();
 
+  // Get a random default hero image (memoized to stay consistent during session)
+  const randomDefaultHero = useMemo(() => getRandomDefaultHero(), []);
+
   // Primary and fallback images
-  const primaryImage = imageUrl ?? CATEGORY_FALLBACKS.generic;
-  const fallbackImage = CATEGORY_FALLBACKS[imageCategory ?? 'generic'] ?? CATEGORY_FALLBACKS.generic;
+  const primaryImage = imageUrl ?? randomDefaultHero;
+  const fallbackImage = imageCategory
+    ? (CATEGORY_FALLBACKS[imageCategory] ?? randomDefaultHero)
+    : randomDefaultHero;
 
   const [imageSrc, setImageSrc] = useState(primaryImage);
   const [hasError, setHasError] = useState(false);
