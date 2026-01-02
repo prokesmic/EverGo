@@ -31,37 +31,19 @@ export const dynamic = 'force-dynamic'
  * 5. Feed + Sidebar (Planning & Social)
  */
 export default async function HomePage() {
-  try {
-    console.log("[Home] Starting session check...")
-    const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions)
 
-    console.log("[Home] Session result:", {
-      hasSession: !!session,
-      email: session?.user?.email,
-      id: session?.user?.id
-    })
+  if (!session?.user?.email) {
+    redirect("/login")
+  }
 
-    if (!session) {
-      console.log("[Home] No session, redirecting to login")
-      redirect("/login")
-    }
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  })
 
-    if (!session.user?.email) {
-      console.log("[Home] Session exists but no email, redirecting to login")
-      redirect("/login")
-    }
-
-    console.log("[Home] Looking up user by email:", session.user.email)
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    })
-
-    console.log("[Home] User lookup result:", { found: !!user, userId: user?.id })
-
-    if (!user) {
-      console.log("[Home] User not found in database, redirecting to login")
-      redirect("/login")
-    }
+  if (!user) {
+    redirect("/login")
+  }
 
     // Fetch user stats for Sport Index
     const userStats = await prisma.userStats.findUnique({
@@ -271,16 +253,4 @@ export default async function HomePage() {
         </div>
       </main>
     )
-  } catch (error: unknown) {
-    // Next.js redirect() throws an error with a specific digest - must rethrow
-    if (error && typeof error === 'object' && 'digest' in error) {
-      const digest = (error as { digest: string }).digest
-      if (digest?.startsWith('NEXT_REDIRECT')) {
-        throw error
-      }
-    }
-    console.error("[Home] Unexpected error:", error)
-    console.error("[Home] Error details:", JSON.stringify(error, Object.getOwnPropertyNames(error as object)))
-    redirect("/login")
-  }
 }
