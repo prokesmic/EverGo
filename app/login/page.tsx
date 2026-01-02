@@ -39,7 +39,7 @@ export default function LoginPage() {
                 // Wait a moment for the session cookie to be set before navigating
                 await new Promise(resolve => setTimeout(resolve, 100))
                 // Use window.location for a hard navigation to ensure cookie is sent
-                window.location.href = "/home-test"
+                window.location.href = "/home"
             } else {
                 console.log("[Login] Unexpected result:", result)
                 toast.error("Login failed")
