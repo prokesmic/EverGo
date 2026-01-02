@@ -271,13 +271,16 @@ export default async function HomePage() {
         </div>
       </main>
     )
-  } catch (error) {
-    // Don't catch redirect errors - they need to bubble up
-    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
-      throw error
+  } catch (error: unknown) {
+    // Next.js redirect() throws an error with a specific digest - must rethrow
+    if (error && typeof error === 'object' && 'digest' in error) {
+      const digest = (error as { digest: string }).digest
+      if (digest?.startsWith('NEXT_REDIRECT')) {
+        throw error
+      }
     }
     console.error("[Home] Unexpected error:", error)
-    console.error("[Home] Error stack:", error instanceof Error ? error.stack : "no stack")
+    console.error("[Home] Error details:", JSON.stringify(error, Object.getOwnPropertyNames(error as object)))
     redirect("/login")
   }
 }
