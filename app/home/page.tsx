@@ -32,17 +32,34 @@ export const dynamic = 'force-dynamic'
  */
 export default async function HomePage() {
   try {
+    console.log("[Home] Starting session check...")
     const session = await getServerSession(authOptions)
 
+    console.log("[Home] Session result:", {
+      hasSession: !!session,
+      email: session?.user?.email,
+      id: session?.user?.id
+    })
+
     if (!session) {
+      console.log("[Home] No session, redirecting to login")
       redirect("/login")
     }
 
+    if (!session.user?.email) {
+      console.log("[Home] Session exists but no email, redirecting to login")
+      redirect("/login")
+    }
+
+    console.log("[Home] Looking up user by email:", session.user.email)
     const user = await prisma.user.findUnique({
-      where: { email: session.user?.email || "" },
+      where: { email: session.user.email },
     })
 
+    console.log("[Home] User lookup result:", { found: !!user, userId: user?.id })
+
     if (!user) {
+      console.log("[Home] User not found in database, redirecting to login")
       redirect("/login")
     }
 
@@ -255,7 +272,12 @@ export default async function HomePage() {
       </main>
     )
   } catch (error) {
-    console.error("Home page error:", error)
+    // Don't catch redirect errors - they need to bubble up
+    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+      throw error
+    }
+    console.error("[Home] Unexpected error:", error)
+    console.error("[Home] Error stack:", error instanceof Error ? error.stack : "no stack")
     redirect("/login")
   }
 }

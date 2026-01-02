@@ -22,19 +22,30 @@ export default function LoginPage() {
         setIsLoading(true)
 
         try {
+            console.log("[Login] Attempting sign in for:", email)
             const result = await signIn("credentials", {
                 email,
                 password,
                 redirect: false,
             })
 
+            console.log("[Login] Sign in result:", result)
+
             if (result?.error) {
+                console.log("[Login] Sign in error:", result.error)
                 toast.error("Invalid credentials")
+            } else if (result?.ok) {
+                console.log("[Login] Sign in successful, waiting for cookie to be set...")
+                // Wait a moment for the session cookie to be set before navigating
+                await new Promise(resolve => setTimeout(resolve, 100))
+                // Use window.location for a hard navigation to ensure cookie is sent
+                window.location.href = "/home"
             } else {
-                router.push("/home")
-                router.refresh()
+                console.log("[Login] Unexpected result:", result)
+                toast.error("Login failed")
             }
         } catch (error) {
+            console.error("[Login] Exception:", error)
             toast.error("Something went wrong")
         } finally {
             setIsLoading(false)

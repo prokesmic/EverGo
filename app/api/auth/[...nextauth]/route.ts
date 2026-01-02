@@ -95,19 +95,25 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async jwt({ token, user }) {
+            console.log("[Auth JWT] Called with user:", user?.id, "token.sub:", token.sub)
             if (user) {
                 token.id = user.id
+                token.email = user.email // Explicitly preserve email
                 token.username = user.username
-                token.picture = user.avatarUrl
+                token.picture = user.image // Use image (from authorize return)
             }
+            console.log("[Auth JWT] Returning token with email:", token.email)
             return token
         },
         async session({ session, token }) {
+            console.log("[Auth Session] Called with token.id:", token.id, "token.email:", token.email)
             if (session.user && token) {
-                session.user.id = token.id
-                session.user.username = token.username
-                session.user.image = token.picture
+                session.user.id = token.id as string
+                session.user.email = token.email as string // Ensure email is in session
+                session.user.username = token.username as string
+                session.user.image = token.picture as string
             }
+            console.log("[Auth Session] Returning session with email:", session.user?.email)
             return session
         }
     }
