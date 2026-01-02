@@ -159,20 +159,28 @@ model UserSportStats {
 
 model RankingCache {
   id              String        @id @default(cuid())
-  
+
+  // Ranked Disciplines v4: Dimension-based ranking
+  dimension       DisciplineKind @default(SPORT_INDEX)  // What we're ranking by
+  disciplineId    String?       // For BENCHMARK: which discipline; null for SPORT_INDEX/FITNESS_SCORE
+
   // Scope definition
   sportId         String?       // null = overall sport index
   scope           String        // Enum: RankingScope (GLOBAL, COUNTRY, CITY, FRIENDS, TEAM)
   scopeValue      String?       // "Prague", "Czech Republic", null for global
   period          String        @default("ALL_TIME") // Enum: RankingPeriod
-  
+
+  // Verification filter (for VERIFIED badge disciplines)
+  verifiedOnly    Boolean       @default(false)
+
   // Cached leaderboard data (top 100)
-  leaderboard     String        // Json: [{userId, rank, score, name, avatar}, ...]
+  leaderboard     String        // Json: [{userId, rank, score, name, avatar, source?, isVerified?}, ...]
   totalUsers      Int
-  
+
   calculatedAt    DateTime      @default(now())
-  
-  @@unique([sportId, scope, scopeValue, period])
+
+  @@unique([dimension, disciplineId, sportId, scope, scopeValue, period, verifiedOnly])
+  @@index([dimension, disciplineId])
 }
 
 model Sport {
@@ -182,7 +190,16 @@ model Sport {
   icon            String
   category        String    // Enum: SportCategory
   hasGpsTracking  Boolean   @default(false)
-  
+
+  // v4.2: MET weighting for Fitness Score
+  metDefault      Float     @default(6.0)  // Default MET value for this sport (avg intensity)
+
+  // v4.2: Deprecation & aliasing (for sport consolidation)
+  isDeprecated    Boolean   @default(false)
+  canonicalSportId String?  // Points to the sport this was merged into
+  canonicalSport  Sport?    @relation("SportAliases", fields: [canonicalSportId], references: [id])
+  aliases         Sport[]   @relation("SportAliases")
+
   disciplines     Discipline[]
   userSports      UserSport[]
   teams           Team[]
@@ -192,6 +209,8 @@ model Sport {
   challenges      Challenge[]
   partnerRequests PartnerRequest[]
   benchmarkDefinitions BenchmarkDefinition[]
+
+  @@index([isDeprecated])
 }
 
 model Discipline {
@@ -200,13 +219,33 @@ model Discipline {
   sport           Sport     @relation(fields: [sportId], references: [id])
   name            String
   slug            String
-  measurementType String    // Enum: MeasurementType
   primaryMetric   String
   rankingFormula  String
-  lowerIsBetter   Boolean   @default(true)
 
-  // New fields for discipline-based rankings
-  unit            String?   // "sec", "km", "m/s", "watts", "kg", "points"
+  // Ranked Disciplines v4: Ranking metadata
+  kind                     DisciplineKind     @default(BENCHMARK)
+  isRanked                 Boolean            @default(true)
+  fairnessBadge            FairnessBadge      @default(STANDARD)
+  verificationBadge        VerificationBadge  @default(MIXED)
+  requireVerifiedForGlobal Boolean            @default(false)
+  allowManualAtAll         Boolean            @default(true)
+  measurement              MeasurementType    @default(TIME_SECONDS)
+  unitLabel                String?            // "sec", "W/kg", "m", etc.
+  higherIsBetter           Boolean            @default(false)
+  configJson               Json?              // Extra config for complex ranking rules
+
+  // v4.2: Per-scope minimum verification tiers
+  minTierGlobal            MinVerificationTier @default(NON_MANUAL)
+  minTierCountry           MinVerificationTier @default(NON_MANUAL)
+  minTierCity              MinVerificationTier @default(NON_MANUAL)
+  minTierTeam              MinVerificationTier @default(ANY)  // Team rankings allow manual
+
+  // Legacy/existing fields (kept for migration compatibility)
+  measurementType String?   // Deprecated: use measurement enum instead
+  lowerIsBetter   Boolean   @default(true) // Deprecated: use higherIsBetter
+  unit            String?   // Deprecated: use unitLabel instead
+
+  // Discipline ranking settings
   scoringKind     ScoringKind @default(PB_BEST) // How to compute leaderboard
   validityMonths  Int       @default(24)        // Ranking validity window
   isActive        Boolean   @default(true)
@@ -223,12 +262,79 @@ model Discipline {
 
   @@unique([sportId, slug])
   @@index([sportId, isActive])
+  @@index([kind, isRanked])
 }
 
 enum ScoringKind {
   PB_BEST      // Best personal best (default for most sports)
   PERIOD_BEST  // Best value within a rolling window
   PERIOD_SUM   // Sum of values in rolling window (activity score)
+}
+
+// =============================================================================
+// RANKED DISCIPLINES v4: FAIRNESS + VERIFICATION BADGES
+// =============================================================================
+
+enum FairnessBadge {
+  STANDARD    // Comparable benchmark (5K time, FTP, etc.)
+  NORMALIZED  // Conditions vary; we normalize effort (trail effort, climbing grade)
+  SEGMENT     // Comparable only on same segment/course
+  RATING      // Based on match results / ELO rating
+}
+
+enum VerificationBadge {
+  VERIFIED    // Only sensor/imported entries appear in leaderboards
+  MIXED       // Verified recommended; manual may be limited
+  MANUAL      // Personal tracking only (no global leaderboards)
+}
+
+enum DisciplineKind {
+  FITNESS_SCORE     // Universal cross-sport normalized activity score
+  SPORT_INDEX       // Composite sport performance score
+  BENCHMARK         // Specific performance benchmark (5K, FTP, etc.)
+  ELO_RATING        // Match-based rating (team/racket sports)
+}
+
+enum MeasurementType {
+  TIME_SECONDS      // Lower is better (5K time, marathon)
+  POWER_WKG         // Higher is better (FTP W/kg)
+  HEIGHT_METERS     // Higher is better (jump height)
+  SPEED_KMH         // Higher is better (top speed)
+  DISTANCE_METERS   // Higher is better (row 30min distance)
+  REPS              // Higher is better (pullups, bench reps)
+  WEIGHT_KG         // Higher is better (1RM)
+  GRADE             // Higher is better (climbing grade ordinal)
+  SCORE             // Higher is better (normalized effort score)
+}
+
+// v4.2: Per-scope verification tier requirements
+enum MinVerificationTier {
+  ANY              // Allow manual everywhere (personal tracking only)
+  NON_MANUAL       // At least STRAVA/GARMIN/device/sensor (most disciplines)
+  VERIFIED_ONLY    // Only sensor-specific or "strong verified" sources
+}
+
+enum VerificationSource {
+  MANUAL            // User entered manually
+  STRAVA            // Imported from Strava
+  GARMIN            // Imported from Garmin Connect
+  APPLE_HEALTH      // Imported from Apple Health
+  GOOGLE_FIT        // Imported from Google Fit
+  WAHOO             // Imported from Wahoo
+  POLAR             // Imported from Polar
+  SUUNTO            // Imported from Suunto
+  COROS             // Imported from COROS
+  WHOOP             // Imported from WHOOP
+  OURA              // Imported from Oura Ring
+  FITBIT            // Imported from Fitbit
+  SENSOR_POWER      // Power meter sensor data
+  SENSOR_HR         // Heart rate monitor sensor data
+  SENSOR_CADENCE    // Cadence sensor data
+  SENSOR_WOO        // Woo kite sensor
+  SENSOR_SURFR      // Surfr sensor
+  SENSOR_OTHER      // Other sensor devices
+  DEVICE_OTHER      // Other connected device
+  OFFICIAL_RESULT   // Official race/competition result
 }
 
 enum SportCategory {
@@ -341,6 +447,9 @@ model Activity {
   effortPoints     Int              @default(0) // Normalized cross-sport effort score
   rpe              Int?             // Rate of Perceived Exertion (1-10, manual input)
 
+  // v4.2: Tags replace subtype - flexible multi-tagging for activities
+  tags             String           @default("[]")  // JSON: ["race", "tempo", "long_run", etc.]
+
   @@unique([source, externalId])
   @@index([rivalryId])
   @@index([userId, activityDate(sort: Desc)])
@@ -379,14 +488,20 @@ model PersonalRecord {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   disciplineId    String
   discipline      Discipline @relation(fields: [disciplineId], references: [id])
-  
+
   recordType      String      // e.g., "5K_TIME", "MARATHON_TIME"
   value           Float
   unit            String
   achievedAt      DateTime
   activityId      String?
-  
+
+  // Ranked Disciplines v4: Verification tracking
+  source          BenchmarkSource @default(MANUAL)
+  verificationStatus BenchmarkVerificationStatus @default(UNVERIFIED)
+  evidenceUrl     String?
+
   @@unique([userId, disciplineId, recordType])
+  @@index([source, verificationStatus])
 }
 
 model Follow {
@@ -1223,6 +1338,12 @@ enum BenchmarkSource {
   ACTIVITY_DERIVED
   IMPORT_STRAVA
   IMPORT_GARMIN
+  IMPORT_APPLE_HEALTH
+  IMPORT_GOOGLE_FIT
+  SENSOR_WOO          // Woo Kite sensor
+  SENSOR_SURFR        // Surfr sensor
+  SENSOR_OTHER        // Other sport-specific sensors
+  DEVICE_OTHER        // Generic device import
 }
 
 enum BenchmarkVerificationStatus {
@@ -1286,6 +1407,14 @@ model UserBenchmarkBest {
   // Convenience flags
   isLegacy           Boolean  @default(false) // computed at write-time (older than validity window)
 
+  // v4.2: Auditability & traceability
+  externalActivityId String?  // Link to source activity (internal or external ID)
+  metadata           Json?    // Extra context: { race_name, conditions, elevation, etc. }
+  isEligibleGlobal   Boolean  @default(true)  // Computed: passes minTierGlobal check
+  isEligibleCountry  Boolean  @default(true)  // Computed: passes minTierCountry check
+  isEligibleCity     Boolean  @default(true)  // Computed: passes minTierCity check
+  isEligibleTeam     Boolean  @default(true)  // Computed: passes minTierTeam check
+
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -1295,6 +1424,7 @@ model UserBenchmarkBest {
   @@unique([userId, benchmarkId]) // latest/active PB per benchmark
   @@index([userId])
   @@index([benchmarkId])
+  @@index([isEligibleGlobal, benchmarkId])  // For efficient global leaderboard queries
 }
 
 model ActivityBenchmarkResult {
@@ -1371,6 +1501,60 @@ model IntegrationJob {
   updatedAt DateTime @updatedAt
 
   @@index([status, runAt])
+}
+
+// =============================================================================
+// v4.2: BACKFILL STATE (Checkpointing for backfill jobs)
+// =============================================================================
+
+enum BackfillJobType {
+  PERSONAL_BESTS     // Backfill PersonalBests from activities
+  ELIGIBILITY_FLAGS  // Recompute isEligible* flags
+  RANKING_CACHE      // Rebuild ranking caches
+  SPORT_INDEX        // Recalculate sport indices
+}
+
+enum BackfillStatus {
+  PENDING
+  RUNNING
+  PAUSED
+  COMPLETED
+  FAILED
+}
+
+model BackfillState {
+  id            String         @id @default(cuid())
+  jobType       BackfillJobType
+  status        BackfillStatus @default(PENDING)
+
+  // Checkpoint cursor (JSON for flexibility)
+  cursor        Json?          // { userId: "...", lastActivityId: "...", page: 5 }
+
+  // Progress tracking
+  totalItems    Int?           // Total items to process (if known)
+  processedItems Int           @default(0)
+  skippedItems  Int            @default(0)
+  errorItems    Int            @default(0)
+
+  // Timing
+  startedAt     DateTime?
+  pausedAt      DateTime?
+  completedAt   DateTime?
+  lastHeartbeat DateTime?      // For detecting stalled jobs
+
+  // Error tracking
+  lastError     String?
+  errorLog      Json?          // Array of errors for debugging
+
+  // Configuration
+  batchSize     Int            @default(100)
+  configJson    Json?          // Job-specific configuration
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([jobType])  // Only one active job per type
+  @@index([status, jobType])
 }
 
 // --- Rivalry Models ---
@@ -1833,14 +2017,17 @@ model DisciplineLeaderboardCache {
   scope           String    // GLOBAL, COUNTRY, CITY, TEAM
   scopeValue      String?   // null for global, "Czech Republic" for country, etc.
 
+  // Ranked Disciplines v4: Verification filter
+  verifiedOnly    Boolean   @default(false)
+
   // Cached leaderboard data (top 100)
-  leaderboard     String    // JSON: [{userId, rank, value, formattedValue, delta, name, avatar}]
+  leaderboard     String    // JSON: [{userId, rank, value, formattedValue, delta, name, avatar, source?, isVerified?}]
   totalUsers      Int
 
   calculatedAt    DateTime  @default(now())
 
-  @@unique([disciplineId, scope, scopeValue])
-  @@index([disciplineId])
+  @@unique([disciplineId, scope, scopeValue, verifiedOnly])
+  @@index([disciplineId, verifiedOnly])
 }
 
 // =============================================================================

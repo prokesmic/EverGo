@@ -1,5 +1,36 @@
 import { prisma } from "@/lib/db"
-import { ScoringKind } from "@prisma/client"
+import { ScoringKind, BenchmarkSource, MinVerificationTier } from "@prisma/client"
+import {
+  meetsVerificationTier,
+  getMinTierForScope,
+  isEligibleForScope,
+  assignCompetitionRanks,
+  type RankingScope,
+} from "@/lib/scoring/strategies"
+
+/**
+ * BenchmarkSource values that count as "verified" for leaderboard eligibility
+ * These are sources that can be trusted (imported from devices/apps)
+ */
+export const VERIFIED_BENCHMARK_SOURCES: BenchmarkSource[] = [
+  BenchmarkSource.ACTIVITY_DERIVED,
+  BenchmarkSource.IMPORT_STRAVA,
+  BenchmarkSource.IMPORT_GARMIN,
+  BenchmarkSource.IMPORT_APPLE_HEALTH,
+  BenchmarkSource.IMPORT_GOOGLE_FIT,
+  BenchmarkSource.SENSOR_WOO,
+  BenchmarkSource.SENSOR_SURFR,
+  BenchmarkSource.SENSOR_OTHER,
+  BenchmarkSource.DEVICE_OTHER,
+]
+
+/**
+ * Check if a BenchmarkSource counts as verified
+ */
+export function isVerifiedSource(source: BenchmarkSource | null | undefined): boolean {
+  if (!source) return false
+  return VERIFIED_BENCHMARK_SOURCES.includes(source)
+}
 
 /**
  * Sport multipliers for Activity Score calculation
@@ -107,37 +138,66 @@ export async function calculateActivityScore(userId: string): Promise<number> {
 }
 
 /**
+ * Result from getDisciplineScore with verification info
+ */
+export interface DisciplineScoreResult {
+  score: number | null
+  isVerified: boolean
+  source: BenchmarkSource | null
+}
+
+/**
  * Get a user's score for a specific discipline
  * Handles different ScoringKind values
+ * Returns score along with verification status
  */
 export async function getDisciplineScore(
   userId: string,
-  disciplineId: string
-): Promise<number | null> {
+  disciplineId: string,
+  options: {
+    verifiedOnly?: boolean
+  } = {}
+): Promise<DisciplineScoreResult> {
+  const { verifiedOnly = false } = options
+
   const discipline = await prisma.discipline.findUnique({
     where: { id: disciplineId },
     include: { sport: true },
   })
 
-  if (!discipline) return null
+  if (!discipline) return { score: null, isVerified: false, source: null }
 
   const validityDate = new Date()
   validityDate.setMonth(validityDate.getMonth() - discipline.validityMonths)
 
   switch (discipline.scoringKind) {
     case ScoringKind.PB_BEST: {
+      // Build where clause with optional verification filter
+      const whereClause: any = {
+        userId,
+        disciplineId,
+        achievedAt: { gte: validityDate },
+      }
+
+      if (verifiedOnly) {
+        whereClause.source = { in: VERIFIED_BENCHMARK_SOURCES }
+      }
+
       // Get best personal record for this discipline
       const bestPR = await prisma.personalRecord.findFirst({
-        where: {
-          userId,
-          disciplineId,
-          achievedAt: { gte: validityDate },
-        },
+        where: whereClause,
         orderBy: discipline.lowerIsBetter
           ? { value: "asc" }
           : { value: "desc" },
       })
-      return bestPR?.value ?? null
+
+      if (!bestPR) return { score: null, isVerified: false, source: null }
+
+      return {
+        score: bestPR.value,
+        isVerified: isVerifiedSource(bestPR.source),
+        source: bestPR.source,
+      }
     }
 
     case ScoringKind.PERIOD_BEST: {
@@ -150,7 +210,7 @@ export async function getDisciplineScore(
         },
       })
 
-      if (activities.length === 0) return null
+      if (activities.length === 0) return { score: null, isVerified: false, source: null }
 
       // Use primary metric based on discipline
       const values = activities.map((a) => {
@@ -160,17 +220,22 @@ export async function getDisciplineScore(
         return null
       }).filter((v): v is number => v !== null)
 
-      if (values.length === 0) return null
+      if (values.length === 0) return { score: null, isVerified: false, source: null }
 
-      return discipline.lowerIsBetter
+      const score = discipline.lowerIsBetter
         ? Math.min(...values)
         : Math.max(...values)
+
+      // Activities are considered verified if they come from an import
+      // For now, we'll assume activities are verified (they typically come from imports)
+      return { score, isVerified: true, source: null }
     }
 
     case ScoringKind.PERIOD_SUM: {
       // Sum of values in the period (for Activity Score)
       if (discipline.slug === "activity-score") {
-        return await calculateActivityScore(userId)
+        const score = await calculateActivityScore(userId)
+        return { score, isVerified: true, source: null }
       }
 
       // Generic sum for other disciplines
@@ -192,11 +257,11 @@ export async function getDisciplineScore(
           sum += activity.elevationGain ?? 0
         }
       }
-      return sum
+      return { score: sum, isVerified: true, source: null }
     }
 
     default:
-      return null
+      return { score: null, isVerified: false, source: null }
   }
 }
 
@@ -210,10 +275,93 @@ export interface LeaderboardEntry {
   avatarUrl: string | null
   score: number
   formattedScore: string
+  isVerified: boolean
+  source: BenchmarkSource | null
+  tiedWith?: number // Number of other entries with the same rank (0 if not tied)
+}
+
+/**
+ * Leaderboard metadata including discipline badges
+ */
+export interface LeaderboardMetadata {
+  disciplineId: string
+  disciplineName: string
+  fairnessBadge: string
+  verificationBadge: string
+  requireVerifiedForGlobal: boolean
+  allowManualAtAll: boolean
+  isVerifiedLeaderboard: boolean
+}
+
+/**
+ * Check if a discipline allows the current entry type
+ *
+ * v4.2: Now supports per-scope MinVerificationTier (minTierGlobal, minTierCountry, etc.)
+ * Falls back to legacy requireVerifiedForGlobal/allowManualAtAll for backwards compat.
+ */
+export function isEligibleForLeaderboard(
+  discipline: {
+    requireVerifiedForGlobal: boolean
+    allowManualAtAll: boolean
+    // v4.2 per-scope min tiers
+    minTierGlobal?: MinVerificationTier
+    minTierCountry?: MinVerificationTier
+    minTierCity?: MinVerificationTier
+    minTierTeam?: MinVerificationTier
+  },
+  source: BenchmarkSource,
+  scope: "GLOBAL" | "COUNTRY" | "CITY" | "FRIENDS" | "TEAM"
+): boolean {
+  // v4.2: If discipline has per-scope min tiers, use the new system
+  if (discipline.minTierGlobal !== undefined) {
+    const disciplineWithTiers = {
+      minTierGlobal: discipline.minTierGlobal,
+      minTierCountry: discipline.minTierCountry ?? discipline.minTierGlobal,
+      minTierCity: discipline.minTierCity ?? discipline.minTierGlobal,
+      minTierTeam: discipline.minTierTeam ?? 'ANY' as MinVerificationTier,
+    }
+
+    // Map FRIENDS to TEAM for tier lookup
+    const rankingScope = scope === 'FRIENDS' ? 'TEAM' : scope
+    return isEligibleForScope(source, rankingScope as RankingScope, disciplineWithTiers)
+  }
+
+  // Legacy fallback for disciplines without v4.2 tier fields
+  const isVerified = isVerifiedSource(source)
+
+  // If manual entries aren't allowed at all, must be verified
+  if (!discipline.allowManualAtAll && !isVerified) {
+    return false
+  }
+
+  // If global scope requires verified entries
+  if (scope === "GLOBAL" && discipline.requireVerifiedForGlobal && !isVerified) {
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Legacy compatibility wrapper - checks by isVerified boolean instead of source
+ * @deprecated Use isEligibleForLeaderboard with source parameter instead
+ */
+export function isEligibleForLeaderboardLegacy(
+  discipline: {
+    requireVerifiedForGlobal: boolean
+    allowManualAtAll: boolean
+  },
+  isVerified: boolean,
+  scope: "GLOBAL" | "COUNTRY" | "CITY" | "FRIENDS"
+): boolean {
+  // Map isVerified boolean to source
+  const source = isVerified ? BenchmarkSource.IMPORT_STRAVA : BenchmarkSource.MANUAL
+  return isEligibleForLeaderboard(discipline, source, scope)
 }
 
 /**
  * Get leaderboard for a discipline with optional scope filtering
+ * Supports eligibility filtering based on discipline configuration
  */
 export async function getDisciplineLeaderboard(
   disciplineId: string,
@@ -223,16 +371,43 @@ export async function getDisciplineLeaderboard(
     userId?: string // For friends scope
     limit?: number
     offset?: number
+    verifiedOnly?: boolean // Force verified-only entries
   } = {}
-): Promise<{ entries: LeaderboardEntry[]; totalCount: number }> {
-  const { scope = "GLOBAL", scopeValue, userId, limit = 50, offset = 0 } = options
+): Promise<{ entries: LeaderboardEntry[]; totalCount: number; metadata: LeaderboardMetadata }> {
+  const { scope = "GLOBAL", scopeValue, userId, limit = 50, offset = 0, verifiedOnly } = options
 
   const discipline = await prisma.discipline.findUnique({
     where: { id: disciplineId },
   })
 
   if (!discipline) {
-    return { entries: [], totalCount: 0 }
+    return {
+      entries: [],
+      totalCount: 0,
+      metadata: {
+        disciplineId,
+        disciplineName: "",
+        fairnessBadge: "STANDARD",
+        verificationBadge: "MIXED",
+        requireVerifiedForGlobal: false,
+        allowManualAtAll: true,
+        isVerifiedLeaderboard: false,
+      },
+    }
+  }
+
+  // Determine if this leaderboard should be verified-only
+  const isVerifiedLeaderboard = verifiedOnly ??
+    (scope === "GLOBAL" && discipline.requireVerifiedForGlobal)
+
+  const metadata: LeaderboardMetadata = {
+    disciplineId,
+    disciplineName: discipline.name,
+    fairnessBadge: discipline.fairnessBadge,
+    verificationBadge: discipline.verificationBadge,
+    requireVerifiedForGlobal: discipline.requireVerifiedForGlobal,
+    allowManualAtAll: discipline.allowManualAtAll,
+    isVerifiedLeaderboard,
   }
 
   // Build user filter based on scope
@@ -263,50 +438,67 @@ export async function getDisciplineLeaderboard(
     },
   })
 
-  // Calculate scores for each user
+  // Calculate scores for each user with eligibility filtering
   const userScores: Array<{
     userId: string
     displayName: string
     avatarUrl: string | null
     score: number
+    isVerified: boolean
+    source: BenchmarkSource | null
   }> = []
 
   for (const user of users) {
-    const score = await getDisciplineScore(user.id, disciplineId)
-    if (score !== null && score > 0) {
-      userScores.push({
-        userId: user.id,
-        displayName: user.displayName,
-        avatarUrl: user.avatarUrl,
-        score,
-      })
+    const result = await getDisciplineScore(user.id, disciplineId, {
+      verifiedOnly: isVerifiedLeaderboard,
+    })
+
+    if (result.score !== null && result.score > 0) {
+      // Check eligibility based on discipline configuration
+      // Use source if available, otherwise map isVerified to a source
+      const sourceForEligibility = result.source ?? (result.isVerified ? BenchmarkSource.IMPORT_STRAVA : BenchmarkSource.MANUAL)
+      const eligible = isEligibleForLeaderboard(discipline, sourceForEligibility, scope)
+
+      if (eligible) {
+        userScores.push({
+          userId: user.id,
+          displayName: user.displayName,
+          avatarUrl: user.avatarUrl,
+          score: result.score,
+          isVerified: result.isVerified,
+          source: result.source,
+        })
+      }
     }
   }
 
-  // Sort by score
-  userScores.sort((a, b) => {
-    if (discipline.lowerIsBetter) {
-      return a.score - b.score
-    }
-    return b.score - a.score
-  })
+  // Use competition ranking for proper ties handling ("1224" style)
+  // Same scores get the same rank, next rank skips appropriately
+  const rankedScores = assignCompetitionRanks(
+    userScores,
+    (entry) => entry.score,
+    !discipline.lowerIsBetter // higherIsBetter is the inverse of lowerIsBetter
+  )
 
-  const totalCount = userScores.length
+  const totalCount = rankedScores.length
 
   // Apply pagination
-  const paginatedScores = userScores.slice(offset, offset + limit)
+  const paginatedScores = rankedScores.slice(offset, offset + limit)
 
-  // Format scores and add ranks
-  const entries: LeaderboardEntry[] = paginatedScores.map((entry, index) => ({
-    rank: offset + index + 1,
-    userId: entry.userId,
-    displayName: entry.displayName,
-    avatarUrl: entry.avatarUrl,
-    score: entry.score,
-    formattedScore: formatScore(entry.score, discipline.unit || "", discipline.primaryMetric),
+  // Format scores and add ranks from competition ranking
+  const entries: LeaderboardEntry[] = paginatedScores.map((rankedEntry) => ({
+    rank: rankedEntry.rank,
+    userId: rankedEntry.entry.userId,
+    displayName: rankedEntry.entry.displayName,
+    avatarUrl: rankedEntry.entry.avatarUrl,
+    score: rankedEntry.entry.score,
+    formattedScore: formatScore(rankedEntry.entry.score, discipline.unit || "", discipline.primaryMetric),
+    isVerified: rankedEntry.entry.isVerified,
+    source: rankedEntry.entry.source,
+    tiedWith: rankedEntry.tiedWith, // Number of other entries with same rank
   }))
 
-  return { entries, totalCount }
+  return { entries, totalCount, metadata }
 }
 
 /**
@@ -345,24 +537,28 @@ export function formatScore(
 
 /**
  * Cache discipline leaderboard (top entries)
+ * Caches both verified-only and all-entries versions for eligible disciplines
  */
 export async function cacheDisciplineLeaderboard(
   disciplineId: string,
   scope: string,
-  scopeValue: string | null
+  scopeValue: string | null,
+  verifiedOnly: boolean = false
 ): Promise<void> {
-  const { entries, totalCount } = await getDisciplineLeaderboard(disciplineId, {
+  const { entries, totalCount, metadata } = await getDisciplineLeaderboard(disciplineId, {
     scope: scope as "GLOBAL" | "COUNTRY" | "CITY",
     scopeValue: scopeValue || undefined,
     limit: 100,
+    verifiedOnly,
   })
 
   await prisma.disciplineLeaderboardCache.upsert({
     where: {
-      disciplineId_scope_scopeValue: {
+      disciplineId_scope_scopeValue_verifiedOnly: {
         disciplineId,
         scope,
         scopeValue: scopeValue ?? "",
+        verifiedOnly,
       },
     },
     update: {
@@ -374,6 +570,7 @@ export async function cacheDisciplineLeaderboard(
       disciplineId,
       scope,
       scopeValue: scopeValue ?? "",
+      verifiedOnly,
       leaderboard: JSON.stringify(entries),
       totalUsers: totalCount,
     },
@@ -386,14 +583,16 @@ export async function cacheDisciplineLeaderboard(
 export async function getCachedLeaderboard(
   disciplineId: string,
   scope: string,
-  scopeValue: string | null
+  scopeValue: string | null,
+  verifiedOnly: boolean = false
 ): Promise<{ entries: LeaderboardEntry[]; totalCount: number; cachedAt: Date } | null> {
   const cached = await prisma.disciplineLeaderboardCache.findUnique({
     where: {
-      disciplineId_scope_scopeValue: {
+      disciplineId_scope_scopeValue_verifiedOnly: {
         disciplineId,
         scope,
         scopeValue: scopeValue ?? "",
+        verifiedOnly,
       },
     },
   })
@@ -409,20 +608,26 @@ export async function getCachedLeaderboard(
 
 /**
  * Recalculate all discipline rankings (background job)
+ * Caches both verified-only and all-entries versions for disciplines that require it
  */
 export async function recalculateAllDisciplineRankings(): Promise<void> {
   console.log("🏆 Recalculating all discipline rankings...")
 
-  // Get all active disciplines
+  // Get all active ranked disciplines
   const disciplines = await prisma.discipline.findMany({
-    where: { isActive: true },
+    where: { isActive: true, isRanked: true },
   })
 
   for (const discipline of disciplines) {
-    console.log(`  Processing: ${discipline.name}`)
+    console.log(`  Processing: ${discipline.name} [${discipline.fairnessBadge}/${discipline.verificationBadge}]`)
 
-    // Cache global leaderboard
-    await cacheDisciplineLeaderboard(discipline.id, "GLOBAL", null)
+    // Cache global leaderboard (both verified and all if applicable)
+    await cacheDisciplineLeaderboard(discipline.id, "GLOBAL", null, false)
+
+    // If discipline requires verified for global, also cache verified-only version
+    if (discipline.requireVerifiedForGlobal) {
+      await cacheDisciplineLeaderboard(discipline.id, "GLOBAL", null, true)
+    }
 
     // Cache country leaderboards
     const countries = await prisma.user.findMany({
@@ -433,7 +638,7 @@ export async function recalculateAllDisciplineRankings(): Promise<void> {
 
     for (const { country } of countries) {
       if (country) {
-        await cacheDisciplineLeaderboard(discipline.id, "COUNTRY", country)
+        await cacheDisciplineLeaderboard(discipline.id, "COUNTRY", country, false)
       }
     }
 
@@ -446,7 +651,7 @@ export async function recalculateAllDisciplineRankings(): Promise<void> {
 
     for (const { city } of cities) {
       if (city) {
-        await cacheDisciplineLeaderboard(discipline.id, "CITY", city)
+        await cacheDisciplineLeaderboard(discipline.id, "CITY", city, false)
       }
     }
   }

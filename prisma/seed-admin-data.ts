@@ -638,17 +638,30 @@ async function seedAdminData() {
   }))
 
   await prisma.rankingCache.upsert({
-    where: { sportId_scope_scopeValue_period: { sportId: '', scope: 'GLOBAL', scopeValue: '', period: 'ALL_TIME' } },
+    where: {
+      dimension_disciplineId_sportId_scope_scopeValue_period_verifiedOnly: {
+        dimension: 'SPORT_INDEX',
+        disciplineId: '',
+        sportId: '',
+        scope: 'GLOBAL',
+        scopeValue: '',
+        period: 'ALL_TIME',
+        verifiedOnly: false,
+      },
+    },
     update: {
       leaderboard: JSON.stringify(leaderboardData),
       totalUsers: allUsersWithStats.length,
       calculatedAt: new Date(),
     },
     create: {
+      dimension: 'SPORT_INDEX',
+      disciplineId: null,
       sportId: null,
       scope: 'GLOBAL',
       scopeValue: null,
       period: 'ALL_TIME',
+      verifiedOnly: false,
       leaderboard: JSON.stringify(leaderboardData),
       totalUsers: allUsersWithStats.length,
     }

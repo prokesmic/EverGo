@@ -15,6 +15,12 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import {
+  FairnessBadgeChip,
+  VerificationBadgeChip,
+  type FairnessBadge,
+  type VerificationBadge,
+} from '@/components/leaderboards/RankingBadges';
 
 type RankScope = 'global' | 'country' | 'city' | 'team';
 
@@ -34,6 +40,8 @@ export type LensOption = {
   sportSlug?: string | null;
   disciplineSlug?: string | null;
   kind: 'sport_index' | 'fitness_score' | 'sport_discipline';
+  fairnessBadge?: FairnessBadge;
+  verificationBadge?: VerificationBadge;
 };
 
 export type PerformanceRibbonProps = {
@@ -259,7 +267,7 @@ export function PerformanceRibbon({
               </div>
             </div>
 
-            {/* Lens select */}
+            {/* Lens select + badges */}
             <div className="flex items-center gap-2 sm:gap-3">
               <label className="hidden sm:block text-xs text-white/55">Lens</label>
               <div className="relative">
@@ -281,6 +289,14 @@ export function PerformanceRibbon({
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
               </div>
+
+              {/* Fairness & Verification badges */}
+              {currentLens?.fairnessBadge && (
+                <FairnessBadgeChip badge={currentLens.fairnessBadge} size="xs" showLabel={false} />
+              )}
+              {currentLens?.verificationBadge && (
+                <VerificationBadgeChip badge={currentLens.verificationBadge} size="xs" showLabel={false} />
+              )}
 
               <Link
                 href={rankHref(rankingsHrefBase, 'global', lensId)}
