@@ -98,9 +98,9 @@ export const authOptions: NextAuthOptions = {
             console.log("[Auth JWT] Called with user:", user?.id, "token.sub:", token.sub)
             if (user) {
                 token.id = user.id
-                token.email = user.email // Explicitly preserve email
+                token.email = user.email ?? token.email // Explicitly preserve email
                 token.username = user.username
-                token.picture = user.image // Use image (from authorize return)
+                token.picture = user.image ?? undefined // Use image (from authorize return)
             }
             console.log("[Auth JWT] Returning token with email:", token.email)
             return token
