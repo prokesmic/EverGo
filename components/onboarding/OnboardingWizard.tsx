@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -12,14 +12,23 @@ import { Step1Identity } from "./steps/Step1Identity"
 import { Step2Sports } from "./steps/Step2Sports"
 import { Step3Benchmark } from "./steps/Step3Benchmark"
 import { Step4Sync } from "./steps/Step4Sync"
-import { ArrowLeft, ArrowRight, Loader2, Check, User, Dumbbell, Target, Link2 } from "lucide-react"
+import {
+  ArrowLeft,
+  ArrowRight,
+  Loader2,
+  Check,
+  User,
+  Dumbbell,
+  Target,
+  Link2,
+} from "lucide-react"
+import type { LucideIcon } from "lucide-react"
+import type { OnboardingSport } from "@/lib/onboarding/sportsCatalog"
 
-interface Sport {
+// Extended sport type with DB id
+export interface CatalogSportWithId extends OnboardingSport {
   id: string
-  name: string
-  slug: string
-  icon: string
-  category: string
+  dbName: string
 }
 
 interface BenchmarkDefinition {
@@ -31,7 +40,7 @@ interface BenchmarkDefinition {
 }
 
 interface OnboardingWizardProps {
-  sports: Sport[]
+  sports: CatalogSportWithId[]
   benchmarks: BenchmarkDefinition[]
   initialData?: {
     displayName?: string
@@ -53,7 +62,11 @@ const STEPS = [
   { id: 4, title: "Sync", icon: Link2, description: "Connect apps" },
 ]
 
-export function OnboardingWizard({ sports, benchmarks, initialData }: OnboardingWizardProps) {
+export function OnboardingWizard({
+  sports,
+  benchmarks,
+  initialData,
+}: OnboardingWizardProps) {
   const router = useRouter()
   const store = useOnboardingStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -152,7 +165,7 @@ export function OnboardingWizard({ sports, benchmarks, initialData }: Onboarding
   if (!hydrated) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
       </div>
     )
   }
@@ -162,9 +175,9 @@ export function OnboardingWizard({ sports, benchmarks, initialData }: Onboarding
   const isLastStep = store.currentStep === STEPS.length
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <section className="w-full max-w-2xl">
       {/* Step Indicators */}
-      <div className="mb-8">
+      <div className="mb-4">
         <div className="flex justify-between items-center mb-4">
           {STEPS.map((step, index) => {
             const Icon = step.icon
@@ -174,7 +187,9 @@ export function OnboardingWizard({ sports, benchmarks, initialData }: Onboarding
             return (
               <div key={step.id} className="flex items-center">
                 <button
-                  onClick={() => isCompleted && store.setStep(step.id as OnboardingStep)}
+                  onClick={() =>
+                    isCompleted && store.setStep(step.id as OnboardingStep)
+                  }
                   disabled={!isCompleted}
                   className={cn(
                     "flex flex-col items-center gap-1 transition-all",
@@ -186,8 +201,9 @@ export function OnboardingWizard({ sports, benchmarks, initialData }: Onboarding
                     className={cn(
                       "w-10 h-10 rounded-full flex items-center justify-center transition-all",
                       isCompleted && "bg-green-500 text-white",
-                      isCurrent && "bg-purple-600 text-white ring-4 ring-purple-200",
-                      !isCompleted && !isCurrent && "bg-gray-200 text-gray-500"
+                      isCurrent &&
+                        "bg-white text-violet-600 ring-4 ring-white/30",
+                      !isCompleted && !isCurrent && "bg-white/20 text-white/70"
                     )}
                   >
                     {isCompleted ? (
@@ -199,7 +215,7 @@ export function OnboardingWizard({ sports, benchmarks, initialData }: Onboarding
                   <span
                     className={cn(
                       "text-xs font-medium hidden sm:block",
-                      isCurrent ? "text-purple-600" : "text-gray-500"
+                      isCurrent ? "text-white" : "text-white/70"
                     )}
                   >
                     {step.title}
@@ -211,7 +227,9 @@ export function OnboardingWizard({ sports, benchmarks, initialData }: Onboarding
                   <div
                     className={cn(
                       "flex-1 h-0.5 mx-2 min-w-[40px]",
-                      store.currentStep > step.id ? "bg-green-500" : "bg-gray-200"
+                      store.currentStep > step.id
+                        ? "bg-green-500"
+                        : "bg-white/20"
                     )}
                   />
                 )}
@@ -221,23 +239,25 @@ export function OnboardingWizard({ sports, benchmarks, initialData }: Onboarding
         </div>
 
         {/* Progress bar */}
-        <Progress value={progress} className="h-1" />
+        <Progress value={progress} className="h-1 bg-white/20" />
       </div>
 
       {/* Step Content Card */}
-      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 min-h-[500px] flex flex-col">
-        {/* Step content */}
-        <div className="flex-1">
-          {store.currentStep === 1 && <Step1Identity />}
-          {store.currentStep === 2 && <Step2Sports sports={sports} />}
-          {store.currentStep === 3 && (
-            <Step3Benchmark sports={sports} benchmarks={benchmarks} />
-          )}
-          {store.currentStep === 4 && <Step4Sync />}
+      <div className="rounded-3xl bg-white/90 shadow-xl ring-1 ring-black/5 backdrop-blur">
+        <div className="px-6 py-6 sm:px-8 sm:py-8">
+          {/* Step content */}
+          <div className="min-h-[400px]">
+            {store.currentStep === 1 && <Step1Identity />}
+            {store.currentStep === 2 && <Step2Sports sports={sports} />}
+            {store.currentStep === 3 && (
+              <Step3Benchmark sports={sports} benchmarks={benchmarks} />
+            )}
+            {store.currentStep === 4 && <Step4Sync />}
+          </div>
         </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center mt-8 pt-6 border-t">
+        {/* Navigation Footer */}
+        <div className="flex items-center justify-between gap-3 border-t border-black/5 px-6 py-4 sm:px-8">
           <Button
             variant="ghost"
             onClick={handleBack}
@@ -282,6 +302,6 @@ export function OnboardingWizard({ sports, benchmarks, initialData }: Onboarding
           </div>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

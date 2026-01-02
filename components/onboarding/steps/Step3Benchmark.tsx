@@ -16,11 +16,7 @@ import {
 } from "@/lib/onboarding/benchmarkMap"
 import { Target, Check, AlertTriangle, Gauge, Shield, Clock } from "lucide-react"
 
-interface Sport {
-  id: string
-  name: string
-  slug: string
-}
+import type { CatalogSportWithId } from "../OnboardingWizard"
 
 interface BenchmarkDefinition {
   id: string
@@ -31,7 +27,7 @@ interface BenchmarkDefinition {
 }
 
 interface Step3BenchmarkProps {
-  sports: Sport[]
+  sports: CatalogSportWithId[]
   benchmarks: BenchmarkDefinition[]
 }
 
@@ -160,7 +156,7 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="font-semibold text-gray-900">{config.label}</h3>
-              <p className="text-sm text-gray-500">{selectedSport.name}</p>
+              <p className="text-sm text-gray-500">{selectedSport.label}</p>
             </div>
             <Badge className={cn("flex items-center gap-1", FairnessBadge.color)}>
               <FairnessBadge.icon className="w-3 h-3" />

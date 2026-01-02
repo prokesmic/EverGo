@@ -14,7 +14,7 @@ import {
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
-import { Check, ChevronsUpDown, MapPin, User } from "lucide-react"
+import { Check, ChevronsUpDown, MapPin, User, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useOnboardingStore } from "@/lib/onboarding/store"
 import { COUNTRIES } from "@/lib/location/countries"
@@ -26,12 +26,28 @@ interface City {
   population: number | null
 }
 
+// Special marker for custom cities
+const CUSTOM_CITY_PREFIX = "custom:"
+
 export function Step1Identity() {
   const store = useOnboardingStore()
   const [cityOpen, setCityOpen] = useState(false)
   const [cities, setCities] = useState<City[]>([])
   const [citySearch, setCitySearch] = useState("")
   const [loadingCities, setLoadingCities] = useState(false)
+  const [showCustomCity, setShowCustomCity] = useState(false)
+  const [customCityName, setCustomCityName] = useState("")
+
+  // Check if current city is a custom one
+  const isCustomCity = store.cityId.startsWith(CUSTOM_CITY_PREFIX)
+
+  // Initialize custom city state from store
+  useEffect(() => {
+    if (isCustomCity) {
+      setShowCustomCity(true)
+      setCustomCityName(store.cityName)
+    }
+  }, [])
 
   // Fetch cities when country changes
   useEffect(() => {
@@ -72,6 +88,8 @@ export function Step1Identity() {
       })
       setCities([])
       setCitySearch("")
+      setShowCustomCity(false)
+      setCustomCityName("")
     }
   }
 
@@ -81,6 +99,42 @@ export function Step1Identity() {
       cityName: city.name,
     })
     setCityOpen(false)
+    setShowCustomCity(false)
+    setCustomCityName("")
+  }
+
+  const handleCustomCityToggle = () => {
+    setShowCustomCity(true)
+    setCityOpen(false)
+    // Clear any existing city selection
+    store.setFields({
+      cityId: "",
+      cityName: "",
+    })
+  }
+
+  const handleCustomCityChange = (name: string) => {
+    setCustomCityName(name)
+    if (name.trim().length >= 2) {
+      store.setFields({
+        cityId: `${CUSTOM_CITY_PREFIX}${name.trim()}`,
+        cityName: name.trim(),
+      })
+    } else {
+      store.setFields({
+        cityId: "",
+        cityName: "",
+      })
+    }
+  }
+
+  const handleBackToSearch = () => {
+    setShowCustomCity(false)
+    setCustomCityName("")
+    store.setFields({
+      cityId: "",
+      cityName: "",
+    })
   }
 
   return (
@@ -172,51 +226,99 @@ export function Step1Identity() {
             {/* City */}
             <div className="space-y-2">
               <Label>City *</Label>
-              <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={cityOpen}
-                    className="w-full justify-between"
-                    disabled={!store.countryCode}
+              {showCustomCity ? (
+                <div className="space-y-2">
+                  <Input
+                    value={customCityName}
+                    onChange={(e) => handleCustomCityChange(e.target.value)}
+                    placeholder="Enter your city name"
+                    className="w-full"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={handleBackToSearch}
+                    className="text-sm text-blue-600 hover:underline"
                   >
-                    {store.cityName || "Select city..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0">
-                  <Command shouldFilter={false}>
-                    <CommandInput
-                      placeholder="Search city..."
-                      value={citySearch}
-                      onValueChange={setCitySearch}
-                    />
-                    <CommandList>
-                      <CommandEmpty>
-                        {loadingCities ? "Loading..." : "No cities found."}
-                      </CommandEmpty>
-                      <CommandGroup>
-                        {cities.map((city) => (
-                          <CommandItem
-                            key={city.id}
-                            value={city.id}
-                            onSelect={() => handleCitySelect(city)}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                store.cityId === city.id ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {city.name}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                    Back to city search
+                  </button>
+                </div>
+              ) : (
+                <Popover open={cityOpen} onOpenChange={setCityOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={cityOpen}
+                      className="w-full justify-between"
+                      disabled={!store.countryCode}
+                    >
+                      {store.cityName || "Select city..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0">
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder="Search city..."
+                        value={citySearch}
+                        onValueChange={setCitySearch}
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          {loadingCities ? (
+                            "Loading..."
+                          ) : (
+                            <div className="py-2 px-2">
+                              <p className="text-sm text-gray-500 mb-2">No cities found.</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full gap-2"
+                                onClick={handleCustomCityToggle}
+                              >
+                                <Plus className="h-4 w-4" />
+                                Enter city manually
+                              </Button>
+                            </div>
+                          )}
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {cities.map((city) => (
+                            <CommandItem
+                              key={city.id}
+                              value={city.id}
+                              onSelect={() => handleCitySelect(city)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  store.cityId === city.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {city.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                        {/* Always show option to enter custom city */}
+                        {cities.length > 0 && (
+                          <div className="p-2 border-t">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full gap-2 text-gray-600"
+                              onClick={handleCustomCityToggle}
+                            >
+                              <Plus className="h-4 w-4" />
+                              My city is not listed
+                            </Button>
+                          </div>
+                        )}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              )}
             </div>
           </div>
         </div>

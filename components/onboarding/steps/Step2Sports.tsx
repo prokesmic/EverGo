@@ -1,67 +1,36 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { useOnboardingStore } from "@/lib/onboarding/store"
 import { Check, Dumbbell, Star } from "lucide-react"
-
-interface Sport {
-  id: string
-  name: string
-  slug: string
-  icon: string
-  category: string
-}
+import { CATEGORY_ORDER } from "@/lib/onboarding/sportsCatalog"
+import type { CatalogSportWithId } from "../OnboardingWizard"
 
 interface Step2SportsProps {
-  sports: Sport[]
-}
-
-// Sport category display order
-const CATEGORY_ORDER = [
-  "ENDURANCE",
-  "CYCLING",
-  "SWIMMING",
-  "STRENGTH",
-  "TEAM",
-  "RACKET",
-  "WATER_BOARD",
-  "OUTDOOR",
-  "WINTER",
-  "COMBAT",
-  "MINDBODY",
-  "GENERIC",
-]
-
-const CATEGORY_LABELS: Record<string, string> = {
-  ENDURANCE: "Running & Endurance",
-  CYCLING: "Cycling",
-  SWIMMING: "Swimming",
-  STRENGTH: "Strength & Gym",
-  TEAM: "Team Sports",
-  RACKET: "Racket Sports",
-  WATER_BOARD: "Water & Board",
-  OUTDOOR: "Outdoor & Climbing",
-  WINTER: "Winter Sports",
-  COMBAT: "Combat & Martial Arts",
-  MINDBODY: "Mind & Body",
-  GENERIC: "Other",
+  sports: CatalogSportWithId[]
 }
 
 export function Step2Sports({ sports }: Step2SportsProps) {
   const store = useOnboardingStore()
 
   // Group sports by category
-  const sportsByCategory = sports.reduce((acc, sport) => {
-    const category = sport.category || "GENERIC"
-    if (!acc[category]) acc[category] = []
-    acc[category].push(sport)
-    return acc
-  }, {} as Record<string, Sport[]>)
+  const grouped = useMemo(() => {
+    const m = new Map<string, CatalogSportWithId[]>()
+    for (const s of sports) {
+      const existing = m.get(s.category) ?? []
+      m.set(s.category, [...existing, s])
+    }
+    // Sort by CATEGORY_ORDER
+    return CATEGORY_ORDER.filter((cat) => m.has(cat)).map((cat) => ({
+      category: cat,
+      items: m.get(cat)!,
+    }))
+  }, [sports])
 
   const handleSportToggle = (sportId: string) => {
+    // If it's the primary sport and selected, we can't deselect it (must have primary)
     if (store.primarySportId === sportId) {
-      // Can't deselect primary sport, just ignore
       return
     }
 
@@ -80,10 +49,11 @@ export function Step2Sports({ sports }: Step2SportsProps) {
     }
   }
 
-  const handleSetPrimary = (sportId: string) => {
+  const handleSetPrimary = (sportId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
     if (store.primarySportId === sportId) return
 
-    // Move current primary to secondary
+    // Move current primary to secondary (if exists)
     const newOther = store.otherSportIds.filter((id) => id !== sportId)
     if (store.primarySportId) {
       newOther.unshift(store.primarySportId)
@@ -102,88 +72,153 @@ export function Step2Sports({ sports }: Step2SportsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-          <Dumbbell className="w-8 h-8 text-green-600" />
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
+          <Dumbbell className="w-8 h-8 text-emerald-600" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900">Choose your sports</h2>
         <p className="text-gray-600 mt-2">
-          Select your primary sport and add others you practice
+          Select sports you do regularly. Mark one as Primary.
         </p>
       </div>
 
       {/* Selection Summary */}
       {store.primarySportId && (
-        <div className="bg-blue-50 rounded-lg p-3 flex items-center gap-2">
-          <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-          <span className="text-sm text-gray-700">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2">
+          <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+          <span className="text-sm text-amber-800">
             Primary sport determines your default ranking lens
           </span>
         </div>
       )}
 
       {/* Sport Categories */}
-      <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2">
-        {CATEGORY_ORDER.filter((cat) => sportsByCategory[cat]?.length > 0).map(
-          (category) => (
-            <div key={category}>
-              <h3 className="text-sm font-medium text-gray-500 mb-3">
-                {CATEGORY_LABELS[category] || category}
-              </h3>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {sportsByCategory[category].map((sport) => (
+      <div className="space-y-6 max-h-[350px] overflow-y-auto pr-2">
+        {grouped.map(({ category, items }) => (
+          <div key={category}>
+            <div className="mb-3 text-sm font-semibold text-gray-500">
+              {category}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              {items.map((sport) => {
+                const selected = isSelected(sport.id)
+                const primary = isPrimary(sport.id)
+                const Icon = sport.icon
+
+                return (
                   <button
                     key={sport.id}
+                    type="button"
                     onClick={() => handleSportToggle(sport.id)}
-                    onDoubleClick={() => handleSetPrimary(sport.id)}
                     className={cn(
-                      "relative p-3 rounded-lg border-2 transition-all text-center",
-                      "hover:border-blue-300 hover:bg-blue-50",
-                      isSelected(sport.id)
-                        ? isPrimary(sport.id)
-                          ? "border-blue-500 bg-blue-100"
-                          : "border-green-400 bg-green-50"
-                        : "border-gray-200 bg-white"
+                      "group relative rounded-2xl border bg-white px-4 py-4 text-left shadow-sm transition",
+                      "hover:shadow-md hover:border-blue-300",
+                      selected
+                        ? primary
+                          ? "border-amber-400 ring-2 ring-amber-200 bg-amber-50"
+                          : "border-emerald-400 ring-2 ring-emerald-100"
+                        : "border-gray-200"
                     )}
                   >
-                    {/* Selected indicator */}
-                    {isSelected(sport.id) && (
-                      <div
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            "flex h-10 w-10 items-center justify-center rounded-xl",
+                            selected
+                              ? primary
+                                ? "bg-amber-100"
+                                : "bg-emerald-100"
+                              : "bg-gray-100"
+                          )}
+                        >
+                          <Icon
+                            className={cn(
+                              "h-5 w-5",
+                              selected
+                                ? primary
+                                  ? "text-amber-600"
+                                  : "text-emerald-600"
+                                : "text-gray-500"
+                            )}
+                          />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {sport.label}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {selected
+                              ? primary
+                                ? "Primary"
+                                : "Selected"
+                              : "Tap to select"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Selected check / Star for primary */}
+                      {selected && (
+                        <div
+                          className={cn(
+                            "flex h-6 w-6 items-center justify-center rounded-full",
+                            primary ? "bg-amber-500" : "bg-emerald-500"
+                          )}
+                        >
+                          {primary ? (
+                            <Star className="h-3.5 w-3.5 text-white fill-white" />
+                          ) : (
+                            <Check className="h-3.5 w-3.5 text-white" />
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Set as Primary button - shown when selected but not primary */}
+                    {selected && !primary && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleSetPrimary(sport.id, e)}
                         className={cn(
-                          "absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center",
-                          isPrimary(sport.id) ? "bg-blue-500" : "bg-green-500"
+                          "mt-3 w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600",
+                          "transition hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700",
+                          "flex items-center justify-center gap-1.5"
                         )}
                       >
-                        {isPrimary(sport.id) ? (
-                          <Star className="w-3 h-3 text-white fill-white" />
-                        ) : (
-                          <Check className="w-3 h-3 text-white" />
-                        )}
-                      </div>
+                        <Star className="h-3.5 w-3.5" />
+                        Set as Primary
+                      </button>
                     )}
 
-                    <span className="text-2xl mb-1 block">{sport.icon}</span>
-                    <span className="text-xs font-medium text-gray-700 block truncate">
-                      {sport.name}
-                    </span>
+                    {/* Tags shown only if selected and tags exist */}
+                    {selected && sport.tags && sport.tags.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {sport.tags.map((tag) => (
+                          <span
+                            key={tag.value}
+                            className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs text-gray-600"
+                          >
+                            {tag.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </button>
-                ))}
-              </div>
+                )
+              })}
             </div>
-          )
-        )}
+          </div>
+        ))}
       </div>
 
-      {/* Help text */}
-      <div className="text-center text-sm text-gray-500">
-        <p>Tap to select/deselect. Double-tap to set as primary.</p>
-        {store.primarySportId && store.otherSportIds.length > 0 && (
-          <p className="mt-1 text-green-600">
-            {store.otherSportIds.length + 1} sport
-            {store.otherSportIds.length > 0 ? "s" : ""} selected
-          </p>
-        )}
-      </div>
+      {/* Selection count */}
+      {store.primarySportId && (
+        <div className="text-center text-sm text-gray-500">
+          {store.otherSportIds.length + 1} sport
+          {store.otherSportIds.length > 0 ? "s" : ""} selected
+        </div>
+      )}
     </div>
   )
 }

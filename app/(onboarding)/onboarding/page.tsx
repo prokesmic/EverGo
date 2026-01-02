@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard"
 import { getOnboardingData } from "@/lib/onboarding/actions"
+import { ONBOARDING_SPORTS } from "@/lib/onboarding/sportsCatalog"
 
 export const dynamic = "force-dynamic"
 
@@ -31,19 +32,27 @@ export default async function OnboardingPage() {
     redirect("/home")
   }
 
-  // Fetch available sports for selection
-  const sports = await prisma.sport.findMany({
-    orderBy: {
-      name: "asc",
-    },
+  // Fetch sports from DB and map to catalog
+  const dbSports = await prisma.sport.findMany({
     select: {
       id: true,
-      name: true,
       slug: true,
-      icon: true,
+      name: true,
       category: true,
     },
   })
+
+  // Create a map of slug -> db sport
+  const dbSportBySlug = new Map(dbSports.map((s) => [s.slug, s]))
+
+  // Map catalog sports to include DB ids
+  const catalogSportsWithIds = ONBOARDING_SPORTS.filter((sport) =>
+    dbSportBySlug.has(sport.slug)
+  ).map((sport) => ({
+    ...sport,
+    id: dbSportBySlug.get(sport.slug)!.id,
+    dbName: dbSportBySlug.get(sport.slug)!.name,
+  }))
 
   // Fetch benchmark definitions for step 3
   const benchmarks = await prisma.benchmarkDefinition.findMany({
@@ -61,7 +70,7 @@ export default async function OnboardingPage() {
 
   return (
     <OnboardingWizard
-      sports={sports}
+      sports={catalogSportsWithIds}
       benchmarks={benchmarks}
       initialData={initialData || undefined}
     />
