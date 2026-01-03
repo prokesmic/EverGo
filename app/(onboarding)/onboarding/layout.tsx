@@ -7,7 +7,7 @@ export default function OnboardingLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-violet-600 via-blue-600 to-emerald-500">
+    <div className="min-h-screen bg-gradient-to-br from-violet-600 via-blue-600 to-emerald-500">
       {/* Logo-only header (no app nav) */}
       <header className="sticky top-0 z-50">
         <div className="mx-auto flex h-14 max-w-5xl items-center px-4">
