@@ -19,6 +19,13 @@ import {
   Trophy,
   Users,
   Target,
+  Wind,
+  Sword,
+  Zap,
+  Timer,
+  Medal,
+  Sailboat,
+  Anchor,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { CATEGORY_ORDER } from "@/lib/onboarding/sportsCatalog"
@@ -26,28 +33,126 @@ import type { CatalogSportWithId } from "../OnboardingWizard"
 
 // Icon lookup map (since icons can't be serialized from server)
 const SPORT_ICONS: Record<string, LucideIcon> = {
+  // Endurance
   running: Footprints,
   cycling: Bike,
   swimming: Waves,
   rowing: Waves,
   triathlon: Trophy,
+  marathon: Medal,
+  "race-walking": PersonStanding,
+  "modern-pentathlon": Medal,
+  // Strength
   "gym-strength": Dumbbell,
   crossfit: Dumbbell,
+  weightlifting: Dumbbell,
+  powerlifting: Dumbbell,
+  calisthenics: Dumbbell,
+  // Outdoor
   hiking: Mountain,
   walking: PersonStanding,
   bouldering: Mountain,
   "climbing-sport": Mountain,
+  mountaineering: Mountain,
+  skateboarding: Zap,
+  // Water
+  kitesurfing: Wind,
+  surfing: Waves,
+  windsurfing: Wind,
+  sailing: Sailboat,
+  kayaking: Waves,
+  canoeing: Waves,
+  diving: Waves,
+  "water-polo": Waves,
+  "stand-up-paddling": Anchor,
+  wakeboarding: Waves,
+  // Winter
   skiing: Snowflake,
-  yoga: Heart,
-  pilates: Heart,
+  "cross-country-skiing": Snowflake,
+  snowboarding: Snowflake,
+  biathlon: Snowflake,
+  "ski-jumping": Snowflake,
+  "freestyle-skiing": Snowflake,
+  "figure-skating": Snowflake,
+  "speed-skating": Snowflake,
+  "ice-hockey": Snowflake,
+  curling: Snowflake,
+  bobsled: Snowflake,
+  luge: Snowflake,
+  skeleton: Snowflake,
+  // Combat
   boxing: Shield,
   mma: Shield,
+  wrestling: Shield,
+  judo: Shield,
+  taekwondo: Shield,
+  karate: Shield,
+  fencing: Sword,
+  kickboxing: Shield,
+  "brazilian-jiu-jitsu": Shield,
+  "muay-thai": Shield,
+  // Racket
   tennis: Target,
   padel: Target,
   badminton: Target,
+  "table-tennis": Target,
+  squash: Target,
+  pickleball: Target,
+  // Team
   basketball: Users,
   football: Users,
   volleyball: Users,
+  "beach-volleyball": Users,
+  handball: Users,
+  rugby: Users,
+  "american-football": Users,
+  baseball: Users,
+  softball: Users,
+  "field-hockey": Users,
+  lacrosse: Users,
+  cricket: Users,
+  // Gymnastics
+  "artistic-gymnastics": Timer,
+  "rhythmic-gymnastics": Timer,
+  trampoline: Timer,
+  acrobatics: Timer,
+  "pole-dance": Timer,
+  cheerleading: Timer,
+  // Precision
+  archery: Target,
+  shooting: Target,
+  golf: Target,
+  darts: Target,
+  bowling: Target,
+  // Athletics
+  sprinting: Zap,
+  hurdles: Zap,
+  "long-jump": Zap,
+  "high-jump": Zap,
+  "pole-vault": Zap,
+  "triple-jump": Zap,
+  "shot-put": Zap,
+  discus: Zap,
+  javelin: Zap,
+  "hammer-throw": Zap,
+  decathlon: Medal,
+  heptathlon: Medal,
+  // Mind & Body
+  yoga: Heart,
+  pilates: Heart,
+  "tai-chi": Heart,
+  meditation: Heart,
+  // Equestrian
+  dressage: Trophy,
+  "show-jumping": Trophy,
+  eventing: Trophy,
+  // Other
+  "break-dancing": Zap,
+  "roller-skating": Zap,
+  "inline-skating": Zap,
+  parkour: Zap,
+  dance: Heart,
+  // General
   "all-sports": Activity,
 }
 
@@ -73,8 +178,18 @@ export function Step2Sports({ sports }: Step2SportsProps) {
   }, [sports])
 
   const handleSportToggle = (sportId: string) => {
-    // If it's the primary sport and selected, we can't deselect it (must have primary)
     if (store.primarySportId === sportId) {
+      // Clicking primary sport deselects it - promote first secondary to primary if any
+      if (store.otherSportIds.length > 0) {
+        const [newPrimary, ...rest] = store.otherSportIds
+        store.setFields({
+          primarySportId: newPrimary,
+          otherSportIds: rest,
+        })
+      } else {
+        // No secondary sports, just clear primary
+        store.setField("primarySportId", "")
+      }
       return
     }
 

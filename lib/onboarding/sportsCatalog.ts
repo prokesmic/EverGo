@@ -14,6 +14,13 @@ import {
   Trophy,
   Users,
   Target,
+  Wind,
+  Sword,
+  Zap,
+  Timer,
+  Medal,
+  Sailboat,
+  Anchor,
 } from "lucide-react"
 
 export type SportTag = { label: string; value: string; dbSlug?: string }
@@ -26,10 +33,9 @@ export type OnboardingSport = {
   tags?: SportTag[]
 }
 
-// IMPORTANT: only canonical sports here (no cycling-road, no swimming-pool etc.)
-// Variants become tags within the canonical sport
+// Comprehensive sports catalog including Olympic sports
 export const ONBOARDING_SPORTS: OnboardingSport[] = [
-  // Endurance
+  // ============ ENDURANCE ============
   {
     slug: "running",
     label: "Running",
@@ -38,6 +44,7 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
     tags: [
       { label: "Road", value: "road" },
       { label: "Trail", value: "trail", dbSlug: "trail-running" },
+      { label: "Track", value: "track" },
     ],
   },
   {
@@ -49,6 +56,8 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
       { label: "Road", value: "road", dbSlug: "cycling-road" },
       { label: "Gravel", value: "gravel", dbSlug: "gravel-cycling" },
       { label: "MTB", value: "mtb", dbSlug: "mountain-biking" },
+      { label: "Track", value: "track" },
+      { label: "BMX", value: "bmx" },
     ],
   },
   {
@@ -73,8 +82,26 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
     category: "Endurance",
     icon: Trophy,
   },
+  {
+    slug: "marathon",
+    label: "Marathon",
+    category: "Endurance",
+    icon: Medal,
+  },
+  {
+    slug: "race-walking",
+    label: "Race Walking",
+    category: "Endurance",
+    icon: PersonStanding,
+  },
+  {
+    slug: "modern-pentathlon",
+    label: "Modern Pentathlon",
+    category: "Endurance",
+    icon: Medal,
+  },
 
-  // Strength
+  // ============ STRENGTH & FITNESS ============
   {
     slug: "gym-strength",
     label: "Gym / Strength",
@@ -87,8 +114,26 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
     category: "Strength",
     icon: Dumbbell,
   },
+  {
+    slug: "weightlifting",
+    label: "Weightlifting",
+    category: "Strength",
+    icon: Dumbbell,
+  },
+  {
+    slug: "powerlifting",
+    label: "Powerlifting",
+    category: "Strength",
+    icon: Dumbbell,
+  },
+  {
+    slug: "calisthenics",
+    label: "Calisthenics",
+    category: "Strength",
+    icon: Dumbbell,
+  },
 
-  // Outdoor
+  // ============ OUTDOOR & ADVENTURE ============
   {
     slug: "hiking",
     label: "Hiking",
@@ -109,38 +154,166 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
   },
   {
     slug: "climbing-sport",
-    label: "Climbing",
+    label: "Sport Climbing",
     category: "Outdoor",
     icon: Mountain,
   },
+  {
+    slug: "mountaineering",
+    label: "Mountaineering",
+    category: "Outdoor",
+    icon: Mountain,
+  },
+  {
+    slug: "skateboarding",
+    label: "Skateboarding",
+    category: "Outdoor",
+    icon: Zap,
+  },
 
-  // Winter
+  // ============ WATER SPORTS ============
+  {
+    slug: "kitesurfing",
+    label: "Kitesurfing",
+    category: "Water",
+    icon: Wind,
+  },
+  {
+    slug: "surfing",
+    label: "Surfing",
+    category: "Water",
+    icon: Waves,
+  },
+  {
+    slug: "windsurfing",
+    label: "Windsurfing",
+    category: "Water",
+    icon: Wind,
+  },
+  {
+    slug: "sailing",
+    label: "Sailing",
+    category: "Water",
+    icon: Sailboat,
+  },
+  {
+    slug: "kayaking",
+    label: "Kayaking",
+    category: "Water",
+    icon: Waves,
+  },
+  {
+    slug: "canoeing",
+    label: "Canoeing",
+    category: "Water",
+    icon: Waves,
+  },
+  {
+    slug: "diving",
+    label: "Diving",
+    category: "Water",
+    icon: Waves,
+  },
+  {
+    slug: "water-polo",
+    label: "Water Polo",
+    category: "Water",
+    icon: Waves,
+  },
+  {
+    slug: "stand-up-paddling",
+    label: "Stand Up Paddling",
+    category: "Water",
+    icon: Anchor,
+  },
+  {
+    slug: "wakeboarding",
+    label: "Wakeboarding",
+    category: "Water",
+    icon: Waves,
+  },
+
+  // ============ WINTER SPORTS ============
   {
     slug: "skiing",
-    label: "Skiing",
+    label: "Alpine Skiing",
     category: "Winter",
     icon: Snowflake,
-    tags: [
-      { label: "Alpine", value: "alpine" },
-      { label: "Cross-country", value: "xc" },
-    ],
-  },
-
-  // Mind & Body
-  {
-    slug: "yoga",
-    label: "Yoga",
-    category: "Mind & Body",
-    icon: Heart,
   },
   {
-    slug: "pilates",
-    label: "Pilates",
-    category: "Mind & Body",
-    icon: Heart,
+    slug: "cross-country-skiing",
+    label: "Cross-Country Skiing",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "snowboarding",
+    label: "Snowboarding",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "biathlon",
+    label: "Biathlon",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "ski-jumping",
+    label: "Ski Jumping",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "freestyle-skiing",
+    label: "Freestyle Skiing",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "figure-skating",
+    label: "Figure Skating",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "speed-skating",
+    label: "Speed Skating",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "ice-hockey",
+    label: "Ice Hockey",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "curling",
+    label: "Curling",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "bobsled",
+    label: "Bobsled",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "luge",
+    label: "Luge",
+    category: "Winter",
+    icon: Snowflake,
+  },
+  {
+    slug: "skeleton",
+    label: "Skeleton",
+    category: "Winter",
+    icon: Snowflake,
   },
 
-  // Combat
+  // ============ COMBAT SPORTS ============
   {
     slug: "boxing",
     label: "Boxing",
@@ -153,8 +326,56 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
     category: "Combat",
     icon: Shield,
   },
+  {
+    slug: "wrestling",
+    label: "Wrestling",
+    category: "Combat",
+    icon: Shield,
+  },
+  {
+    slug: "judo",
+    label: "Judo",
+    category: "Combat",
+    icon: Shield,
+  },
+  {
+    slug: "taekwondo",
+    label: "Taekwondo",
+    category: "Combat",
+    icon: Shield,
+  },
+  {
+    slug: "karate",
+    label: "Karate",
+    category: "Combat",
+    icon: Shield,
+  },
+  {
+    slug: "fencing",
+    label: "Fencing",
+    category: "Combat",
+    icon: Sword,
+  },
+  {
+    slug: "kickboxing",
+    label: "Kickboxing",
+    category: "Combat",
+    icon: Shield,
+  },
+  {
+    slug: "brazilian-jiu-jitsu",
+    label: "Brazilian Jiu-Jitsu",
+    category: "Combat",
+    icon: Shield,
+  },
+  {
+    slug: "muay-thai",
+    label: "Muay Thai",
+    category: "Combat",
+    icon: Shield,
+  },
 
-  // Racket Sports
+  // ============ RACKET SPORTS ============
   {
     slug: "tennis",
     label: "Tennis",
@@ -173,8 +394,26 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
     category: "Racket",
     icon: Target,
   },
+  {
+    slug: "table-tennis",
+    label: "Table Tennis",
+    category: "Racket",
+    icon: Target,
+  },
+  {
+    slug: "squash",
+    label: "Squash",
+    category: "Racket",
+    icon: Target,
+  },
+  {
+    slug: "pickleball",
+    label: "Pickleball",
+    category: "Racket",
+    icon: Target,
+  },
 
-  // Team Sports
+  // ============ TEAM SPORTS ============
   {
     slug: "basketball",
     label: "Basketball",
@@ -183,7 +422,7 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
   },
   {
     slug: "football",
-    label: "Football",
+    label: "Football (Soccer)",
     category: "Team",
     icon: Users,
   },
@@ -193,8 +432,284 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
     category: "Team",
     icon: Users,
   },
+  {
+    slug: "beach-volleyball",
+    label: "Beach Volleyball",
+    category: "Team",
+    icon: Users,
+  },
+  {
+    slug: "handball",
+    label: "Handball",
+    category: "Team",
+    icon: Users,
+  },
+  {
+    slug: "rugby",
+    label: "Rugby",
+    category: "Team",
+    icon: Users,
+  },
+  {
+    slug: "american-football",
+    label: "American Football",
+    category: "Team",
+    icon: Users,
+  },
+  {
+    slug: "baseball",
+    label: "Baseball",
+    category: "Team",
+    icon: Users,
+  },
+  {
+    slug: "softball",
+    label: "Softball",
+    category: "Team",
+    icon: Users,
+  },
+  {
+    slug: "field-hockey",
+    label: "Field Hockey",
+    category: "Team",
+    icon: Users,
+  },
+  {
+    slug: "lacrosse",
+    label: "Lacrosse",
+    category: "Team",
+    icon: Users,
+  },
+  {
+    slug: "cricket",
+    label: "Cricket",
+    category: "Team",
+    icon: Users,
+  },
 
-  // General
+  // ============ GYMNASTICS & ACROBATICS ============
+  {
+    slug: "artistic-gymnastics",
+    label: "Artistic Gymnastics",
+    category: "Gymnastics",
+    icon: Timer,
+  },
+  {
+    slug: "rhythmic-gymnastics",
+    label: "Rhythmic Gymnastics",
+    category: "Gymnastics",
+    icon: Timer,
+  },
+  {
+    slug: "trampoline",
+    label: "Trampoline",
+    category: "Gymnastics",
+    icon: Timer,
+  },
+  {
+    slug: "acrobatics",
+    label: "Acrobatics",
+    category: "Gymnastics",
+    icon: Timer,
+  },
+  {
+    slug: "pole-dance",
+    label: "Pole Dance",
+    category: "Gymnastics",
+    icon: Timer,
+  },
+  {
+    slug: "cheerleading",
+    label: "Cheerleading",
+    category: "Gymnastics",
+    icon: Timer,
+  },
+
+  // ============ PRECISION SPORTS ============
+  {
+    slug: "archery",
+    label: "Archery",
+    category: "Precision",
+    icon: Target,
+  },
+  {
+    slug: "shooting",
+    label: "Shooting",
+    category: "Precision",
+    icon: Target,
+  },
+  {
+    slug: "golf",
+    label: "Golf",
+    category: "Precision",
+    icon: Target,
+  },
+  {
+    slug: "darts",
+    label: "Darts",
+    category: "Precision",
+    icon: Target,
+  },
+  {
+    slug: "bowling",
+    label: "Bowling",
+    category: "Precision",
+    icon: Target,
+  },
+
+  // ============ TRACK & FIELD ============
+  {
+    slug: "sprinting",
+    label: "Sprinting",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "hurdles",
+    label: "Hurdles",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "long-jump",
+    label: "Long Jump",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "high-jump",
+    label: "High Jump",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "pole-vault",
+    label: "Pole Vault",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "triple-jump",
+    label: "Triple Jump",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "shot-put",
+    label: "Shot Put",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "discus",
+    label: "Discus Throw",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "javelin",
+    label: "Javelin Throw",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "hammer-throw",
+    label: "Hammer Throw",
+    category: "Athletics",
+    icon: Zap,
+  },
+  {
+    slug: "decathlon",
+    label: "Decathlon",
+    category: "Athletics",
+    icon: Medal,
+  },
+  {
+    slug: "heptathlon",
+    label: "Heptathlon",
+    category: "Athletics",
+    icon: Medal,
+  },
+
+  // ============ MIND & BODY ============
+  {
+    slug: "yoga",
+    label: "Yoga",
+    category: "Mind & Body",
+    icon: Heart,
+  },
+  {
+    slug: "pilates",
+    label: "Pilates",
+    category: "Mind & Body",
+    icon: Heart,
+  },
+  {
+    slug: "tai-chi",
+    label: "Tai Chi",
+    category: "Mind & Body",
+    icon: Heart,
+  },
+  {
+    slug: "meditation",
+    label: "Meditation",
+    category: "Mind & Body",
+    icon: Heart,
+  },
+
+  // ============ EQUESTRIAN ============
+  {
+    slug: "dressage",
+    label: "Dressage",
+    category: "Equestrian",
+    icon: Trophy,
+  },
+  {
+    slug: "show-jumping",
+    label: "Show Jumping",
+    category: "Equestrian",
+    icon: Trophy,
+  },
+  {
+    slug: "eventing",
+    label: "Eventing",
+    category: "Equestrian",
+    icon: Trophy,
+  },
+
+  // ============ OTHER ============
+  {
+    slug: "break-dancing",
+    label: "Breaking (Breakdance)",
+    category: "Other",
+    icon: Zap,
+  },
+  {
+    slug: "roller-skating",
+    label: "Roller Skating",
+    category: "Other",
+    icon: Zap,
+  },
+  {
+    slug: "inline-skating",
+    label: "Inline Skating",
+    category: "Other",
+    icon: Zap,
+  },
+  {
+    slug: "parkour",
+    label: "Parkour",
+    category: "Other",
+    icon: Zap,
+  },
+  {
+    slug: "dance",
+    label: "Dance",
+    category: "Other",
+    icon: Heart,
+  },
+
+  // ============ GENERAL ============
   {
     slug: "all-sports",
     label: "All Sports",
@@ -206,12 +721,18 @@ export const ONBOARDING_SPORTS: OnboardingSport[] = [
 // Category display order
 export const CATEGORY_ORDER = [
   "Endurance",
+  "Water",
   "Strength",
+  "Athletics",
   "Outdoor",
   "Winter",
-  "Mind & Body",
   "Combat",
   "Racket",
   "Team",
+  "Gymnastics",
+  "Precision",
+  "Mind & Body",
+  "Equestrian",
+  "Other",
   "General",
 ]
