@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Plus, Users, Trophy, Search, Sparkles, ChevronRight, UserPlus } from "lucide-react"
 import Link from "next/link"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { Input } from "@/components/ui/input"
 import { SportGlyph } from "@/components/sports/SportGlyph"
 

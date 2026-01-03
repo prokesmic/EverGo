@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { notFound } from "next/navigation"
 import { CommunityHeader } from "@/components/communities/community-header"
 import { CommunityPostComposer } from "@/components/communities/community-post-composer"

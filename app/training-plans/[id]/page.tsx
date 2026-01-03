@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { TrainingPlanDetail } from "@/components/training/training-plan-detail"

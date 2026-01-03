@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db"
 import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { ProfileHeaderHero } from "@/components/profile/ProfileHeaderHero"
 import { ProfileStatsPills } from "@/components/profile/ProfileStatsPills"
 import { ActivityFeedV2 } from "@/components/profile/ActivityFeedV2"

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db"
 import { MissionControlForm } from "@/components/activity/mission-control-form"
 import { Rocket } from "lucide-react"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 
 export const dynamic = 'force-dynamic'
 
