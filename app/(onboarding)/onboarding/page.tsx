@@ -45,11 +45,14 @@ export default async function OnboardingPage() {
   // Create a map of slug -> db sport
   const dbSportBySlug = new Map(dbSports.map((s) => [s.slug, s]))
 
-  // Map catalog sports to include DB ids
+  // Map catalog sports to include DB ids (strip icon as it's not serializable)
   const catalogSportsWithIds = ONBOARDING_SPORTS.filter((sport) =>
     dbSportBySlug.has(sport.slug)
   ).map((sport) => ({
-    ...sport,
+    slug: sport.slug,
+    label: sport.label,
+    category: sport.category,
+    tags: sport.tags,
     id: dbSportBySlug.get(sport.slug)!.id,
     dbName: dbSportBySlug.get(sport.slug)!.name,
   }))

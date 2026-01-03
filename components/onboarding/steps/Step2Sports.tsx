@@ -3,9 +3,53 @@
 import { useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { useOnboardingStore } from "@/lib/onboarding/store"
-import { Check, Dumbbell, Star } from "lucide-react"
+import {
+  Check,
+  Dumbbell,
+  Star,
+  Activity,
+  Bike,
+  Footprints,
+  Mountain,
+  PersonStanding,
+  Snowflake,
+  Waves,
+  Heart,
+  Shield,
+  Trophy,
+  Users,
+  Target,
+} from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { CATEGORY_ORDER } from "@/lib/onboarding/sportsCatalog"
 import type { CatalogSportWithId } from "../OnboardingWizard"
+
+// Icon lookup map (since icons can't be serialized from server)
+const SPORT_ICONS: Record<string, LucideIcon> = {
+  running: Footprints,
+  cycling: Bike,
+  swimming: Waves,
+  rowing: Waves,
+  triathlon: Trophy,
+  "gym-strength": Dumbbell,
+  crossfit: Dumbbell,
+  hiking: Mountain,
+  walking: PersonStanding,
+  bouldering: Mountain,
+  "climbing-sport": Mountain,
+  skiing: Snowflake,
+  yoga: Heart,
+  pilates: Heart,
+  boxing: Shield,
+  mma: Shield,
+  tennis: Target,
+  padel: Target,
+  badminton: Target,
+  basketball: Users,
+  football: Users,
+  volleyball: Users,
+  "all-sports": Activity,
+}
 
 interface Step2SportsProps {
   sports: CatalogSportWithId[]
@@ -104,7 +148,7 @@ export function Step2Sports({ sports }: Step2SportsProps) {
               {items.map((sport) => {
                 const selected = isSelected(sport.id)
                 const primary = isPrimary(sport.id)
-                const Icon = sport.icon
+                const Icon = SPORT_ICONS[sport.slug] || Activity
 
                 return (
                   <button

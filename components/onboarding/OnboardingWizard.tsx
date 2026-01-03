@@ -23,10 +23,14 @@ import {
   Link2,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
-import type { OnboardingSport } from "@/lib/onboarding/sportsCatalog"
+import type { SportTag } from "@/lib/onboarding/sportsCatalog"
 
-// Extended sport type with DB id
-export interface CatalogSportWithId extends OnboardingSport {
+// Serializable sport type (without icon) for passing from server to client
+export interface CatalogSportWithId {
+  slug: string
+  label: string
+  category: string
+  tags?: SportTag[]
   id: string
   dbName: string
 }
