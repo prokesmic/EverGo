@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard"
+import { SessionRefreshRedirect } from "@/components/onboarding/SessionRefreshRedirect"
 import { getOnboardingData } from "@/lib/onboarding/actions"
 import { ONBOARDING_SPORTS } from "@/lib/onboarding/sportsCatalog"
 
@@ -27,9 +28,10 @@ export default async function OnboardingPage() {
     redirect("/login")
   }
 
-  // If already completed onboarding, redirect to home
+  // If already completed onboarding, use client-side redirect that updates session first
+  // This prevents redirect loops caused by stale JWT tokens
   if (user.onboardingCompleted) {
-    redirect("/home")
+    return <SessionRefreshRedirect redirectTo="/home" />
   }
 
   // Fetch sports from DB and map to catalog
