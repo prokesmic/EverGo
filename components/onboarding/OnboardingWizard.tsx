@@ -137,6 +137,8 @@ export function OnboardingWizard({
       const data = store.getData()
       const result = await completeOnboarding(data)
 
+      // If we get here, the redirect didn't happen (shouldn't happen normally)
+      // Check for explicit error response
       if (result?.ok === false) {
         toast.error(result.error || "Failed to complete onboarding", {
           description: result.fieldErrors
@@ -156,7 +158,21 @@ export function OnboardingWizard({
 
       // Redirect happens in the server action, but just in case:
       router.push("/home")
-    } catch (error) {
+    } catch (error: unknown) {
+      // Next.js redirect() throws an error with digest starting with "NEXT_REDIRECT"
+      // We need to re-throw it to allow the redirect to happen
+      if (
+        error &&
+        typeof error === "object" &&
+        "digest" in error &&
+        typeof (error as { digest?: string }).digest === "string" &&
+        (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+      ) {
+        // Clear local storage before redirect completes
+        store.reset()
+        throw error
+      }
+
       console.error("Onboarding error:", error)
       toast.error("Something went wrong", {
         description: "Please try again.",
