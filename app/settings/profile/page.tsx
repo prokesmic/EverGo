@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { ProfileSettings } from "@/components/settings/profile-settings"
+import { RestartOnboardingButton } from "@/components/settings/RestartOnboardingButton"
 
 export const dynamic = 'force-dynamic'
 
@@ -39,16 +40,23 @@ export default async function ProfileSettingsPage() {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-slate-100">
-        <h1 className="text-2xl font-bold text-slate-900">Profile Settings</h1>
-        <p className="text-slate-500 mt-1">
-          Update your profile information and photos
-        </p>
+    <div className="space-y-6">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-slate-100">
+          <h1 className="text-2xl font-bold text-slate-900">Profile Settings</h1>
+          <p className="text-slate-500 mt-1">
+            Update your profile information and photos
+          </p>
+        </div>
+
+        <div className="p-6">
+          <ProfileSettings user={user} />
+        </div>
       </div>
 
-      <div className="p-6">
-        <ProfileSettings user={user} />
+      {/* Restart Setup Wizard */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
+        <RestartOnboardingButton />
       </div>
     </div>
   )

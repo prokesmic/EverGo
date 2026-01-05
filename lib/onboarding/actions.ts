@@ -244,6 +244,40 @@ export async function completeOnboarding(rawInput: unknown) {
 }
 
 /**
+ * Restart onboarding for the current user
+ * This allows users to go through the setup wizard again
+ * without losing their existing data (data will be pre-filled)
+ */
+export async function restartOnboarding() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    throw new Error("Not authenticated")
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { id: true, onboardingCompleted: true },
+  })
+
+  if (!user) {
+    throw new Error("User not found")
+  }
+
+  // Set onboardingCompleted to false to allow re-entering onboarding
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { onboardingCompleted: false },
+  })
+
+  // Revalidate paths
+  revalidatePath("/onboarding")
+  revalidatePath("/home")
+  revalidatePath("/settings/profile")
+
+  return { ok: true }
+}
+
+/**
  * Get initial data for onboarding (pre-fill from existing user data)
  */
 export async function getOnboardingData() {
