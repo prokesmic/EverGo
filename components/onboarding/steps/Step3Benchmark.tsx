@@ -159,7 +159,13 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
   }
 
   const config = benchmarkConfig as BenchmarkConfig
-  const FairnessBadge = FAIRNESS_BADGES[config.fairnessBadge] || FAIRNESS_BADGES.STANDARD
+
+  // Defensive: ensure fairnessBadge is a valid key
+  const fairnessKey: FairnessBadgeType =
+    config.fairnessBadge && config.fairnessBadge in FAIRNESS_BADGES
+      ? config.fairnessBadge
+      : "STANDARD"
+  const FairnessBadge = FAIRNESS_BADGES[fairnessKey]
 
   // Safety check - if no fairness badge found, skip to no-benchmark UI
   if (!FairnessBadge) {
@@ -208,8 +214,8 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
               <p className="text-sm text-gray-500">{String(selectedSport?.label || "Selected sport")}</p>
             </div>
             <Badge className={cn("flex items-center gap-1", FairnessBadge.color)}>
-              <FairnessBadgeIcon type={config.fairnessBadge} className="w-3 h-3" />
-              {FairnessBadge.label}
+              <FairnessBadgeIcon type={fairnessKey} className="w-3 h-3" />
+              {String(FairnessBadge.label)}
             </Badge>
           </div>
 
@@ -218,7 +224,7 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
               type="text"
               value={rawInput}
               onChange={(e) => setRawInput(e.target.value)}
-              placeholder={config.placeholder}
+              placeholder={String(config.placeholder || "")}
               className={cn(
                 "text-lg",
                 parseError && "border-red-300 focus:ring-red-500"
@@ -232,7 +238,7 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
               </p>
             )}
             {config.helpText && !parseError && (
-              <p className="text-sm text-gray-500">{config.helpText}</p>
+              <p className="text-sm text-gray-500">{String(config.helpText)}</p>
             )}
           </div>
         </div>

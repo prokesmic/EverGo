@@ -305,7 +305,7 @@ export function Step2Sports({ sports }: Step2SportsProps) {
                         </div>
                         <div>
                           <div className="font-medium text-gray-900">
-                            {sport.label}
+                            {String(sport.label || "")}
                           </div>
                           <div className="text-xs text-gray-500">
                             {selected
@@ -355,10 +355,10 @@ export function Step2Sports({ sports }: Step2SportsProps) {
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {sport.tags.map((tag) => (
                           <span
-                            key={tag.value}
+                            key={String(tag.value || "")}
                             className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs text-gray-600"
                           >
-                            {tag.label}
+                            {String(tag.label || "")}
                           </span>
                         ))}
                       </div>
