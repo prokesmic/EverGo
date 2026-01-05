@@ -57,8 +57,8 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
     return getBenchmarkConfig(selectedSport.slug)
   }, [selectedSport])
 
-  // Check if this sport should skip benchmarks
-  const shouldSkip = benchmarkConfig && isBenchmarkSkipped(benchmarkConfig)
+  // Check if this sport should skip benchmarks (or has no config at all)
+  const shouldSkip = !benchmarkConfig || isBenchmarkSkipped(benchmarkConfig)
 
   // Get the matching benchmark definition
   const benchmarkDef = useMemo(() => {
@@ -109,8 +109,12 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
     )
   }
 
-  // For team sports that don't have benchmarks
-  if (shouldSkip && benchmarkConfig && isBenchmarkSkipped(benchmarkConfig)) {
+  // For sports that don't have benchmarks (team sports, or sports without config)
+  if (shouldSkip) {
+    const skipMessage = benchmarkConfig && isBenchmarkSkipped(benchmarkConfig)
+      ? benchmarkConfig.message
+      : "Your Fitness Score will rank you as you log activities."
+
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
@@ -118,7 +122,7 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
             <Target className="w-8 h-8 text-yellow-600" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900">No benchmark needed</h2>
-          <p className="text-gray-600 mt-2">{benchmarkConfig.message}</p>
+          <p className="text-gray-600 mt-2">{skipMessage}</p>
         </div>
 
         <div className="bg-blue-50 rounded-lg p-6 text-center">
