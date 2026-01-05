@@ -254,9 +254,9 @@ export function Step2Sports({ sports }: Step2SportsProps) {
       {/* Sport Categories */}
       <div className="space-y-6 max-h-[350px] overflow-y-auto pr-2">
         {grouped.map(({ category, items }) => (
-          <div key={category}>
+          <div key={String(category || "")}>
             <div className="mb-3 text-sm font-semibold text-gray-500">
-              {category}
+              {String(category || "")}
             </div>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -267,7 +267,7 @@ export function Step2Sports({ sports }: Step2SportsProps) {
 
                 return (
                   <button
-                    key={sport.id}
+                    key={String(sport.id || "")}
                     type="button"
                     onClick={() => handleSportToggle(sport.id)}
                     className={cn(
