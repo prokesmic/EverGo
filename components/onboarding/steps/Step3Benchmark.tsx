@@ -140,7 +140,33 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
   }
 
   const config = benchmarkConfig as BenchmarkConfig
-  const FairnessBadge = FAIRNESS_BADGES[config.fairnessBadge]
+  const FairnessBadge = FAIRNESS_BADGES[config.fairnessBadge] || FAIRNESS_BADGES.STANDARD
+
+  // Safety check - if no fairness badge found, skip to no-benchmark UI
+  if (!FairnessBadge) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 mb-4">
+            <Target className="w-8 h-8 text-yellow-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">No benchmark needed</h2>
+          <p className="text-gray-600 mt-2">Your Fitness Score will rank you as you log activities.</p>
+        </div>
+
+        <div className="bg-blue-50 rounded-lg p-6 text-center">
+          <Clock className="w-10 h-10 text-blue-600 mx-auto mb-3" />
+          <h3 className="font-semibold text-gray-900 mb-2">
+            Your Fitness Score will start at 0
+          </h3>
+          <p className="text-sm text-gray-600">
+            Log your first activity after onboarding to start building your ranking.
+            Track matches, training sessions, and activities to climb the leaderboard.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -159,8 +185,8 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-semibold text-gray-900">{config.label}</h3>
-              <p className="text-sm text-gray-500">{selectedSport.label}</p>
+              <h3 className="font-semibold text-gray-900">{String(config.label || "Benchmark")}</h3>
+              <p className="text-sm text-gray-500">{String(selectedSport?.label || "Selected sport")}</p>
             </div>
             <Badge className={cn("flex items-center gap-1", FairnessBadge.color)}>
               <FairnessBadge.icon className="w-3 h-3" />
