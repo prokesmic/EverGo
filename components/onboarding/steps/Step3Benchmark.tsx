@@ -31,12 +31,31 @@ interface Step3BenchmarkProps {
   benchmarks: BenchmarkDefinition[]
 }
 
+// Fairness badge type
+type FairnessBadgeType = "STANDARD" | "NORMALIZED" | "SEGMENT" | "RATING"
+
+// Get fairness badge icon
+function FairnessBadgeIcon({ type, className }: { type: FairnessBadgeType; className?: string }) {
+  switch (type) {
+    case "STANDARD":
+      return <Check className={className} />
+    case "NORMALIZED":
+      return <Gauge className={className} />
+    case "SEGMENT":
+      return <Target className={className} />
+    case "RATING":
+      return <Shield className={className} />
+    default:
+      return <Check className={className} />
+  }
+}
+
 // Fairness badge descriptions
-const FAIRNESS_BADGES = {
-  STANDARD: { icon: Check, label: "Standard", color: "bg-green-100 text-green-800" },
-  NORMALIZED: { icon: Gauge, label: "Normalized", color: "bg-blue-100 text-blue-800" },
-  SEGMENT: { icon: Target, label: "Segment", color: "bg-purple-100 text-purple-800" },
-  RATING: { icon: Shield, label: "Rating", color: "bg-yellow-100 text-yellow-800" },
+const FAIRNESS_BADGES: Record<FairnessBadgeType, { label: string; color: string }> = {
+  STANDARD: { label: "Standard", color: "bg-green-100 text-green-800" },
+  NORMALIZED: { label: "Normalized", color: "bg-blue-100 text-blue-800" },
+  SEGMENT: { label: "Segment", color: "bg-purple-100 text-purple-800" },
+  RATING: { label: "Rating", color: "bg-yellow-100 text-yellow-800" },
 }
 
 export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
@@ -189,7 +208,7 @@ export function Step3Benchmark({ sports, benchmarks }: Step3BenchmarkProps) {
               <p className="text-sm text-gray-500">{String(selectedSport?.label || "Selected sport")}</p>
             </div>
             <Badge className={cn("flex items-center gap-1", FairnessBadge.color)}>
-              <FairnessBadge.icon className="w-3 h-3" />
+              <FairnessBadgeIcon type={config.fairnessBadge} className="w-3 h-3" />
               {FairnessBadge.label}
             </Badge>
           </div>
