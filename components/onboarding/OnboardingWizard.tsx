@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
@@ -72,6 +73,7 @@ export function OnboardingWizard({
   initialData,
 }: OnboardingWizardProps) {
   const router = useRouter()
+  const { update: updateSession } = useSession()
   const store = useOnboardingStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hydrated, setHydrated] = useState(false)
@@ -137,8 +139,7 @@ export function OnboardingWizard({
       const data = store.getData()
       const result = await completeOnboarding(data)
 
-      // If we get here, the redirect didn't happen (shouldn't happen normally)
-      // Check for explicit error response
+      // Check for error response
       if (result?.ok === false) {
         toast.error(result.error || "Failed to complete onboarding", {
           description: result.fieldErrors
@@ -149,30 +150,20 @@ export function OnboardingWizard({
         return
       }
 
-      // Clear local storage on success
+      // Success! Update the NextAuth session to refresh the JWT token
+      // This is critical to avoid redirect loops (middleware checks JWT, not DB)
+      await updateSession()
+
+      // Clear local storage
       store.reset()
 
       toast.success("Welcome to EverGo!", {
         description: "Your profile is set up. Let's see your rankings!",
       })
 
-      // Redirect happens in the server action, but just in case:
+      // Navigate to home
       router.push("/home")
     } catch (error: unknown) {
-      // Next.js redirect() throws an error with digest starting with "NEXT_REDIRECT"
-      // We need to re-throw it to allow the redirect to happen
-      if (
-        error &&
-        typeof error === "object" &&
-        "digest" in error &&
-        typeof (error as { digest?: string }).digest === "string" &&
-        (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
-      ) {
-        // Clear local storage before redirect completes
-        store.reset()
-        throw error
-      }
-
       console.error("Onboarding error:", error)
       toast.error("Something went wrong", {
         description: "Please try again.",

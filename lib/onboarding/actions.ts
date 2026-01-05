@@ -5,7 +5,6 @@ import { prisma } from "@/lib/db"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
 
 // Prefix for custom city IDs from the frontend
 const CUSTOM_CITY_PREFIX = "custom:"
@@ -232,6 +231,9 @@ export async function completeOnboarding(rawInput: unknown) {
     // Revalidate paths
     revalidatePath("/home")
     revalidatePath("/onboarding")
+
+    // Return success - client will update session and redirect
+    return { ok: true }
   } catch (error) {
     console.error("[Onboarding] Error:", error)
     return {
@@ -239,9 +241,6 @@ export async function completeOnboarding(rawInput: unknown) {
       error: "Failed to complete onboarding. Please try again.",
     }
   }
-
-  // Redirect to home (outside of try-catch to allow redirect to work)
-  redirect("/home")
 }
 
 /**
