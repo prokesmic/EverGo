@@ -38,11 +38,22 @@ function getRandomDefaultHero(): string {
   return DEFAULT_HERO_IMAGES[index];
 }
 
+// Sport type for non-primary sports
+export interface HeroSport {
+  name: string;
+  icon: string;
+}
+
 interface SlimHeroProps {
   name: string;
   avatarUrl?: string;
-  location: string;
+  /** @deprecated Use city + country instead */
+  location?: string;
+  city?: string;
+  country?: string;
   primarySport: string;
+  /** Non-primary active sports to display as icon pills */
+  otherSports?: HeroSport[];
   imageUrl?: string;
   imageCategory?: string;
   imageCredit?: {
@@ -55,7 +66,10 @@ export function SlimHero({
   name,
   avatarUrl,
   location,
+  city,
+  country,
   primarySport,
+  otherSports,
   imageUrl,
   imageCategory,
   imageCredit,
@@ -80,6 +94,30 @@ export function SlimHero({
       setImageSrc(fallbackImage);
     }
   };
+
+  // Build location display: "City, Country" or fallback to legacy location
+  const locationDisplay = useMemo(() => {
+    if (city && country) {
+      return { city, country };
+    }
+    if (city) {
+      return { city, country: null };
+    }
+    if (country) {
+      return { city: null, country };
+    }
+    // Fallback to legacy location prop
+    if (location) {
+      return { city: location, country: null };
+    }
+    return { city: null, country: null };
+  }, [city, country, location]);
+
+  // Filter out empty sports and limit to 4 for display
+  const displayOtherSports = useMemo(() => {
+    if (!otherSports) return [];
+    return otherSports.filter(s => s.name && s.icon).slice(0, 4);
+  }, [otherSports]);
 
   return (
     <div className="w-full">
@@ -119,14 +157,43 @@ export function SlimHero({
               <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-md truncate">
                 {name}
               </h1>
+
+              {/* Location: City, Country */}
               <div className="flex items-center gap-2 text-white/80 text-sm font-medium mt-1 flex-wrap">
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate">{location}</span>
-                </span>
-                <span className="text-white/30">•</span>
-                <span className="text-amber-400 capitalize">{primarySport}</span>
+                {(locationDisplay.city || locationDisplay.country) && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">
+                      {locationDisplay.city}
+                      {locationDisplay.city && locationDisplay.country && ', '}
+                      {locationDisplay.country}
+                    </span>
+                  </span>
+                )}
+                {(locationDisplay.city || locationDisplay.country) && <span className="text-white/30">•</span>}
+                <span className="text-amber-400 capitalize font-semibold">{primarySport}</span>
               </div>
+
+              {/* Other Sports - Beautiful icon pills */}
+              {displayOtherSports.length > 0 && (
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="text-white/40 text-xs mr-1">Also:</span>
+                  <div className="flex items-center gap-1">
+                    {displayOtherSports.map((sport, index) => (
+                      <div
+                        key={sport.name}
+                        className="group/sport relative flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 hover:bg-white/20 hover:border-white/20 transition-all duration-200"
+                        title={sport.name}
+                      >
+                        <span className="text-sm">{sport.icon}</span>
+                        <span className="text-xs text-white/70 group-hover/sport:text-white/90 transition-colors hidden sm:inline capitalize">
+                          {sport.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

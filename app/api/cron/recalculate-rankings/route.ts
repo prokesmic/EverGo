@@ -1,14 +1,13 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { recalculateAllRankings } from "@/lib/rankings"
+import { verifyCronRequest } from "@/lib/cron"
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+    // Verify cron authentication
+    const authError = verifyCronRequest(request)
+    if (authError) return authError
+
     try {
-        // In a real production app, verify a secret token here to prevent unauthorized access
-        // const authHeader = request.headers.get('authorization');
-        // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        //   return new Response('Unauthorized', { status: 401 });
-        // }
-
         await recalculateAllRankings()
 
         return NextResponse.json({ success: true, message: "Rankings recalculated successfully" })

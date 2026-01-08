@@ -44,7 +44,12 @@
     "typecheck": "tsc --noEmit",
     "seed:benchmarks": "npx tsx scripts/seedBenchmarks.ts",
     "seed:sportsbench": "npx tsx scripts/seedSportsAndBenchmarks.ts",
-    "check:sportsbench": "npx tsx scripts/checkSportsBenchCoverage.ts"
+    "check:sportsbench": "npx tsx scripts/checkSportsBenchCoverage.ts",
+    "test:unit": "npx tsx tests/fitness-score.test.ts",
+    "docs:versions": "npx tsx scripts/docs/generate-versions.ts",
+    "docs:api": "npx tsx scripts/docs/generate-api-reference.ts",
+    "docs:schema": "npx tsx scripts/docs/generate-schema-reference.ts",
+    "docs:generate": "npm run docs:versions && npm run docs:api && npm run docs:schema"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -68,6 +73,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.15",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@supabase/supabase-js": "^2.86.2",
     "@tanstack/react-virtual": "^3.13.14",
     "@types/leaflet": "^1.9.21",
@@ -86,6 +92,7 @@
     "react": "19.2.0",
     "react-day-picker": "^9.12.0",
     "react-dom": "19.2.0",
+    "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.67.0",
     "react-leaflet": "^5.0.0",
     "recharts": "^3.5.1",

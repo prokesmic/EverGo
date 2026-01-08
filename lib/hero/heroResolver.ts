@@ -442,7 +442,7 @@ export function resolveHeroForSport(params: {
   // Try Supabase URL first, then sport-specific fallback, then category fallback
   const supabaseUrl = buildSupabasePublicUrl(image.path)
   let imageUrl = supabaseUrl
-  let usedSupabase = !!supabaseUrl
+  const usedSupabase = !!supabaseUrl
   let usedSportFallback = false
   let usedCategoryFallback = false
 

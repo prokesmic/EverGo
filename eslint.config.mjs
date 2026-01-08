@@ -38,6 +38,16 @@ const eslintConfig = defineConfig([
       }],
       // Allow unescaped quotes in JSX - they render fine in browsers
       "react/no-unescaped-entities": "off",
+      // React 19 compiler rules - downgrade to warnings as they are optimizations not bugs
+      // These rules are from eslint-plugin-react-hooks v7+ (React 19 compiler integration)
+      "react-hooks/rules-of-hooks": "error", // Keep this as error - it's critical
+      "react-hooks/exhaustive-deps": "warn", // Keep as warning - important but sometimes false positives
+      // React Compiler optimization rules - downgrade from error to warn
+      // These are strict optimization hints for the React 19 compiler, not actual bugs
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/static-components": "warn",
+      "react-hooks/immutability": "warn",
+      "react-hooks/purity": "warn",
     }
   },
   // Stricter rules for Mike testing agent

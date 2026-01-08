@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db"
 import { unstable_cache } from "next/cache"
+import type { LeaderboardMode, RankingScope } from "./types"
 
 // ============================================================================
 // TYPES
@@ -39,6 +40,7 @@ export type HeroRankLensParams = {
   userId: string
   sportId: string
   benchmarkId: string | null // null = Sport Index leaderboard
+  mode?: LeaderboardMode // VERIFIED (default) or COMMUNITY
 }
 
 // ============================================================================
@@ -191,7 +193,8 @@ async function computeSportIndexRank(
 
 async function getBenchmarkRankTiles(
   ctx: UserContext,
-  benchmarkId: string
+  benchmarkId: string,
+  mode: LeaderboardMode = "COMMUNITY"
 ): Promise<Record<RankTileScope, RankTile>> {
   // Get benchmark definition to know if higher is better
   const benchmark = await prisma.benchmarkDefinition.findUnique({
@@ -230,22 +233,22 @@ async function getBenchmarkRankTiles(
   const [globalRank, countryRank, cityRank, teamRank] = await Promise.all([
     // GLOBAL
     userValue !== null
-      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, {})
+      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, {}, "global", mode)
       : Promise.resolve(null),
 
     // COUNTRY
     ctx.country && userValue !== null
-      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, { country: ctx.country })
+      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, { country: ctx.country }, "country", mode)
       : Promise.resolve(null),
 
     // CITY
     ctx.city && userValue !== null
-      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, { city: ctx.city, country: ctx.country })
+      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, { city: ctx.city, country: ctx.country }, "city", mode)
       : Promise.resolve(null),
 
     // TEAM
     ctx.primaryTeamId && teamMemberIds.length > 0 && userValue !== null
-      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, { id: { in: teamMemberIds } })
+      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, { id: { in: teamMemberIds } }, "team", mode)
       : Promise.resolve(null),
   ])
 
@@ -273,20 +276,53 @@ async function getBenchmarkRankTiles(
   }
 }
 
+/**
+ * Get the eligibility field name for a given scope
+ */
+function getEligibilityField(scope: RankTileScope): string {
+  switch (scope) {
+    case "global":
+      return "isEligibleGlobal"
+    case "country":
+      return "isEligibleCountry"
+    case "city":
+      return "isEligibleCity"
+    case "team":
+      return "isEligibleTeam"
+    default:
+      return "isEligibleGlobal"
+  }
+}
+
 async function computeBenchmarkRank(
   value: number,
   benchmarkId: string,
   higherIsBetter: boolean,
-  userFilter: Record<string, unknown>
+  userFilter: Record<string, unknown>,
+  scope: RankTileScope = "global",
+  mode: LeaderboardMode = "COMMUNITY"
 ): Promise<{ rank: number; total: number }> {
   // Count how many users have a better score
   const betterThan = higherIsBetter ? { gt: value } : { lt: value }
+
+  // Build eligibility filter
+  const eligibilityFilter: Record<string, unknown> = {}
+
+  // In VERIFIED mode, exclude manual entries
+  if (mode === "VERIFIED") {
+    eligibilityFilter.source = { not: "MANUAL" }
+  }
+
+  // Filter by scope-specific eligibility flag
+  const eligibilityField = getEligibilityField(scope)
+  eligibilityFilter[eligibilityField] = true
 
   const [betterCount, total] = await Promise.all([
     prisma.userBenchmarkBest.count({
       where: {
         benchmarkId,
         value: betterThan,
+        ...eligibilityFilter,
         user: {
           privacyLevel: { not: "PRIVATE" },
           ...userFilter,
@@ -296,6 +332,7 @@ async function computeBenchmarkRank(
     prisma.userBenchmarkBest.count({
       where: {
         benchmarkId,
+        ...eligibilityFilter,
         user: {
           privacyLevel: { not: "PRIVATE" },
           ...userFilter,
@@ -323,7 +360,7 @@ function getDefaultTiles(): Record<RankTileScope, RankTile> {
 async function _getHeroRankLensSnapshot(
   params: HeroRankLensParams
 ): Promise<HeroRankLensSnapshot> {
-  const { userId, sportId, benchmarkId } = params
+  const { userId, sportId, benchmarkId, mode = "COMMUNITY" } = params
 
   // Get sport info and benchmarks in parallel with user context
   const [sport, benchmarks, userCtx] = await Promise.all([
@@ -360,7 +397,7 @@ async function _getHeroRankLensSnapshot(
   if (!userCtx) {
     tiles = getDefaultTiles()
   } else if (benchmarkId && currentBenchmark) {
-    tiles = await getBenchmarkRankTiles(userCtx, benchmarkId)
+    tiles = await getBenchmarkRankTiles(userCtx, benchmarkId, mode)
   } else {
     tiles = await getSportIndexRankTiles(userCtx, sportId)
   }

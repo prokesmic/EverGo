@@ -1,0 +1,69 @@
+{
+  "auditDate": "2026-01-07",
+  "packageManager": "npm",
+  "lockfilePresent": false,
+  "nodeVersionSpec": null,
+  "versions": {
+    "next": "^16.0.7",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "typescript": "^5",
+    "prisma": "^6.0.0",
+    "@prisma/client": "^6.0.0",
+    "next-auth": "^4.24.13",
+    "@supabase/supabase-js": "^2.86.2",
+    "zod": "^4.1.13",
+    "zustand": "^5.0.9",
+    "tailwindcss": "^4",
+    "@playwright/test": "^1.57.0"
+  },
+  "schema": {
+    "modelCount": 79,
+    "enumCount": 48
+  },
+  "routes": {
+    "apiRouteFiles": 83,
+    "pageFiles": 42
+  },
+  "cron": {
+    "endpoints": [
+      {
+        "path": "/api/cron/recalculate-rankings",
+        "method": "GET",
+        "authImplemented": false,
+        "note": "Auth check is COMMENTED OUT"
+      },
+      {
+        "path": "/api/cron/activity-score",
+        "method": "POST/GET",
+        "authImplemented": true,
+        "note": "Uses CRON_SECRET if set"
+      },
+      {
+        "path": "/api/cron/strava-sync",
+        "method": "GET",
+        "authImplemented": true,
+        "note": "Uses CRON_SECRET, allows dev bypass"
+      },
+      {
+        "path": "/api/cron/teams",
+        "method": "GET",
+        "authImplemented": true,
+        "note": "Uses CRON_SECRET with development_secret fallback"
+      }
+    ],
+    "scheduler": "Vercel Cron",
+    "vercelCronConfig": [
+      { "path": "/api/cron/strava-sync", "schedule": "0 6 * * *" },
+      { "path": "/api/jobs/run", "schedule": "0 7 * * *" }
+    ]
+  },
+  "discrepancies": [
+    "EVERGO7.md claims 75+ models, actual count is 79",
+    "EVERGO7.md claims ~80 API endpoints, actual count is 83 route files",
+    "EVERGO7.md claims production URL https://evergo-pi.vercel.app - needs verification",
+    "Cron auth is inconsistent: recalculate-rankings has NO auth",
+    "No lockfile present (npm) - reproducibility concern",
+    "lib/env.ts only handles APP_ENV, not full env validation"
+  ]
+}

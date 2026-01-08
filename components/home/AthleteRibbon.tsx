@@ -70,6 +70,37 @@ function getPercentileBadge(rank: number, total: number) {
   return null;
 }
 
+/**
+ * Format percentile for primary display
+ * Shows "Top X%" for upper half, "Xth percentile" for lower half
+ */
+function formatPercentileDisplay(rank: number, total: number): { primary: string; secondary: string } {
+  if (total <= 0) return { primary: '--', secondary: '' };
+
+  const percentile = ((total - rank + 1) / total) * 100;
+  const topPercent = 100 - percentile;
+
+  let primary: string;
+  if (topPercent <= 1) {
+    primary = 'Top 1%';
+  } else if (topPercent <= 5) {
+    primary = `Top ${Math.round(topPercent)}%`;
+  } else if (topPercent <= 10) {
+    primary = `Top ${Math.round(topPercent)}%`;
+  } else if (topPercent <= 25) {
+    primary = `Top ${Math.round(topPercent / 5) * 5}%`;
+  } else if (topPercent <= 50) {
+    primary = `Top ${Math.round(topPercent / 10) * 10}%`;
+  } else {
+    primary = `${Math.round(percentile)}th`;
+  }
+
+  // Secondary shows rank context
+  const secondary = `#${rank.toLocaleString()} of ${total.toLocaleString()}`;
+
+  return { primary, secondary };
+}
+
 // =============================================================================
 // SPORT INDEX CARD (The Anchor)
 // =============================================================================
@@ -196,14 +227,27 @@ function RankCard({
           {label}
         </span>
 
-        {!isEmpty ? (
+        {!isEmpty && data.total ? (
+          // Percentile-first display (fixes "Rank #2 of 2" problem)
+          (() => {
+            const display = formatPercentileDisplay(data.rank!, data.total);
+            return (
+              <>
+                <div className="text-xl font-bold text-slate-800">
+                  {display.primary}
+                </div>
+                <div className="text-[10px] text-slate-400 tabular-nums">
+                  {display.secondary}
+                </div>
+              </>
+            );
+          })()
+        ) : !isEmpty ? (
+          // Has rank but no total - show rank only
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-bold text-slate-800 tabular-nums font-mono">
               #{data.rank}
             </span>
-            {data.total && (
-              <span className="text-xs text-slate-400">of {data.total}</span>
-            )}
           </div>
         ) : (
           <div className="flex items-center gap-1 text-amber-600">

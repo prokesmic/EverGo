@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
-import { SlimHero } from "@/components/home/SlimHero"
+import { SlimHero, type HeroSport } from "@/components/home/SlimHero"
 import { AthleteRibbon, type RankCardData } from "@/components/home/AthleteRibbon"
 import { PulseRail } from "@/components/vapor/PulseRail"
 import { CompeteNowDeckWrapper } from "@/components/home/CompeteNowDeckWrapper"
@@ -106,6 +106,31 @@ export default async function HomePage() {
     console.error("[Home] Failed to fetch userPrimarySport:", e)
   }
 
+  // Fetch user's other active sports (non-primary) for hero display
+  let otherSports: HeroSport[] = []
+  try {
+    const userSports = await prisma.userSport.findMany({
+      where: {
+        userId: user.id,
+        status: "ACTIVE",
+        priority: { not: 0 }, // Exclude primary sport (priority 0)
+      },
+      include: {
+        sport: {
+          select: { name: true, icon: true },
+        },
+      },
+      orderBy: { priority: "asc" },
+      take: 4, // Limit to 4 other sports
+    })
+    otherSports = userSports.map((us) => ({
+      name: us.sport.name,
+      icon: us.sport.icon,
+    }))
+  } catch (e) {
+    console.error("[Home] Failed to fetch userSports:", e)
+  }
+
   // Get hero image, user rank scopes, and rank lens snapshot in parallel - with fallbacks
   let hero: Partial<ResolvedHero> = { sportName: "Sport" }
   let userRanks = null
@@ -207,8 +232,10 @@ export default async function HomePage() {
           <SlimHero
             name={user.displayName || "Athlete"}
             avatarUrl={user.avatarUrl || undefined}
-            location={user.city || "Prague, Czech Republic"}
+            city={user.cityName || user.city || undefined}
+            country={user.countryName || user.country || undefined}
             primarySport={hero.sportName || primarySport}
+            otherSports={otherSports}
             imageUrl={hero.imageUrl}
             imageCategory={hero.category}
             imageCredit={hero.image?.credit}

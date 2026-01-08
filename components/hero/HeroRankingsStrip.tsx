@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useTransition } from "react"
+import { useState, useEffect, useTransition, useCallback } from "react"
 import Link from "next/link"
 import {
   Globe,
@@ -262,21 +262,7 @@ export function HeroRankingsStrip({ snapshot, className }: HeroRankingsStripProp
   const [data, setData] = useState(snapshot)
   const [isPending, startTransition] = useTransition()
 
-  // Initialize from localStorage on mount
-  useEffect(() => {
-    const storedBenchmarkId = getStoredBenchmarkId(snapshot.sport.id)
-    if (
-      storedBenchmarkId !== null &&
-      storedBenchmarkId !== (snapshot.currentBenchmark?.id ?? null)
-    ) {
-      const benchmark = snapshot.benchmarks.find((b) => b.id === storedBenchmarkId)
-      if (benchmark) {
-        handleBenchmarkChange(storedBenchmarkId)
-      }
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function handleBenchmarkChange(benchmarkId: string | null) {
+  const handleBenchmarkChange = useCallback(async (benchmarkId: string | null) => {
     storeBenchmarkId(snapshot.sport.id, benchmarkId)
 
     startTransition(async () => {
@@ -298,7 +284,21 @@ export function HeroRankingsStrip({ snapshot, className }: HeroRankingsStripProp
         console.error("Failed to fetch rank lens data:", error)
       }
     })
-  }
+  }, [snapshot.sport.id])
+
+  // Initialize from localStorage on mount
+  useEffect(() => {
+    const storedBenchmarkId = getStoredBenchmarkId(snapshot.sport.id)
+    if (
+      storedBenchmarkId !== null &&
+      storedBenchmarkId !== (snapshot.currentBenchmark?.id ?? null)
+    ) {
+      const benchmark = snapshot.benchmarks.find((b) => b.id === storedBenchmarkId)
+      if (benchmark) {
+        handleBenchmarkChange(storedBenchmarkId)
+      }
+    }
+  }, [snapshot.sport.id, snapshot.currentBenchmark?.id, snapshot.benchmarks, handleBenchmarkChange])
 
   // Format sport + discipline label
   const sportLabel = data.currentBenchmark

@@ -25,6 +25,17 @@ const CATEGORY_FALLBACKS: Record<string, string> = {
   generic: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1920&q=80",
 }
 
+interface UserSport {
+  id: string
+  sportId: string
+  isPrimary: boolean
+  sport: {
+    id: string
+    name: string
+    slug: string
+  }
+}
+
 interface ProfileHeaderHeroProps {
   user: {
     id: string
@@ -41,6 +52,7 @@ interface ProfileHeaderHeroProps {
     activities: number
   }
   hero: ResolvedHero
+  sports: UserSport[]
   isCurrentUser: boolean
   isFollowing: boolean
   onFollow?: () => void
@@ -51,6 +63,7 @@ export function ProfileHeaderHero({
   user,
   stats,
   hero,
+  sports,
   isCurrentUser,
   isFollowing,
   onFollow,
@@ -152,21 +165,39 @@ export function ProfileHeaderHero({
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   Joined {memberSince}
                 </span>
-                {hero?.sportName && hero.sportName !== "Sport" && (
-                  <>
-                    <span className="text-slate-600">·</span>
-                    <span className="flex items-center gap-1 text-orange-400 font-medium capitalize">
-                      <Trophy className="w-3.5 h-3.5" />
-                      {hero.sportName}
-                    </span>
-                  </>
-                )}
+{/* Sports badges moved below bio */}
               </div>
 
               {user.bio && (
                 <p className="mt-3 text-sm text-slate-300 max-w-lg line-clamp-2">
                   {user.bio}
                 </p>
+              )}
+
+              {/* Sports badges */}
+              {sports.length > 0 && (
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {sports.map((userSport, index) => {
+                    const isPrimary = userSport.isPrimary || index === 0
+                    return (
+                      <motion.span
+                        key={userSport.id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+                          isPrimary
+                            ? "bg-orange-500/90 text-white ring-2 ring-orange-400/50 shadow-lg shadow-orange-500/20"
+                            : "bg-white/10 text-slate-200 backdrop-blur-sm hover:bg-white/15"
+                        )}
+                      >
+                        {isPrimary && <Trophy className="w-3.5 h-3.5" />}
+                        {userSport.sport.name}
+                      </motion.span>
+                    )
+                  })}
+                </div>
               )}
             </div>
           </div>

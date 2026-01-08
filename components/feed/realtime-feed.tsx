@@ -16,6 +16,12 @@ export function RealtimeFeed({ type = "all" }: RealtimeFeedProps) {
   const [pendingUpdates, setPendingUpdates] = useState(0)
   const [isConnected, setIsConnected] = useState(false)
 
+  const handleRefresh = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1)
+    setPendingUpdates(0)
+    toast.success("Feed refreshed!")
+  }, [])
+
   useEffect(() => {
     if (!supabase) return
 
@@ -136,13 +142,7 @@ export function RealtimeFeed({ type = "all" }: RealtimeFeedProps) {
       likeChannel.unsubscribe()
       commentChannel.unsubscribe()
     }
-  }, [type])
-
-  const handleRefresh = useCallback(() => {
-    setRefreshTrigger((prev) => prev + 1)
-    setPendingUpdates(0)
-    toast.success("Feed refreshed!")
-  }, [])
+  }, [type, handleRefresh])
 
   return (
     <div className="space-y-4">

@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import Link from "next/link"
 import { Trophy, Medal, Users, Target, Calendar, ChevronRight } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -46,6 +47,17 @@ export function ProfileSideRail({
   username,
 }: ProfileSideRailProps) {
   const profilePath = username || userId
+
+  // Pre-compute days left to avoid impure function calls during render
+  const now = useMemo(() => Date.now(), [])
+  const challengesWithDaysLeft = useMemo(() =>
+    activeChallenges.map((challenge) => ({
+      ...challenge,
+      daysLeft: Math.ceil((new Date(challenge.endsAt).getTime() - now) / (1000 * 60 * 60 * 24)),
+      progressPercent: Math.min(100, (challenge.progress / challenge.target) * 100),
+    })),
+    [activeChallenges, now]
+  )
 
   return (
     <aside className="space-y-4">
@@ -166,11 +178,8 @@ export function ProfileSideRail({
           </div>
 
           <div className="divide-y divide-slate-100">
-            {activeChallenges.slice(0, 3).map((challenge) => {
-              const progressPercent = Math.min(100, (challenge.progress / challenge.target) * 100)
-              const daysLeft = Math.ceil(
-                (new Date(challenge.endsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-              )
+            {challengesWithDaysLeft.slice(0, 3).map((challenge) => {
+              const { progressPercent, daysLeft } = challenge
 
               return (
                 <Link

@@ -21,6 +21,7 @@ import {
   type FairnessBadge,
   type VerificationBadge,
 } from '@/components/leaderboards/RankingBadges';
+import { ModeToggle, type LeaderboardMode } from '@/components/rankings/ModeToggle';
 
 type RankScope = 'global' | 'country' | 'city' | 'team';
 
@@ -53,6 +54,12 @@ export type PerformanceRibbonProps = {
 
   // Ranks should reflect the CURRENT lens
   ranksByLens: Record<string, RankCard[]>;
+
+  // Leaderboard mode (Clubhouse vs Pro-Am)
+  mode?: LeaderboardMode;
+  onModeChange?: (mode: LeaderboardMode) => void;
+  showModeToggle?: boolean;
+  isVerifiedAthlete?: boolean;
 
   // Link targets
   rankingsHrefBase?: string;      // default "/rankings"
@@ -158,6 +165,10 @@ export function PerformanceRibbon({
   lensOptions,
   initialLensId,
   ranksByLens,
+  mode = 'COMMUNITY',
+  onModeChange,
+  showModeToggle = true,
+  isVerifiedAthlete = false,
   rankingsHrefBase = '/rankings',
   settingsLocationHref = '/settings/profile?focus=location',
   settingsTeamHref = '/teams',
@@ -267,8 +278,14 @@ export function PerformanceRibbon({
               </div>
             </div>
 
-            {/* Lens select + badges */}
+            {/* Mode toggle + Lens select + badges */}
             <div className="flex items-center gap-2 sm:gap-3">
+              {showModeToggle && onModeChange && (
+                <ModeToggle
+                  mode={mode}
+                  onChange={onModeChange}
+                />
+              )}
               <label className="hidden sm:block text-xs text-white/55">Lens</label>
               <div className="relative">
                 <select

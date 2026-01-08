@@ -411,7 +411,7 @@ export async function getDisciplineLeaderboard(
   }
 
   // Build user filter based on scope
-  let userFilter: any = {}
+  const userFilter: any = {}
 
   if (scope === "COUNTRY" && scopeValue) {
     userFilter.country = scopeValue

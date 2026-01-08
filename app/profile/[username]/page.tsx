@@ -286,6 +286,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           activities: user._count.activities,
         }}
         hero={hero}
+        sports={user.sports.map((us, index) => ({
+          id: us.id,
+          sportId: us.sportId,
+          isPrimary: index === 0 || us.sportId === user.primarySportId,
+          sport: {
+            id: us.sport.id,
+            name: us.sport.name,
+            slug: us.sport.slug,
+          },
+        }))}
         isCurrentUser={isCurrentUser}
         isFollowing={isFollowing}
       />

@@ -108,39 +108,53 @@ model User {
 
   // Most Active Scores
   activityScores      UserActivityScore[]
+
+  // Leagues
+  leagueMemberships   LeagueMember[]
+
+  // PaceBot Rivalries
+  paceBotRivalries    PaceBotRivalry[]
 }
 
 model UserStats {
   id              String    @id @default(cuid())
   userId          String    @unique
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   // Aggregate metrics (updated after each activity)
   totalDistance   Float     @default(0)    // Total km across all sports
   totalDuration   Int       @default(0)    // Total seconds
   totalActivities Int       @default(0)
   totalCalories   Int       @default(0)
-  
+
   // Sport Index (composite score 0-1000)
   sportIndex           Int       @default(0)
   sportIndexBest       Int       @default(0)
+  sportIndexDelta7d    Int       @default(0)     // 7-day change in sport index
   sportIndexUpdatedAt  DateTime  @default(now())
-  
+
   // Precomputed ranks (updated by background job)
   globalRank      Int?
   countryRank     Int?
   cityRank        Int?
-  
+
   // Location for regional rankings
   country         String?
   city            String?
-  
+
+  // Chapter 3: Verified Athlete Status
+  isVerifiedAthlete    Boolean   @default(false)
+  verifiedSince        DateTime?
+  verifiedActivityCount Int      @default(0)   // Count of verified activities in last 60 days
+  lastVerificationCheck DateTime?
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  
+
   @@index([sportIndex(sort: Desc)])
   @@index([country, sportIndex(sort: Desc)])
   @@index([city, sportIndex(sort: Desc)])
+  @@index([isVerifiedAthlete])
 }
 
 model UserSportStats {
@@ -1404,6 +1418,7 @@ model BenchmarkDefinition {
   sport           Sport    @relation(fields: [sportId], references: [id], onDelete: Cascade)
   userBests       UserBenchmarkBest[]
   activityResults ActivityBenchmarkResult[]
+  paceBotRivalries PaceBotRivalry[]
 
   @@unique([sportId, slug])
   @@index([sportId, isActive])
@@ -1992,6 +2007,59 @@ model RivalryResult {
   @@index([loserUserId])
 }
 
+// --- PaceBot Rivalry System ---
+// Provides pseudo-rivalries for users without real rivals
+
+enum PaceBotPersona {
+  STEADY     // Consistent performer, slight edge
+  AGGRESSIVE // Always pushing, harder to beat
+  COMEBACK   // Starts slow but improves
+  RANDOM     // Wildcard - unpredictable
+}
+
+enum PaceBotRivalryStatus {
+  ACTIVE
+  WON   // User beat the PaceBot
+  LOST  // PaceBot won (user didn't improve)
+}
+
+model PaceBot {
+  id          String           @id @default(cuid())
+  label       String           // Display name e.g. "Steady Sam"
+  avatarUrl   String?          // Optional avatar
+  persona     PaceBotPersona
+  difficulty  String           @default("NORMAL") // EASY, NORMAL, HARD
+
+  // Rivalries using this PaceBot
+  rivalries   PaceBotRivalry[]
+
+  createdAt   DateTime         @default(now())
+
+  @@index([persona])
+}
+
+model PaceBotRivalry {
+  id            String               @id @default(cuid())
+  userId        String
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paceBotId     String
+  paceBot       PaceBot              @relation(fields: [paceBotId], references: [id], onDelete: Cascade)
+  benchmarkId   String
+  benchmark     BenchmarkDefinition  @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+
+  // Values at rivalry creation
+  userValue     Float                // User's PB value when rivalry started
+  paceBotValue  Float                // PaceBot's target (based on persona offset)
+
+  status        PaceBotRivalryStatus @default(ACTIVE)
+  createdAt     DateTime             @default(now())
+  resolvedAt    DateTime?            // When user won/lost
+
+  @@unique([userId, benchmarkId, status]) // One active rivalry per benchmark
+  @@index([userId, status])
+  @@index([benchmarkId])
+}
+
 // --- Most Active / Universal Activity Score ---
 
 model UserActivityScore {
@@ -2187,4 +2255,359 @@ model City {
   @@unique([countryCode, name])
   @@index([countryCode, normalized])
   @@index([countryCode, population(sort: Desc)])
+}
+
+// =============================================================================
+// CHAPTER 1: UNIVERSAL IMPORT ENGINE (.fit/.gpx/.tcx)
+// =============================================================================
+
+enum ExternalSource {
+  MANUAL
+  STRAVA
+  GARMIN
+  APPLE_HEALTH
+  GOOGLE_FIT
+  FILE_UPLOAD
+  PACEBOT
+}
+
+enum ImportFileType {
+  FIT
+  GPX
+  TCX
+}
+
+enum ImportStatus {
+  PENDING
+  PARSING
+  PARSED
+  FAILED
+}
+
+model ActivityImport {
+  id              String        @id @default(cuid())
+  userId          String
+  source          ExternalSource
+  fileType        ImportFileType
+  originalFilename String
+  storageKey      String        // Supabase Storage path
+  parsedSummary   Json?         // { distance, duration, elevGain, avgHr, powerAvg, sportGuess }
+  status          ImportStatus  @default(PENDING)
+  errorText       String?
+
+  // Link to created activity
+  activityId      String?       @unique
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+// =============================================================================
+// CHAPTER 7: HEALTH INTEGRATIONS (APPLE HEALTH + GARMIN HEALTH)
+// =============================================================================
+
+enum HealthConnectionStatus {
+  PENDING
+  CONNECTED
+  DISCONNECTED
+  ERROR
+}
+
+model AppleHealthConnection {
+  id              String                  @id @default(cuid())
+  userId          String                  @unique
+  status          HealthConnectionStatus  @default(PENDING)
+
+  // Last successful sync
+  lastSyncAt      DateTime?
+  lastSyncError   String?
+
+  // Sync configuration
+  syncActivities  Boolean                 @default(true)
+  syncWorkouts    Boolean                 @default(true)
+
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+}
+
+model GarminHealthConnection {
+  id              String                  @id @default(cuid())
+  userId          String                  @unique
+  status          HealthConnectionStatus  @default(PENDING)
+
+  // OAuth tokens (encrypted)
+  accessTokenEnc  String?
+  accessSecretEnc String?
+
+  // Last successful sync
+  lastSyncAt      DateTime?
+  lastSyncError   String?
+
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+}
+
+// =============================================================================
+// CHAPTER 8: PACEBOT RIVALRIES
+// =============================================================================
+
+model PaceBotProfile {
+  id              String    @id @default(cuid())
+  disciplineId    String?   // Optional: for discipline-specific bots
+  benchmarkId     String?   // Optional: link to BenchmarkDefinition
+
+  // Bot configuration
+  targetValue     Float     // Target time/score/distance
+  label           String    // "25:00 5K", "Sub-20 5K"
+  difficulty      String    @default("MEDIUM") // EASY, MEDIUM, HARD, ELITE
+
+  // Display
+  avatarUrl       String?
+  bio             String?
+
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+
+  @@index([disciplineId, isActive])
+  @@index([benchmarkId, isActive])
+}
+
+// =============================================================================
+// CHAPTER 9: WEEKLY COHORT SQUADS ("ROOKIE LEAGUE")
+// =============================================================================
+
+model Cohort {
+  id              String    @id @default(cuid())
+  label           String    // "Class of Jan 2026", "Week of 2026-01-06"
+  startAt         DateTime
+  endAt           DateTime
+
+  // Cohort type
+  cohortType      String    @default("WEEKLY") // WEEKLY, MONTHLY, SPECIAL
+
+  // Stats
+  memberCount     Int       @default(0)
+
+  createdAt       DateTime  @default(now())
+
+  members         CohortMember[]
+
+  @@index([startAt, endAt])
+  @@index([cohortType])
+}
+
+model CohortMember {
+  id              String    @id @default(cuid())
+  cohortId        String
+  cohort          Cohort    @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  userId          String
+
+  // Ranking within cohort
+  rank            Int?
+  score           Float?    // Sport Index or activity score
+
+  joinedAt        DateTime  @default(now())
+
+  @@unique([cohortId, userId])
+  @@index([userId])
+  @@index([cohortId, score(sort: Desc)])
+}
+
+// =============================================================================
+// CHAPTER 10: PRIVATE LEAGUES (CLUBS / COMPANIES)
+// =============================================================================
+
+enum LeagueType {
+  CLUB
+  COMPANY
+  FRIENDS
+  CUSTOM
+}
+
+enum LeagueVisibility {
+  PUBLIC
+  PRIVATE
+  INVITE_ONLY
+}
+
+enum LeagueMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model League {
+  id              String            @id @default(cuid())
+  name            String
+  slug            String            @unique
+  description     String?
+
+  // Branding
+  logoUrl         String?
+  coverPhotoUrl   String?
+
+  // Type and visibility
+  type            LeagueType        @default(CLUB)
+  visibility      LeagueVisibility  @default(PRIVATE)
+
+  // Invite code for private leagues
+  inviteCode      String?           @unique
+
+  // Owner
+  ownerId         String
+
+  // Stats
+  memberCount     Int               @default(0)
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  members         LeagueMember[]
+  leaderboardConfig LeagueLeaderboardConfig?
+
+  @@index([ownerId])
+  @@index([inviteCode])
+}
+
+model LeagueMember {
+  id              String            @id @default(cuid())
+  leagueId        String
+  league          League            @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role            LeagueMemberRole  @default(MEMBER)
+
+  // Stats within league
+  rank            Int?
+  score           Float?
+
+  joinedAt        DateTime          @default(now())
+
+  @@unique([leagueId, userId])
+  @@index([userId])
+  @@index([leagueId, score(sort: Desc)])
+}
+
+model LeagueLeaderboardConfig {
+  id                  String    @id @default(cuid())
+  leagueId            String    @unique
+  league              League    @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  // Default discipline for leaderboard
+  defaultDisciplineId String?
+  defaultBenchmarkId  String?
+
+  // Default mode
+  modeDefault         String    @default("COMMUNITY") // CLUBHOUSE (COMMUNITY) or PRO_AM (VERIFIED)
+
+  // Scoring configuration
+  scoringType         String    @default("SPORT_INDEX") // SPORT_INDEX, BENCHMARK, ACTIVITY_SCORE
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// =============================================================================
+// CHAPTER 11: PERKS (TROPHY ROOM) + DYNAMIC TARGETS
+// =============================================================================
+
+model Perk {
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+
+  // Partner info
+  partnerName     String?
+  partnerLogoUrl  String?
+  url             String?   // External link to perk
+
+  // Unlock requirements
+  minSportIndex   Int?      // Minimum Sport Index to unlock
+  requireVerified Boolean   @default(false) // Require Verified Athlete status
+
+  // Display
+  imageUrl        String?
+  category        String    @default("GENERAL") // GENERAL, GEAR, NUTRITION, TRAINING, RECOVERY
+
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+
+  @@index([isActive, minSportIndex])
+}
+
+enum TargetStatus {
+  ACTIVE
+  ACHIEVED
+  ABANDONED
+  EXPIRED
+}
+
+model Target {
+  id              String        @id @default(cuid())
+  userId          String
+
+  // What we're targeting
+  disciplineId    String?       // Optional: specific discipline
+  benchmarkId     String?       // Optional: specific benchmark
+
+  // Target definition
+  targetValue     Float         // Target time/distance/score
+  targetDate      DateTime?     // Optional deadline
+
+  // Current progress
+  currentValue    Float?        // Latest PB value
+  startValue      Float?        // Value when target was set
+
+  // Status
+  status          TargetStatus  @default(ACTIVE)
+  achievedAt      DateTime?
+
+  // Progress tracking
+  progressPct     Float?        // Computed: progress toward target
+  isOnTrack       Boolean?      // Computed: based on trend
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, benchmarkId])
+}
+
+// =============================================================================
+// VERIFIED ATHLETE STATUS
+// =============================================================================
+
+// Add to UserStats for Verified Athlete tracking
+// Note: This is handled via the existing UserStats model with new fields
+
+// =============================================================================
+// CRON JOB TRACKING
+// =============================================================================
+
+model CronJobRun {
+  id              String    @id @default(cuid())
+  jobName         String    // e.g., "recalculate-rankings", "strava-sync"
+  runId           String    // Unique per execution, for idempotency
+
+  status          String    @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, FAILED
+
+  startedAt       DateTime  @default(now())
+  finishedAt      DateTime?
+
+  durationMs      Int?
+  recordsProcessed Int      @default(0)
+  recordsUpdated  Int       @default(0)
+
+  errorSummary    String?   // First 500 chars of error if failed
+  statsJson       String?   // JSON blob for job-specific stats
+
+  @@unique([jobName, runId])
+  @@index([jobName, status])
+  @@index([startedAt])
 }

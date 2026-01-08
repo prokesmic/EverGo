@@ -13,8 +13,10 @@ export function useMediaQuery(query: string): boolean {
   useEffect(() => {
     const media = window.matchMedia(query)
 
-    // Set initial value
-    setMatches(media.matches)
+    // Only update if value differs from current state
+    if (media.matches !== matches) {
+      setMatches(media.matches)
+    }
 
     const listener = (event: MediaQueryListEvent) => {
       setMatches(event.matches)
@@ -22,7 +24,7 @@ export function useMediaQuery(query: string): boolean {
 
     media.addEventListener("change", listener)
     return () => media.removeEventListener("change", listener)
-  }, [query])
+  }, [query, matches])
 
   return matches
 }
