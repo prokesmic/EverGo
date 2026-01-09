@@ -5,9 +5,16 @@ import { notFound, redirect } from "next/navigation"
 import { TeamHeader } from "@/components/teams/team-header"
 import { TeamPostComposer } from "@/components/teams/team-post-composer"
 import { TeamPostCard } from "@/components/teams/team-post-card"
+import { TeamCrewWars } from "@/components/teams/TeamCrewWars"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Users, Calendar, Trophy } from "lucide-react"
+import { Users, Calendar, Trophy, Swords } from "lucide-react"
 import { format } from "date-fns"
+import {
+  getActiveCrewWar,
+  getPendingCrewWarInvitations,
+  getTeamCrewWarHistory,
+  getTeamCrewWarStats,
+} from "@/lib/crew-wars"
 
 export const dynamic = 'force-dynamic'
 
@@ -55,24 +62,30 @@ export default async function TeamPage({ params }: { params: { slug: string } })
         }
     }
 
-    // Fetch posts
-    const posts = await prisma.teamPost.findMany({
-        where: { teamId: team.id },
-        orderBy: [
-            { isPinned: "desc" },
-            { createdAt: "desc" }
-        ],
-        take: 20,
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    displayName: true,
-                    avatarUrl: true
+    // Fetch posts and crew wars data in parallel
+    const [posts, activeCrewWar, pendingCrewWars, crewWarHistory, crewWarStats] = await Promise.all([
+        prisma.teamPost.findMany({
+            where: { teamId: team.id },
+            orderBy: [
+                { isPinned: "desc" },
+                { createdAt: "desc" }
+            ],
+            take: 20,
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        avatarUrl: true
+                    }
                 }
             }
-        }
-    })
+        }),
+        getActiveCrewWar(team.id),
+        getPendingCrewWarInvitations(team.id),
+        getTeamCrewWarHistory(team.id, 5),
+        getTeamCrewWarStats(team.id),
+    ])
 
     const isAdmin = currentUserMembership?.role === "OWNER" || currentUserMembership?.role === "ADMIN"
 
@@ -153,6 +166,23 @@ export default async function TeamPage({ params }: { params: { slug: string } })
                                     </div>
                                 ))}
                             </div>
+                        </div>
+
+                        {/* Crew Wars Section */}
+                        <div className="bg-white rounded-xl shadow-sm border border-border-light p-4">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Swords className="w-5 h-5 text-violet-600" />
+                                <h3 className="font-semibold text-text-primary">Crew Wars</h3>
+                            </div>
+                            <TeamCrewWars
+                                teamId={team.id}
+                                teamSlug={team.slug}
+                                isAdmin={isAdmin}
+                                activeWar={activeCrewWar as any}
+                                pendingChallenges={pendingCrewWars as any}
+                                history={crewWarHistory as any}
+                                stats={crewWarStats}
+                            />
                         </div>
                     </div>
 

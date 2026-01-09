@@ -6,6 +6,7 @@ import { MainNav } from "@/components/main-nav";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
 import { MobileTopTabs } from "@/components/layout/MobileTopTabs";
+import { FloatingActionButton } from "@/components/mobile/FloatingActionButton";
 import { Toaster } from "@/components/ui/sonner";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
@@ -96,6 +97,8 @@ export default function RootLayout({
             </main>
             {/* Mobile Bottom Navigation */}
             <MobileNav />
+            {/* Mobile Floating Action Button */}
+            <FloatingActionButton />
           </div>
           <InstallPrompt />
           <Toaster />

@@ -6,7 +6,10 @@ import { ProfileHeaderHero } from "@/components/profile/ProfileHeaderHero"
 import { ProfileStatsPills } from "@/components/profile/ProfileStatsPills"
 import { ActivityFeedV2 } from "@/components/profile/ActivityFeedV2"
 import { ProfileSideRail } from "@/components/profile/ProfileSideRail"
+import { ProfileTabs } from "@/components/profile/ProfileTabs"
+import { ProfileRivalries } from "@/components/profile/ProfileRivalries"
 import { getHeroForUserPrimarySport } from "@/lib/hero/getHeroForUserPrimarySport"
+import { getUserRivals } from "@/lib/head-to-head"
 export const dynamic = "force-dynamic"
 
 interface ProfilePageProps {
@@ -199,19 +202,22 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     weeklyTime += activity.durationSeconds ? activity.durationSeconds / 60 : 0
   })
 
-  // Fetch user teams
-  const userTeams = await prisma.teamMember.findMany({
-    where: { userId: user.id },
-    include: {
-      team: {
-        include: {
-          sport: true,
-          _count: { select: { members: true } },
+  // Fetch user teams and rivalries in parallel
+  const [userTeams, rivalries] = await Promise.all([
+    prisma.teamMember.findMany({
+      where: { userId: user.id },
+      include: {
+        team: {
+          include: {
+            sport: true,
+            _count: { select: { members: true } },
+          },
         },
       },
-    },
-    take: 3,
-  })
+      take: 3,
+    }),
+    getUserRivals(user.id, 20),
+  ])
 
   const formattedTeams = userTeams.map((tm) => ({
     id: tm.team.id,
@@ -315,9 +321,22 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       {/* Main Content Grid: 12 columns */}
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* Main Column: Activity Feed (8 cols) */}
+          {/* Main Column: Activity Feed with Tabs (8 cols) */}
           <div className="lg:col-span-8">
-            <ActivityFeedV2 activities={formattedActivities} showUserOnCards={false} />
+            <ProfileTabs
+              defaultTab="activities"
+              rivalryCount={rivalries.length}
+              activitiesContent={
+                <ActivityFeedV2 activities={formattedActivities} showUserOnCards={false} />
+              }
+              rivalriesContent={
+                <ProfileRivalries
+                  rivalries={rivalries}
+                  isCurrentUser={isCurrentUser}
+                  userId={user.id}
+                />
+              }
+            />
           </div>
 
           {/* Sidebar (4 cols) - Sticky */}
