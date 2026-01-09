@@ -1338,4 +1338,68 @@ Components updated for V5:
 
 ---
 
+## Appendix D: Decision Log
+
+### V5 Architecture Overhaul (January 2026)
+
+**Implemented:**
+- Feature pruning: 84 → ~35 active models (deprecated 9 feature groups)
+- Effort Score system replaces Sport Index for weekly rankings (duration × RPE multiplier)
+- Rank Ladder component (±2 ranks, mobile-first)
+- Rank Battles (auto-matched weekly 1v1 competitions)
+- First Week Magic onboarding with milestone tracking
+- Mobile floating rank pill with scope switcher
+- "Almost There" notifications (encouragement when close to goals)
+
+**Key Files:**
+| File | Purpose |
+|------|---------|
+| `lib/features.ts` | Feature flags (core/deprecated/new) |
+| `lib/effort-score.ts` | Effort calculation & weekly aggregation |
+| `lib/rankings/rank-ladder.ts` | Ladder data fetching (±2 around user) |
+| `lib/rank-battles.ts` | Battle matching, scoring, finalization |
+| `lib/first-week.ts` | Onboarding progress & milestones |
+| `lib/almost-there.ts` | Near-goal detection & notifications |
+| `lib/api-deprecated.ts` | Deprecation middleware (410 Gone) |
+
+**Cron Jobs:**
+| Job | Schedule | Purpose |
+|-----|----------|---------|
+| `/api/cron/rank-battles` | Monday 5 AM UTC | Match & finalize battles |
+| `/api/cron/strava-sync` | Daily 6 AM UTC | Sync Strava activities |
+| `/api/jobs/run` | Daily 7 AM UTC | Process integration jobs |
+
+**Schema Additions:**
+- `WeeklyEffortScore` model (effort tracking by week)
+- `RankBattle` model (weekly 1v1 competitions)
+- `RankBattleStatus` enum (ACTIVE, CHALLENGER_WON, OPPONENT_WON, TIE, EXPIRED)
+- `Activity.effortScore`, `Activity.effortMultiplier`, `Activity.isRace` fields
+
+**Deprecated Features (V5):**
+- PaceBot & PaceBotRivalry
+- Leagues & LeagueMember
+- Cohorts & CohortMember
+- Communities (merged into Teams)
+- Training Plans
+- Partner Finder
+- Perks/Trophy Room
+- Product Offers
+- Benchmarks UI (merged into Rankings)
+
+**Verification Checklist:**
+- [x] `npx prisma db push` completes without errors
+- [x] `npx prisma generate` regenerates client
+- [x] `npm run build` completes successfully (0 errors)
+- [x] TypeScript: 0 errors
+- [x] ESLint: 0 errors, 503 warnings
+- [ ] New onboarding flow works end-to-end (manual test)
+- [ ] Effort score calculates on activity creation (manual test)
+- [ ] Rank Ladder shows ±2 positions around user (manual test)
+- [ ] Floating pill appears on mobile only (manual test)
+- [ ] Rank Battle matching runs on Monday cron (scheduled)
+- [ ] "Almost There" notifications fire after activities (manual test)
+- [ ] Deprecated features return 410 Gone (manual test)
+
+---
+
 *Document generated January 2026. For latest updates, see repository.*
