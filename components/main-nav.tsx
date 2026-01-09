@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -14,28 +13,24 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useSession, signOut } from "next-auth/react"
-import { Home, Trophy, Users, Calendar, Target, PlusCircle, Bell, Sparkles, ChevronDown, Swords, Dumbbell } from "lucide-react"
+import { Home, Trophy, Users, Calendar, Swords, Bell, Sparkles, ChevronDown, Settings, Plus, PlusCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SearchCommand } from "@/components/search-command"
 
-// Navigation configuration
+// V6 Navigation configuration - Competition-first hierarchy
 const primaryLinks = [
     { href: "/home", label: "Home", icon: Home },
     { href: "/rankings", label: "Rankings", icon: Trophy },
-]
-
-const competeLinks = [
-    { href: "/challenges", label: "Challenges", icon: Target },
-    { href: "/teams", label: "Teams", icon: Users },
+    { href: "/gauntlets", label: "Gauntlets", icon: Swords },
+    { href: "/seasons", label: "Seasons", icon: Calendar },
 ]
 
 const moreLinks = [
-    { href: "/sports", label: "Sports", icon: Dumbbell },
-    { href: "/calendar", label: "Events", icon: Calendar },
+    { href: "/teams", label: "Teams", icon: Users, description: "Join or manage teams" },
+    { href: "/settings", label: "Settings", icon: Settings, description: "Account preferences" },
 ]
 
-// Get all hrefs for a dropdown to check active state
-const competeHrefs = competeLinks.map(l => l.href)
+// Get all hrefs for dropdown to check active state
 const moreHrefs = moreLinks.map(l => l.href)
 
 export function MainNav() {
@@ -65,89 +60,72 @@ export function MainNav() {
                     </Link>
                 </div>
 
-                {/* Centered Navigation */}
-                <nav className="flex items-center gap-6 text-sm font-medium">
+                {/* Centered Navigation - V6 Competition-first */}
+                <nav className="flex items-center gap-1 text-sm font-medium">
                     {/* Primary Links */}
                     {primaryLinks.map((item) => {
                         const active = isActive(item.href)
+                        const Icon = item.icon
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "relative transition-colors text-slate-600 hover:text-slate-900",
-                                    active && "text-slate-900"
+                                    "relative flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors",
+                                    active
+                                        ? "bg-slate-100 text-slate-900"
+                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                                 )}
                             >
+                                <Icon className="h-4 w-4" />
                                 {item.label}
-                                {active && (
-                                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 rounded-full" />
-                                )}
                             </Link>
                         )
                     })}
-
-                    {/* Compete Dropdown */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                className={cn(
-                                    "relative flex items-center gap-1 transition-colors text-slate-600 hover:text-slate-900 focus:outline-none",
-                                    isDropdownActive(competeHrefs) && "text-slate-900"
-                                )}
-                            >
-                                Compete
-                                <ChevronDown className="h-3.5 w-3.5" />
-                                {isDropdownActive(competeHrefs) && (
-                                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 rounded-full" />
-                                )}
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-48">
-                            {competeLinks.map((item) => (
-                                <DropdownMenuItem key={item.href} asChild>
-                                    <Link href={item.href} className={cn(
-                                        "flex items-center gap-2 cursor-pointer",
-                                        isActive(item.href) && "bg-slate-100"
-                                    )}>
-                                        <item.icon className="h-4 w-4 text-slate-500" />
-                                        {item.label}
-                                    </Link>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
 
                     {/* More Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button
                                 className={cn(
-                                    "relative flex items-center gap-1 transition-colors text-slate-600 hover:text-slate-900 focus:outline-none",
-                                    isDropdownActive(moreHrefs) && "text-slate-900"
+                                    "relative flex items-center gap-1 px-3 py-2 rounded-lg transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-50 focus:outline-none",
+                                    isDropdownActive(moreHrefs) && "bg-slate-100 text-slate-900"
                                 )}
                             >
                                 More
                                 <ChevronDown className="h-3.5 w-3.5" />
-                                {isDropdownActive(moreHrefs) && (
-                                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 rounded-full" />
-                                )}
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-48">
-                            {moreLinks.map((item) => (
-                                <DropdownMenuItem key={item.href} asChild>
-                                    <Link href={item.href} className={cn(
-                                        "flex items-center gap-2 cursor-pointer",
-                                        isActive(item.href) && "bg-slate-100"
-                                    )}>
-                                        <item.icon className="h-4 w-4 text-slate-500" />
-                                        {item.label}
-                                    </Link>
-                                </DropdownMenuItem>
-                            ))}
+                        <DropdownMenuContent align="start" className="w-52">
+                            {moreLinks.map((item) => {
+                                const Icon = item.icon
+                                return (
+                                    <DropdownMenuItem key={item.href} asChild>
+                                        <Link href={item.href} className={cn(
+                                            "flex items-center gap-3 cursor-pointer py-2",
+                                            isActive(item.href) && "bg-slate-100"
+                                        )}>
+                                            <Icon className="h-4 w-4 text-slate-500" />
+                                            <div>
+                                                <div className="font-medium">{item.label}</div>
+                                                <div className="text-xs text-slate-500">{item.description}</div>
+                                            </div>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )
+                            })}
                         </DropdownMenuContent>
                     </DropdownMenu>
+
+                    {/* Primary CTA - Throw Gauntlet */}
+                    {session && (
+                        <Link href="/gauntlets/new" className="ml-2">
+                            <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-4">
+                                <Swords className="h-4 w-4" />
+                                <span className="hidden xl:inline">Throw Gauntlet</span>
+                            </Button>
+                        </Link>
+                    )}
                 </nav>
 
                 {/* Right Side Actions */}

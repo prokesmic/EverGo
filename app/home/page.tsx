@@ -2,52 +2,38 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
-import { SlimHero, type HeroSport } from "@/components/home/SlimHero"
-import { AthleteRibbon, type RankCardData } from "@/components/home/AthleteRibbon"
-import { PulseRail } from "@/components/vapor/PulseRail"
-import { CompeteNowDeckWrapper } from "@/components/home/CompeteNowDeckWrapper"
-import { CalendarWidget } from "@/components/widgets/calendar-widget"
-import { PeopleToFollow } from "@/components/widgets/PeopleToFollow"
-import { CreatePostBox } from "@/components/feed/create-post-box"
-import { Feed } from "@/components/feed/feed"
-import { getHomeHeroForUser } from "@/lib/hero/getHomeHero"
-import type { ResolvedHero } from "@/lib/hero/heroResolver"
-import { RankingsHighlightsFeed } from "@/components/home/RankingsHighlightsFeed"
-import { VirtualizedFollowingFeed } from "@/components/home/VirtualizedFollowingFeed"
-import { HomeFeedTabs } from "@/components/home/HomeFeedTabs"
-import { getUserRankScopes } from "@/lib/leaderboards"
-import { getHeroRankLensSnapshot, getUserPrimarySport } from "@/lib/rankings/hero-rank-lens"
+import { Suspense } from "react"
+
 // V6 Components
-import { FirstWeekCard } from "@/components/first-week/FirstWeekCard"
-import { FirstWeekTips } from "@/components/first-week/FirstWeekTips"
-import { RankLadder } from "@/components/rankings/RankLadder"
-import { RankBattleCard } from "@/components/battles/RankBattleCard"
-import { AlmostThereCard } from "@/components/notifications/AlmostThereCard"
+import { HomeHeader } from "@/components/home/HomeHeader"
+import { ActiveCompetitions } from "@/components/home/ActiveCompetitions"
+import { RivalriesStrip } from "@/components/home/RivalriesStrip"
+import { CityLadder } from "@/components/home/CityLadder"
+import { QuickActions } from "@/components/home/QuickActions"
+import { HomeFeed } from "@/components/home/HomeFeedV6"
 import { PowerCard } from "@/components/power/PowerCard"
-import { FloatingRankPill } from "@/components/rankings/FloatingRankPill"
-import { GauntletCard } from "@/components/gauntlet/GauntletCard"
 import { SeasonCard } from "@/components/season/SeasonCard"
+
+// Loading skeletons
+import { Skeleton } from "@/components/ui/skeleton"
+
 // V6 Data fetching
-import { getFirstWeekProgress, getFirstWeekTips } from "@/lib/first-week"
-import { getRankLadder, getUserRankScopes as getPowerRankScopes } from "@/lib/rankings/rank-ladder"
-import { getUserActiveBattle } from "@/lib/rank-battles"
-import { getAlmostThereInsights } from "@/lib/almost-there"
 import { getUserWeeklyPower } from "@/lib/power"
-import { getActiveGauntlet, getPendingInvitations } from "@/lib/gauntlet"
+import { getUserGauntlets, getPendingInvitations } from "@/lib/gauntlet"
+import { getUserRivalries } from "@/lib/rivalry"
 import { getCurrentSeason, getUserSeasonRank } from "@/lib/season"
+import { getActiveCrewWar } from "@/lib/crew-wars"
+import { getCityLadder } from "@/lib/rankings/ladders"
 import { isFeatureEnabled } from "@/lib/features"
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 /**
- * Home Dashboard Page - Compare → Compete → Social Proof
+ * V6 Home Dashboard Page - Competition Platform
  *
- * Layout Order:
- * 1. WelcomeHero (Full-width anchor with stats, RankStrip on desktop, Log Activity CTA)
- * 2. PulseRail (Stories-style friend activity)
- * 3. CompeteNowDeck (Active rivalries, challenges, team battles)
- * 4. HomeFeedTabs (Highlights + Following feed with tab switcher)
- * 5. Feed + Sidebar (Planning & Social)
+ * Clean 3-section layout:
+ * - Main Column: Power Card, Active Competitions, Rivalries Strip, Feed
+ * - Sidebar: Season Card, City Ladder, Quick Actions
  */
 export default async function HomePage() {
   const session = await getServerSession(authOptions)
@@ -58,454 +44,179 @@ export default async function HomePage() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
+    select: {
+      id: true,
+      displayName: true,
+      username: true,
+      city: true,
+      country: true,
+    },
   })
 
   if (!user) {
     redirect("/login")
   }
 
-    // Fetch user stats for Sport Index - with fallback
-  let userStats = null
-  try {
-    userStats = await prisma.userStats.findUnique({
-      where: { userId: user.id },
-    })
-  } catch (e) {
-    console.error("[Home] Failed to fetch userStats:", e)
-  }
+  const userId = user.id
 
-  // Simplified data - fetch in parallel with fallback
-  const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-  let weeklyActivities: any[] = []
-  try {
-    weeklyActivities = await prisma.activity.findMany({
-      where: {
-        userId: user.id,
-        activityDate: { gte: sevenDaysAgo }
-      },
-      include: {
-        discipline: {
-          include: { sport: true }
-        }
-      },
-      take: 50
-    })
-  } catch (e) {
-    console.error("[Home] Failed to fetch weeklyActivities:", e)
-  }
-
-  // Calculate Weekly Stats for Hero
-  let weeklyDistance = 0
-  let weeklyTime = 0
-  const sportStats: Record<string, { distance: number }> = {}
-
-  weeklyActivities.forEach((activity: any) => {
-    weeklyDistance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
-    weeklyTime += activity.durationSeconds ? activity.durationSeconds / 60 : 0
-
-    const sportName = activity.discipline?.sport?.name?.toLowerCase() || 'other'
-    if (!sportStats[sportName]) {
-      sportStats[sportName] = { distance: 0 }
-    }
-    sportStats[sportName].distance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
+  // Get user's team membership separately
+  const teamMembership = await prisma.teamMember.findFirst({
+    where: { userId, role: { not: "BANNED" } },
+    select: {
+      teamId: true,
+      team: { select: { name: true, slug: true } },
+    },
   })
+  const teamId = teamMembership?.teamId
 
-  // Determine primary sport by distance
-  const sortedSports = Object.entries(sportStats).sort((a, b) => b[1].distance - a[1].distance)
-  const primarySport = sortedSports.length > 0 ? sortedSports[0][0] : "running"
+  // Parallel data fetching with error handling
+  const [
+    weeklyPowerResult,
+    gauntletsResult,
+    pendingGauntletsResult,
+    rivalriesResult,
+    seasonResult,
+    crewWarResult,
+    cityLadderResult,
+  ] = await Promise.allSettled([
+    getUserWeeklyPower(userId),
+    getUserGauntlets(userId, 10),
+    getPendingInvitations(userId),
+    getUserRivalries(userId, 6),
+    getCurrentSeason(),
+    teamId ? getActiveCrewWar(teamId) : Promise.resolve(null),
+    user.city ? getCityLadder(user.city, userId, 10) : Promise.resolve([]),
+  ])
 
-  // Get user's primary sport for rank lens - with fallback
-  let userPrimarySport = null
-  try {
-    userPrimarySport = await getUserPrimarySport(user.id)
-  } catch (e) {
-    console.error("[Home] Failed to fetch userPrimarySport:", e)
-  }
+  // Extract results with fallbacks
+  const weeklyPower =
+    weeklyPowerResult.status === "fulfilled"
+      ? weeklyPowerResult.value
+      : { currentPower: 0, delta: 0, percentChange: 0, breakdown: { easy: 0, moderate: 0, hard: 0, race: 0 }, activityCount: 0 }
 
-  // Fetch user's other active sports (non-primary) for hero display
-  let otherSports: HeroSport[] = []
-  try {
-    const userSports = await prisma.userSport.findMany({
-      where: {
-        userId: user.id,
-        status: "ACTIVE",
-        priority: { not: 0 }, // Exclude primary sport (priority 0)
-      },
-      include: {
-        sport: {
-          select: { name: true, icon: true },
-        },
-      },
-      orderBy: { priority: "asc" },
-      take: 4, // Limit to 4 other sports
-    })
-    otherSports = userSports.map((us) => ({
-      name: us.sport.name,
-      icon: us.sport.icon,
-    }))
-  } catch (e) {
-    console.error("[Home] Failed to fetch userSports:", e)
-  }
+  const allGauntlets =
+    gauntletsResult.status === "fulfilled" ? gauntletsResult.value : []
 
-  // Get hero image, user rank scopes, and rank lens snapshot in parallel - with fallbacks
-  let hero: Partial<ResolvedHero> = { sportName: "Sport" }
-  let userRanks = null
-  let rankLensSnapshot = null
+  const pendingGauntlets =
+    pendingGauntletsResult.status === "fulfilled"
+      ? pendingGauntletsResult.value
+      : []
 
-  try {
-    const results = await Promise.allSettled([
-      getHomeHeroForUser(user.id),
-      getUserRankScopes(user.id),
-      userPrimarySport
-        ? getHeroRankLensSnapshot({
-            userId: user.id,
-            sportId: userPrimarySport.id,
-            benchmarkId: null,
-          })
-        : Promise.resolve(null),
-    ])
+  // Combine gauntlets and filter for active/pending
+  const activeGauntlets = [
+    ...allGauntlets.filter((g) => g.status === "PENDING" || g.status === "ACTIVE"),
+    ...pendingGauntlets,
+  ].slice(0, 3)
 
-    if (results[0].status === 'fulfilled') hero = results[0].value as any
-    if (results[1].status === 'fulfilled') userRanks = results[1].value
-    if (results[2].status === 'fulfilled') rankLensSnapshot = results[2].value
+  const rivalries =
+    rivalriesResult.status === "fulfilled" ? rivalriesResult.value : []
 
-    // Log any failures
-    results.forEach((r, i) => {
-      if (r.status === 'rejected') {
-        console.error(`[Home] Promise ${i} failed:`, r.reason)
-      }
-    })
-  } catch (e) {
-    console.error("[Home] Failed in Promise.allSettled:", e)
-  }
+  const activeSeason =
+    seasonResult.status === "fulfilled" ? seasonResult.value : null
 
-    // Build Athlete Ribbon data
-    const sportIndexValue = userStats?.sportIndex ?? 0
+  const crewWar =
+    crewWarResult.status === "fulfilled" ? crewWarResult.value : null
 
-    // Build rank cards from rankLensSnapshot tiles
-    const buildRankCards = (): RankCardData[] => {
-      const cards: RankCardData[] = []
+  const cityLadder =
+    cityLadderResult.status === "fulfilled" ? cityLadderResult.value : []
 
-      if (!rankLensSnapshot?.tiles) return cards
-
-      const tiles = rankLensSnapshot.tiles
-
-      // Global rank
-      if (tiles.global) {
-        cards.push({
-          scope: 'global',
-          rank: tiles.global.rank,
-          total: tiles.global.total ?? null,
-          delta: null,
-        })
-      }
-
-      // Country rank
-      if (tiles.country) {
-        cards.push({
-          scope: 'country',
-          rank: tiles.country.rank,
-          total: tiles.country.total ?? null,
-          label: tiles.country.scopeValue ?? user.country ?? null,
-          delta: null,
-        })
-      }
-
-      // City rank
-      if (tiles.city) {
-        cards.push({
-          scope: 'city',
-          rank: tiles.city.rank,
-          total: tiles.city.total ?? null,
-          label: tiles.city.scopeValue ?? user.city ?? null,
-          delta: null,
-        })
-      }
-
-      // Team rank
-      if (tiles.team) {
-        cards.push({
-          scope: 'team',
-          rank: tiles.team.rank,
-          total: tiles.team.total ?? null,
-          label: tiles.team.scopeValue ?? null,
-          delta: null,
-        })
-      }
-
-      return cards
+  // Get user's season stats if season is active
+  let seasonStats = null
+  if (activeSeason) {
+    try {
+      const rankData = await getUserSeasonRank(userId, activeSeason.id)
+      seasonStats = rankData
+    } catch {
+      // Ignore errors
     }
+  }
 
-    const rankCards = buildRankCards()
+  return (
+    <main className="min-h-screen bg-slate-50">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        {/* Welcome Header */}
+        <HomeHeader displayName={user.displayName ?? user.username ?? "Athlete"} />
 
-    // ============================================
-    // V6 DATA FETCHING - Power Score, Rank Ladder, Battles
-    // ============================================
-    let firstWeekProgress = null
-    let firstWeekTips: any[] = []
-    let rankLadder = null
-    let activeBattle = null
-    let almostThereInsights: any[] = []
-    let weeklyPower = null
-    let powerRankScopes = null
-    let activeGauntlet = null
-    let pendingGauntlets: any[] = []
-    let currentSeason = null
-    let userSeasonRank = null
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          {/* Main Column (2/3) */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Power Card */}
+            {isFeatureEnabled("power") && (
+              <PowerCard
+                currentPower={weeklyPower.currentPower}
+                delta={weeklyPower.delta}
+                percentChange={weeklyPower.percentChange}
+                breakdown={weeklyPower.breakdown}
+                activityCount={weeklyPower.activityCount}
+              />
+            )}
 
-    if (isFeatureEnabled('power') || isFeatureEnabled('rankLadder') || isFeatureEnabled('rankBattles') || isFeatureEnabled('gauntlet') || isFeatureEnabled('season')) {
-      try {
-        const v6Results = await Promise.allSettled([
-          getFirstWeekProgress(user.id),
-          getRankLadder(user.id, 'global'),
-          getUserActiveBattle(user.id),
-          getAlmostThereInsights(user.id),
-          getUserWeeklyPower(user.id),
-          getPowerRankScopes(user.id),
-          getActiveGauntlet(user.id),
-          getPendingInvitations(user.id),
-          getCurrentSeason(),
-        ])
+            {/* Active Competitions */}
+            {isFeatureEnabled("gauntlet") && (
+              <ActiveCompetitions
+                gauntlets={activeGauntlets}
+                crewWar={crewWar}
+                teamId={teamId}
+                userId={userId}
+              />
+            )}
 
-        if (v6Results[0].status === 'fulfilled') {
-          firstWeekProgress = v6Results[0].value
-          if (firstWeekProgress) {
-            firstWeekTips = getFirstWeekTips(firstWeekProgress)
-          }
-        }
-        if (v6Results[1].status === 'fulfilled') rankLadder = v6Results[1].value
-        if (v6Results[2].status === 'fulfilled') activeBattle = v6Results[2].value
-        if (v6Results[3].status === 'fulfilled') almostThereInsights = v6Results[3].value
-        if (v6Results[4].status === 'fulfilled') weeklyPower = v6Results[4].value
-        if (v6Results[5].status === 'fulfilled') powerRankScopes = v6Results[5].value
-        if (v6Results[6].status === 'fulfilled') activeGauntlet = v6Results[6].value
-        if (v6Results[7].status === 'fulfilled') pendingGauntlets = v6Results[7].value || []
-        if (v6Results[8].status === 'fulfilled') currentSeason = v6Results[8].value
+            {/* Rivalries Strip */}
+            {isFeatureEnabled("rivalry") && rivalries.length > 0 && (
+              <RivalriesStrip rivalries={rivalries.slice(0, 4)} />
+            )}
 
-        // Fetch user's season rank if season exists
-        if (currentSeason) {
-          try {
-            userSeasonRank = await getUserSeasonRank(user.id, currentSeason.id)
-          } catch (e) {
-            console.error('[Home V6] Failed to fetch userSeasonRank:', e)
-          }
-        }
+            {/* Feed */}
+            <Suspense fallback={<FeedSkeleton />}>
+              <HomeFeed userId={userId} />
+            </Suspense>
+          </div>
 
-        // Log failures
-        v6Results.forEach((r, i) => {
-          if (r.status === 'rejected') {
-            console.error(`[Home V6] Promise ${i} failed:`, r.reason)
-          }
-        })
-      } catch (e) {
-        console.error("[Home V6] Failed to fetch V6 data:", e)
-      }
-    }
+          {/* Sidebar (1/3) */}
+          <div className="space-y-6">
+            {/* Season Card */}
+            {isFeatureEnabled("season") && activeSeason && (
+              <SeasonCard
+                season={activeSeason}
+                userStats={
+                  seasonStats
+                    ? {
+                        totalPower: seasonStats.totalPower,
+                        rank: seasonStats.rank,
+                        total: seasonStats.total,
+                        activityCount: seasonStats.activityCount,
+                      }
+                    : undefined
+                }
+              />
+            )}
 
-    return (
-      <main className="min-h-screen bg-slate-50 pb-20 md:pb-0" data-testid="home-page">
-        {/* ============================================
-            ZONE A: THE VIBE - Slim Hero + Avatar Bridge
-            Atmospheric background + overlapping avatar identity
-        ============================================ */}
-        <div data-testid="home-slot-hero">
-          <SlimHero
-            name={user.displayName || "Athlete"}
-            avatarUrl={user.avatarUrl || undefined}
-            city={user.cityName || user.city || undefined}
-            country={user.countryName || user.country || undefined}
-            primarySport={hero.sportName || primarySport}
-            otherSports={otherSports}
-            imageUrl={hero.imageUrl}
-            imageCategory={hero.category}
-            imageCredit={hero.image?.credit}
-          />
-        </div>
+            {/* City Ladder */}
+            {user.city && cityLadder.length > 0 && (
+              <CityLadder
+                city={user.city}
+                entries={cityLadder}
+                currentUserId={userId}
+              />
+            )}
 
-        {/* ============================================
-            ZONE B: THE ATHLETE RIBBON
-            High-definition cards with Sport Index anchor
-            + Global/Country/City/Team orbit cards
-        ============================================ */}
-        <AthleteRibbon
-          sportIndex={sportIndexValue}
-          sportIndexDelta={null}
-          rankCards={rankCards}
-        />
-
-        {/* ============================================
-            SECTION 3: THE PULSE - Friend Activity Rail
-            Stories-style horizontal scroll (The Hook)
-        ============================================ */}
-        <div className="border-b border-slate-200/60 bg-white/80 backdrop-blur-sm">
-          <div className="max-w-6xl mx-auto">
-            <PulseRail />
+            {/* Quick Actions */}
+            <QuickActions />
           </div>
         </div>
+      </div>
+    </main>
+  )
+}
 
-        {/* ============================================
-            SECTION 3: MAIN CONTENT GRID
-            12-column grid: Main (8) + Sidebar (4)
-            Order: Compete → Rank → Feed
-        ============================================ */}
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-5">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
-
-            {/* MAIN COLUMN (Span 8) - Compete First */}
-            <div className="lg:col-span-8 space-y-5">
-
-              {/* V5: First Week Magic (for new users) */}
-              {firstWeekProgress?.isFirstWeek && (
-                <div data-testid="home-slot-first-week">
-                  <FirstWeekCard progress={firstWeekProgress} />
-                  {firstWeekTips.length > 0 && (
-                    <FirstWeekTips tips={firstWeekTips} className="mt-3" />
-                  )}
-                </div>
-              )}
-
-              {/* V5: Almost There Insights */}
-              {almostThereInsights.length > 0 && !firstWeekProgress?.isFirstWeek && (
-                <div data-testid="home-slot-almost-there">
-                  <AlmostThereCard insights={almostThereInsights} />
-                </div>
-              )}
-
-              {/* V5: Active Rank Battle */}
-              {activeBattle && isFeatureEnabled('rankBattles') && (
-                <div data-testid="home-slot-battle">
-                  <RankBattleCard
-                    battle={{
-                      ...activeBattle,
-                      weekStart: activeBattle.weekStart,
-                      weekEnd: activeBattle.weekEnd,
-                    }}
-                    currentUserId={user.id}
-                  />
-                </div>
-              )}
-
-              {/* V6: Active Gauntlet Challenge */}
-              {activeGauntlet && isFeatureEnabled('gauntlet') && (
-                <div data-testid="home-slot-gauntlet">
-                  <GauntletCard
-                    gauntlet={activeGauntlet}
-                    currentUserId={user.id}
-                  />
-                </div>
-              )}
-
-              {/* V6: Pending Gauntlet Invitations */}
-              {pendingGauntlets.length > 0 && isFeatureEnabled('gauntlet') && (
-                <div data-testid="home-slot-gauntlet-invites" className="space-y-3">
-                  {pendingGauntlets.map((gauntlet: any) => (
-                    <GauntletCard
-                      key={gauntlet.id}
-                      gauntlet={gauntlet}
-                      currentUserId={user.id}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Compete Now Deck - Rivalries, Challenges, Battles */}
-              <div data-testid="home-slot-compete">
-                <CompeteNowDeckWrapper />
-              </div>
-
-              {/* Feed Tabs: Highlights + Following */}
-              <div data-testid="home-slot-feed-tabs">
-                <HomeFeedTabs
-                  highlightsContent={<RankingsHighlightsFeed />}
-                  followingContent={<VirtualizedFollowingFeed />}
-                />
-              </div>
-
-              {/* Consumption Zone - Social Feed */}
-              <div data-testid="home-slot-feed">
-                <CreatePostBox userImage={user.avatarUrl || undefined} />
-                <div className="mt-4">
-                  <Feed />
-                </div>
-              </div>
-            </div>
-
-            {/* SIDEBAR (Span 4) - Planning & Future */}
-            <aside className="lg:col-span-4 space-y-4">
-              {/* V6: Weekly Power Score */}
-              {weeklyPower && isFeatureEnabled('power') && (
-                <PowerCard
-                  currentPower={weeklyPower.currentPower}
-                  delta={weeklyPower.delta}
-                  percentChange={weeklyPower.percentChange}
-                  breakdown={weeklyPower.breakdown}
-                  activityCount={weeklyPower.activityCount}
-                />
-              )}
-
-              {/* V6: Current Season */}
-              {currentSeason && isFeatureEnabled('season') && (
-                <SeasonCard
-                  season={currentSeason}
-                  userStats={userSeasonRank ? {
-                    totalPower: userSeasonRank.totalPower,
-                    activityCount: userSeasonRank.activityCount,
-                    rank: userSeasonRank.rank,
-                    total: userSeasonRank.total,
-                  } : null}
-                />
-              )}
-
-              {/* V5: Rank Ladder */}
-              {rankLadder && isFeatureEnabled('rankLadder') && (
-                <RankLadder
-                  scope={rankLadder.scope}
-                  scopeValue={rankLadder.scopeValue}
-                  userRank={rankLadder.userRank}
-                  totalInScope={rankLadder.totalInScope}
-                  entries={rankLadder.entries}
-                  pointsToNextRank={rankLadder.pointsToNextRank}
-                  pointsBehindPrevRank={rankLadder.pointsBehindPrevRank}
-                />
-              )}
-
-              {/* 1. Upcoming Events (Immediate Future) */}
-              <CalendarWidget />
-
-              {/* Partner Finder removed in V6 */}
-
-              {/* 3. People to Follow (Discovery) */}
-              <div className="hidden lg:block">
-                <PeopleToFollow />
-              </div>
-            </aside>
-
-          </div>
-        </div>
-
-        {/* V6: Mobile Floating Rank Pill */}
-        {powerRankScopes && weeklyPower && isFeatureEnabled('floatingRankPill') && (
-          <FloatingRankPill
-            global={{
-              rank: powerRankScopes.global.rank,
-              total: powerRankScopes.global.total,
-            }}
-            country={powerRankScopes.country.rank ? {
-              rank: powerRankScopes.country.rank,
-              total: powerRankScopes.country.total,
-              scopeValue: powerRankScopes.country.scopeValue,
-            } : null}
-            city={powerRankScopes.city.rank ? {
-              rank: powerRankScopes.city.rank,
-              total: powerRankScopes.city.total,
-              scopeValue: powerRankScopes.city.scopeValue,
-            } : null}
-            power={weeklyPower.currentPower}
-            className="md:hidden"
-          />
-        )}
-      </main>
-    )
+function FeedSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-32" />
+      <Skeleton className="h-12 w-full" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  )
 }

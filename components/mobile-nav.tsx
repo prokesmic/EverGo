@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Trophy, Target, Users, Dumbbell, Plus, Calendar } from "lucide-react"
+import { Home, Trophy, Swords, User, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
 
@@ -15,21 +15,18 @@ export function MobileNav() {
     return null
   }
 
-  // Mobile bottom nav shows 5 items - prioritize most used
-  // Full menu is accessible via hamburger in mobile header
+  // V6 Mobile bottom nav - Competition-first: Home, Rankings, Gauntlets, Profile
   const navItems = [
     { href: "/home", label: "Home", icon: Home, testId: "nav-home" },
     { href: "/rankings", label: "Rankings", icon: Trophy, testId: "nav-rankings" },
-    { href: "/challenges", label: "Compete", icon: Target, testId: "nav-challenges" },
-    { href: "/sports", label: "Sports", icon: Dumbbell, testId: "nav-sports" },
-    { href: "/calendar", label: "Events", icon: Calendar, testId: "nav-events" },
+    { href: "/gauntlets", label: "Gauntlets", icon: Swords, testId: "nav-gauntlets" },
+    { href: `/profile/${session?.user?.username || 'me'}`, label: "Profile", icon: User, testId: "nav-profile" },
   ]
 
   const isActive = (href: string) => {
-    if (href === "/home") return pathname === "/home" || pathname === "/"
+    if (href === "/home") return pathname === "/home"
     if (href.startsWith("/profile")) return pathname?.startsWith("/profile")
-    // /challenges also covers /teams conceptually for "Compete"
-    if (href === "/challenges") return pathname?.startsWith("/challenges") || pathname?.startsWith("/teams")
+    if (href === "/gauntlets") return pathname?.startsWith("/gauntlets")
     return pathname?.startsWith(href)
   }
 
@@ -50,9 +47,9 @@ export function MobileNav() {
       {/* Bottom Navigation */}
       <nav
         data-testid="mobile-bottom-nav"
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border-light lg:hidden pb-safe"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 lg:hidden pb-safe"
       >
-        <div className="grid h-16 grid-cols-5 max-w-lg mx-auto">
+        <div className="grid h-16 grid-cols-4 max-w-lg mx-auto">
           {navItems.map((item) => {
             const active = isActive(item.href)
             return (
@@ -63,14 +60,14 @@ export function MobileNav() {
                 className={cn(
                   "flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-all active:scale-95",
                   active
-                    ? "text-brand-blue"
-                    : "text-text-muted"
+                    ? "text-emerald-600"
+                    : "text-slate-500"
                 )}
               >
                 <div
                   className={cn(
                     "flex items-center justify-center w-10 h-7 rounded-full transition-all",
-                    active && "bg-brand-blue/10"
+                    active && "bg-emerald-50"
                   )}
                 >
                   <item.icon
