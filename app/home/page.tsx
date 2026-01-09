@@ -18,6 +18,21 @@ import { VirtualizedFollowingFeed } from "@/components/home/VirtualizedFollowing
 import { HomeFeedTabs } from "@/components/home/HomeFeedTabs"
 import { getUserRankScopes } from "@/lib/leaderboards"
 import { getHeroRankLensSnapshot, getUserPrimarySport } from "@/lib/rankings/hero-rank-lens"
+// V5 Components
+import { FirstWeekCard } from "@/components/first-week/FirstWeekCard"
+import { FirstWeekTips } from "@/components/first-week/FirstWeekTips"
+import { RankLadder } from "@/components/rankings/RankLadder"
+import { RankBattleCard } from "@/components/battles/RankBattleCard"
+import { AlmostThereCard } from "@/components/notifications/AlmostThereCard"
+import { EffortScoreCard } from "@/components/effort/EffortScoreCard"
+import { FloatingRankPill } from "@/components/rankings/FloatingRankPill"
+// V5 Data fetching
+import { getFirstWeekProgress, getFirstWeekTips } from "@/lib/first-week"
+import { getRankLadder, getUserRankScopes as getEffortRankScopes } from "@/lib/rankings/rank-ladder"
+import { getUserActiveBattle } from "@/lib/rank-battles"
+import { getAlmostThereInsights } from "@/lib/almost-there"
+import { getUserWeeklyEffort } from "@/lib/effort-score"
+import { isFeatureEnabled } from "@/lib/features"
 
 export const dynamic = 'force-dynamic'
 
@@ -222,6 +237,51 @@ export default async function HomePage() {
 
     const rankCards = buildRankCards()
 
+    // ============================================
+    // V5 DATA FETCHING - Effort Score, Rank Ladder, Battles
+    // ============================================
+    let firstWeekProgress = null
+    let firstWeekTips: any[] = []
+    let rankLadder = null
+    let activeBattle = null
+    let almostThereInsights: any[] = []
+    let weeklyEffort = null
+    let effortRankScopes = null
+
+    if (isFeatureEnabled('effortScore') || isFeatureEnabled('rankLadder') || isFeatureEnabled('rankBattles')) {
+      try {
+        const v5Results = await Promise.allSettled([
+          getFirstWeekProgress(user.id),
+          getRankLadder(user.id, 'global'),
+          getUserActiveBattle(user.id),
+          getAlmostThereInsights(user.id),
+          getUserWeeklyEffort(user.id),
+          getEffortRankScopes(user.id),
+        ])
+
+        if (v5Results[0].status === 'fulfilled') {
+          firstWeekProgress = v5Results[0].value
+          if (firstWeekProgress) {
+            firstWeekTips = getFirstWeekTips(firstWeekProgress)
+          }
+        }
+        if (v5Results[1].status === 'fulfilled') rankLadder = v5Results[1].value
+        if (v5Results[2].status === 'fulfilled') activeBattle = v5Results[2].value
+        if (v5Results[3].status === 'fulfilled') almostThereInsights = v5Results[3].value
+        if (v5Results[4].status === 'fulfilled') weeklyEffort = v5Results[4].value
+        if (v5Results[5].status === 'fulfilled') effortRankScopes = v5Results[5].value
+
+        // Log failures
+        v5Results.forEach((r, i) => {
+          if (r.status === 'rejected') {
+            console.error(`[Home V5] Promise ${i} failed:`, r.reason)
+          }
+        })
+      } catch (e) {
+        console.error("[Home V5] Failed to fetch V5 data:", e)
+      }
+    }
+
     return (
       <main className="min-h-screen bg-slate-50 pb-20 md:pb-0" data-testid="home-page">
         {/* ============================================
@@ -274,6 +334,37 @@ export default async function HomePage() {
             {/* MAIN COLUMN (Span 8) - Compete First */}
             <div className="lg:col-span-8 space-y-5">
 
+              {/* V5: First Week Magic (for new users) */}
+              {firstWeekProgress?.isFirstWeek && (
+                <div data-testid="home-slot-first-week">
+                  <FirstWeekCard progress={firstWeekProgress} />
+                  {firstWeekTips.length > 0 && (
+                    <FirstWeekTips tips={firstWeekTips} className="mt-3" />
+                  )}
+                </div>
+              )}
+
+              {/* V5: Almost There Insights */}
+              {almostThereInsights.length > 0 && !firstWeekProgress?.isFirstWeek && (
+                <div data-testid="home-slot-almost-there">
+                  <AlmostThereCard insights={almostThereInsights} />
+                </div>
+              )}
+
+              {/* V5: Active Rank Battle */}
+              {activeBattle && isFeatureEnabled('rankBattles') && (
+                <div data-testid="home-slot-battle">
+                  <RankBattleCard
+                    battle={{
+                      ...activeBattle,
+                      weekStart: activeBattle.weekStart,
+                      weekEnd: activeBattle.weekEnd,
+                    }}
+                    currentUserId={user.id}
+                  />
+                </div>
+              )}
+
               {/* Compete Now Deck - Rivalries, Challenges, Battles */}
               <div data-testid="home-slot-compete">
                 <CompeteNowDeckWrapper />
@@ -298,11 +389,35 @@ export default async function HomePage() {
 
             {/* SIDEBAR (Span 4) - Planning & Future */}
             <aside className="lg:col-span-4 space-y-4">
+              {/* V5: Weekly Effort Score */}
+              {weeklyEffort && isFeatureEnabled('effortScore') && (
+                <EffortScoreCard
+                  currentScore={weeklyEffort.currentScore}
+                  delta={weeklyEffort.delta}
+                  percentChange={weeklyEffort.percentChange}
+                  breakdown={weeklyEffort.breakdown}
+                  activityCount={weeklyEffort.activityCount}
+                />
+              )}
+
+              {/* V5: Rank Ladder */}
+              {rankLadder && isFeatureEnabled('rankLadder') && (
+                <RankLadder
+                  scope={rankLadder.scope}
+                  scopeValue={rankLadder.scopeValue}
+                  userRank={rankLadder.userRank}
+                  totalInScope={rankLadder.totalInScope}
+                  entries={rankLadder.entries}
+                  pointsToNextRank={rankLadder.pointsToNextRank}
+                  pointsBehindPrevRank={rankLadder.pointsBehindPrevRank}
+                />
+              )}
+
               {/* 1. Upcoming Events (Immediate Future) */}
               <CalendarWidget />
 
               {/* 2. Partner Finder (Social Planning) */}
-              <PartnerFinderWidget />
+              {isFeatureEnabled('partnerFinder') && <PartnerFinderWidget />}
 
               {/* 3. People to Follow (Discovery) */}
               <div className="hidden lg:block">
@@ -312,6 +427,28 @@ export default async function HomePage() {
 
           </div>
         </div>
+
+        {/* V5: Mobile Floating Rank Pill */}
+        {effortRankScopes && weeklyEffort && isFeatureEnabled('floatingRankPill') && (
+          <FloatingRankPill
+            global={{
+              rank: effortRankScopes.global.rank,
+              total: effortRankScopes.global.total,
+            }}
+            country={effortRankScopes.country.rank ? {
+              rank: effortRankScopes.country.rank,
+              total: effortRankScopes.country.total,
+              scopeValue: effortRankScopes.country.scopeValue,
+            } : null}
+            city={effortRankScopes.city.rank ? {
+              rank: effortRankScopes.city.rank,
+              total: effortRankScopes.city.total,
+              scopeValue: effortRankScopes.city.scopeValue,
+            } : null}
+            effortScore={weeklyEffort.currentScore}
+            className="md:hidden"
+          />
+        )}
       </main>
     )
 }

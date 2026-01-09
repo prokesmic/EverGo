@@ -8,6 +8,10 @@
     {
       "path": "/api/jobs/run",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/rank-battles",
+      "schedule": "0 5 * * 1"
     }
   ]
 }

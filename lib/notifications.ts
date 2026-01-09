@@ -9,6 +9,8 @@ export type NotificationType =
     | 'TEAM_INVITE' | 'TEAM_JOIN_REQUEST' | 'TEAM_POST'
     | 'WEEKLY_SUMMARY' | 'PRODUCT_UPDATE'
     | 'GEAR_REPLACEMENT'
+    | 'RANK_BATTLE_STARTED' | 'RANK_BATTLE_WON' | 'RANK_BATTLE_LOST'
+    | 'ALMOST_RANK_UP' | 'ALMOST_BATTLE_WIN' | 'ALMOST_WEEKLY_GOAL'
 
 interface CreateNotificationParams {
     userId: string
@@ -16,6 +18,7 @@ interface CreateNotificationParams {
     title: string
     message: string
     data?: any
+    actionUrl?: string
 }
 
 export async function createNotification({ userId, type, title, message, data }: CreateNotificationParams) {

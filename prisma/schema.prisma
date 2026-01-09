@@ -109,11 +109,18 @@ model User {
   // Most Active Scores
   activityScores      UserActivityScore[]
 
+  // V5: Weekly Effort Scores
+  weeklyEffortScores  WeeklyEffortScore[]
+
   // Leagues
   leagueMemberships   LeagueMember[]
 
   // PaceBot Rivalries
   paceBotRivalries    PaceBotRivalry[]
+
+  // V5: Rank Battles
+  battlesAsChallenger RankBattle[] @relation("BattleChallenger")
+  battlesAsOpponent   RankBattle[] @relation("BattleOpponent")
 }
 
 model UserStats {
@@ -478,6 +485,11 @@ model Activity {
   // Most Active / Effort scoring
   effortPoints     Int              @default(0) // Normalized cross-sport effort score
   rpe              Int?             // Rate of Perceived Exertion (1-10, manual input)
+
+  // V5: Effort Score fields
+  effortScore      Float?           // Calculated: duration × multiplier
+  effortMultiplier Float?           @default(1.0) // Based on RPE
+  isRace           Boolean          @default(false) // 3x multiplier for races
 
   // v4.2: Tags replace subtype - flexible multi-tagging for activities
   tags             String           @default("[]")  // JSON: ["race", "tempo", "long_run", etc.]
@@ -2060,6 +2072,54 @@ model PaceBotRivalry {
   @@index([benchmarkId])
 }
 
+// --- V5: Rank Battles ---
+
+enum RankBattleStatus {
+  ACTIVE
+  CHALLENGER_WON
+  OPPONENT_WON
+  TIE
+  EXPIRED // Neither user logged activities
+}
+
+model RankBattle {
+  id          String   @id @default(cuid())
+
+  // Week this battle is for
+  weekStart   DateTime
+  weekEnd     DateTime
+
+  // Participants
+  challengerId   String
+  challenger     User   @relation("BattleChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
+  opponentId     String
+  opponent       User   @relation("BattleOpponent", fields: [opponentId], references: [id], onDelete: Cascade)
+
+  // Scope of battle (determined by matching algorithm)
+  scope          String   // 'city', 'country', 'global'
+  scopeValue     String?  // e.g., "Prague" for city battles
+
+  // Starting ranks when battle began
+  challengerStartRank  Int
+  opponentStartRank    Int
+
+  // Current scores (updated as activities are logged)
+  challengerScore Float @default(0)
+  opponentScore   Float @default(0)
+
+  // Final result
+  status      RankBattleStatus @default(ACTIVE)
+  winnerId    String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([challengerId, weekStart]) // One battle per user per week
+  @@index([weekStart, status])
+  @@index([challengerId, status])
+  @@index([opponentId, status])
+}
+
 // --- Most Active / Universal Activity Score ---
 
 model UserActivityScore {
@@ -2088,6 +2148,33 @@ model UserActivityScore {
   @@index([asOfDate, windowDays, activityScore(sort: Desc)])
   @@index([asOfDate, windowDays, country, activityScore(sort: Desc)])
   @@index([asOfDate, windowDays, city, activityScore(sort: Desc)])
+}
+
+// --- V5: Weekly Effort Score ---
+
+model WeeklyEffortScore {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  weekStart   DateTime // Monday 00:00 UTC
+  weekEnd     DateTime // Sunday 23:59 UTC
+  totalScore  Float    @default(0)
+
+  // Breakdown by intensity
+  easyMinutes     Int   @default(0)  // RPE 1-4
+  moderateMinutes Int   @default(0)  // RPE 5-7
+  hardMinutes     Int   @default(0)  // RPE 8-10
+  raceMinutes     Int   @default(0)  // isRace = true
+
+  activityCount   Int   @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, weekStart])
+  @@index([weekStart, totalScore(sort: Desc)]) // For leaderboards
+  @@index([userId, weekStart])
 }
 
 // =============================================================================
