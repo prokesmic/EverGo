@@ -5,20 +5,20 @@ import { prisma } from "@/lib/db"
 import { Suspense } from "react"
 
 // V6 Components
-import { HomeHeader } from "@/components/home/HomeHeader"
+import { HeroBanner } from "@/components/home/HeroBanner"
+import { HeroBannerSkeleton } from "@/components/home/HeroBannerSkeleton"
 import { ActiveCompetitions } from "@/components/home/ActiveCompetitions"
 import { RivalriesStrip } from "@/components/home/RivalriesStrip"
 import { CityLadder } from "@/components/home/CityLadder"
 import { QuickActions } from "@/components/home/QuickActions"
 import { HomeFeed } from "@/components/home/HomeFeedV6"
-import { PowerCard } from "@/components/power/PowerCard"
 import { SeasonCard } from "@/components/season/SeasonCard"
 
 // Loading skeletons
 import { Skeleton } from "@/components/ui/skeleton"
 
 // V6 Data fetching
-import { getUserWeeklyPower } from "@/lib/power"
+import { getHeroData } from "@/lib/home/getHeroData"
 import { getUserGauntlets, getPendingInvitations } from "@/lib/gauntlet"
 import { getUserRivalries } from "@/lib/rivalry"
 import { getCurrentSeason, getUserSeasonRank } from "@/lib/season"
@@ -31,8 +31,9 @@ export const dynamic = "force-dynamic"
 /**
  * V6 Home Dashboard Page - Competition Platform
  *
- * Clean 3-section layout:
- * - Main Column: Power Card, Active Competitions, Rivalries Strip, Feed
+ * Clean layout with Hero Banner:
+ * - Hero Banner: Sports identity, Power, Ranks, Competition status
+ * - Main Column: Active Competitions, Rivalries Strip, Feed
  * - Sidebar: Season Card, City Ladder, Quick Actions
  */
 export default async function HomePage() {
@@ -71,7 +72,7 @@ export default async function HomePage() {
 
   // Parallel data fetching with error handling
   const [
-    weeklyPowerResult,
+    heroDataResult,
     gauntletsResult,
     pendingGauntletsResult,
     rivalriesResult,
@@ -79,7 +80,7 @@ export default async function HomePage() {
     crewWarResult,
     cityLadderResult,
   ] = await Promise.allSettled([
-    getUserWeeklyPower(userId),
+    getHeroData(userId),
     getUserGauntlets(userId, 10),
     getPendingInvitations(userId),
     getUserRivalries(userId, 6),
@@ -89,10 +90,7 @@ export default async function HomePage() {
   ])
 
   // Extract results with fallbacks
-  const weeklyPower =
-    weeklyPowerResult.status === "fulfilled"
-      ? weeklyPowerResult.value
-      : { currentPower: 0, delta: 0, percentChange: 0, breakdown: { easy: 0, moderate: 0, hard: 0, race: 0 }, activityCount: 0 }
+  const heroData = heroDataResult.status === "fulfilled" ? heroDataResult.value : null
 
   const allGauntlets =
     gauntletsResult.status === "fulfilled" ? gauntletsResult.value : []
@@ -134,24 +132,23 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
-        {/* Welcome Header */}
-        <HomeHeader displayName={user.displayName ?? user.username ?? "Athlete"} />
+        {/* Hero Banner - Full Width */}
+        {heroData ? (
+          <HeroBanner
+            user={heroData.user}
+            primarySports={heroData.primarySports}
+            weeklyPower={heroData.weeklyPower}
+            seasonRanks={heroData.seasonRanks}
+            competitionStats={heroData.competitionStats}
+          />
+        ) : (
+          <HeroBannerSkeleton />
+        )}
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           {/* Main Column (2/3) */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Power Card */}
-            {isFeatureEnabled("power") && (
-              <PowerCard
-                currentPower={weeklyPower.currentPower}
-                delta={weeklyPower.delta}
-                percentChange={weeklyPower.percentChange}
-                breakdown={weeklyPower.breakdown}
-                activityCount={weeklyPower.activityCount}
-              />
-            )}
-
             {/* Active Competitions */}
             {isFeatureEnabled("gauntlet") && (
               <ActiveCompetitions
