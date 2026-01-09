@@ -108,50 +108,12 @@ async function loadMetricValues(
     return Array.from(byUser.values())
   }
 
-  // Benchmark-based metrics - from UserBenchmarkBest
-  // Extract sport and benchmark from metricKey (e.g., "running:5k_time")
+  // Benchmark-based metrics removed in V6
+  // Return empty for benchmark-style metric keys
   const [sport, benchmark] = metricKey.split(":")
   if (sport && benchmark) {
-    // Find matching benchmark definition
-    const benchmarkDef = await prisma.benchmarkDefinition.findFirst({
-      where: {
-        slug: benchmark,
-        sport: { slug: sport },
-        isActive: true,
-      },
-    })
-
-    if (benchmarkDef) {
-      const bests = await prisma.userBenchmarkBest.findMany({
-        where: {
-          benchmarkId: benchmarkDef.id,
-          user: {
-            ...whereUser,
-            privacyLevel: { not: "PRIVATE" },
-          },
-        },
-        select: {
-          userId: true,
-          value: true,
-          user: {
-            select: {
-              displayName: true,
-              avatarUrl: true,
-            },
-          },
-        },
-        take: 5000,
-      })
-
-      return bests
-        .filter((b) => b.value > 0)
-        .map((b) => ({
-          userId: b.userId,
-          displayName: b.user.displayName,
-          avatarUrl: b.user.avatarUrl,
-          value: b.value,
-        }))
-    }
+    console.warn("[Deprecated] Benchmark leaderboards removed in V6:", metricKey)
+    return []
   }
 
   // Fallback: No data for unknown metric

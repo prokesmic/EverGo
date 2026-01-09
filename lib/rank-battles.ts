@@ -24,8 +24,8 @@ export async function matchRankBattles(): Promise<number> {
     return 0
   }
 
-  // Get active users with recent effort scores
-  const recentScores = await prisma.weeklyEffortScore.findMany({
+  // Get active users with recent power scores
+  const recentScores = await prisma.weeklyPower.findMany({
     where: {
       weekStart: { gte: twoWeeksAgo }
     },
@@ -39,7 +39,7 @@ export async function matchRankBattles(): Promise<number> {
         }
       }
     },
-    orderBy: { totalScore: 'desc' }
+    orderBy: { totalPower: 'desc' }
   })
 
   // Group by city
@@ -71,8 +71,8 @@ export async function matchRankBattles(): Promise<number> {
   for (const [city, users] of cityGroups) {
     if (users.length < 2) continue
 
-    // Sort by score for ranking
-    const sorted = [...users].sort((a, b) => b.totalScore - a.totalScore)
+    // Sort by power for ranking
+    const sorted = [...users].sort((a, b) => b.totalPower - a.totalPower)
 
     for (let i = 0; i < sorted.length; i++) {
       const user = sorted[i]
@@ -104,7 +104,7 @@ export async function matchRankBattles(): Promise<number> {
   const unmatchedGlobal = noCity
     .concat([...cityGroups.values()].flat())
     .filter(u => !matchedUsers.has(u.userId))
-    .sort((a, b) => b.totalScore - a.totalScore)
+    .sort((a, b) => b.totalPower - a.totalPower)
 
   for (let i = 0; i < unmatchedGlobal.length - 1; i += 2) {
     const user1 = unmatchedGlobal[i]
@@ -172,12 +172,12 @@ export async function updateBattleScores(userId: string): Promise<void> {
 
   if (!battle) return
 
-  // Get both users' current week scores
-  const [challengerScore, opponentScore] = await Promise.all([
-    prisma.weeklyEffortScore.findUnique({
+  // Get both users' current week power scores
+  const [challengerPower, opponentPower] = await Promise.all([
+    prisma.weeklyPower.findUnique({
       where: { userId_weekStart: { userId: battle.challengerId, weekStart } }
     }),
-    prisma.weeklyEffortScore.findUnique({
+    prisma.weeklyPower.findUnique({
       where: { userId_weekStart: { userId: battle.opponentId, weekStart } }
     })
   ])
@@ -185,8 +185,8 @@ export async function updateBattleScores(userId: string): Promise<void> {
   await prisma.rankBattle.update({
     where: { id: battle.id },
     data: {
-      challengerScore: challengerScore?.totalScore ?? 0,
-      opponentScore: opponentScore?.totalScore ?? 0
+      challengerScore: challengerPower?.totalPower ?? 0,
+      opponentScore: opponentPower?.totalPower ?? 0
     }
   })
 }

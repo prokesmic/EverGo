@@ -11,6 +11,8 @@ export type NotificationType =
     | 'GEAR_REPLACEMENT'
     | 'RANK_BATTLE_STARTED' | 'RANK_BATTLE_WON' | 'RANK_BATTLE_LOST'
     | 'ALMOST_RANK_UP' | 'ALMOST_BATTLE_WIN' | 'ALMOST_WEEKLY_GOAL'
+    | 'GAUNTLET_RECEIVED' | 'GAUNTLET_ACCEPTED' | 'GAUNTLET_DECLINED'
+    | 'GAUNTLET_WON' | 'GAUNTLET_LOST' | 'GAUNTLET_TIE'
 
 interface CreateNotificationParams {
     userId: string

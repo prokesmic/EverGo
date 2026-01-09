@@ -84,29 +84,8 @@ export async function POST(request: Request) {
       })
     }
 
-    // Join communities
-    if (joinedCommunities && joinedCommunities.length > 0) {
-      await prisma.communityMember.createMany({
-        data: joinedCommunities.map((communityId: string) => ({
-          userId: user.id,
-          communityId,
-          role: "MEMBER",
-        })),
-        skipDuplicates: true,
-      })
-
-      // Update community member counts
-      for (const communityId of joinedCommunities) {
-        await prisma.community.update({
-          where: { id: communityId },
-          data: {
-            memberCount: {
-              increment: 1,
-            },
-          },
-        })
-      }
-    }
+    // Communities removed in V6
+    void joinedCommunities
 
     // TODO: Mark onboarding as completed
     // Add onboardingCompleted: true field to User model

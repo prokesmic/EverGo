@@ -58,9 +58,7 @@ model User {
   
   teamPosts              TeamPost[]
   teamJoinRequests       TeamJoinRequest[]
-  communityMemberships   CommunityMember[]
-  communityPosts         CommunityPost[]
-  
+
   stats           UserStats?
   sportStats      UserSportStats[]
 
@@ -77,15 +75,7 @@ model User {
   // Monetization
   subscription        Subscription?
   gear                UserGear[]
-  productOfferViews   ProductOfferView[]
   stripeCustomerId    String?
-
-  // Social
-  createdPartnerRequests PartnerRequest[] @relation("createdRequests")
-  partnerRequestParticipations PartnerRequestParticipant[]
-
-  // Benchmarks / PBs
-  benchmarkBests  UserBenchmarkBest[]
 
   // Integrations
   stravaConnection StravaConnection?
@@ -109,18 +99,20 @@ model User {
   // Most Active Scores
   activityScores      UserActivityScore[]
 
-  // V5: Weekly Effort Scores
-  weeklyEffortScores  WeeklyEffortScore[]
-
-  // Leagues
-  leagueMemberships   LeagueMember[]
-
-  // PaceBot Rivalries
-  paceBotRivalries    PaceBotRivalry[]
+  // V6: Weekly Power Scores
+  weeklyPower         WeeklyPower[]
 
   // V5: Rank Battles
   battlesAsChallenger RankBattle[] @relation("BattleChallenger")
   battlesAsOpponent   RankBattle[] @relation("BattleOpponent")
+
+  // V6: Gauntlets (User-Initiated 1v1 Challenges)
+  gauntletsAsChallenger Gauntlet[] @relation("GauntletChallenger")
+  gauntletsAsOpponent   Gauntlet[] @relation("GauntletOpponent")
+  gauntletsWon          Gauntlet[] @relation("GauntletWinner")
+
+  // V6: Season Mode
+  seasonParticipations  SeasonParticipant[]
 }
 
 model UserStats {
@@ -244,10 +236,7 @@ model Sport {
   teams           Team[]
   userSportStats  UserSportStats[]
   activities      Activity[]
-  communities     Community[]
   challenges      Challenge[]
-  partnerRequests PartnerRequest[]
-  benchmarkDefinitions BenchmarkDefinition[]
 
   @@index([isDeprecated])
 }
@@ -471,7 +460,6 @@ model Activity {
 
   post            Post?
   gearItems       ActivityGear[]
-  benchmarkResults ActivityBenchmarkResult[]
 
   // Rivalry tagging (optional)
   rivalryId       String?
@@ -482,13 +470,13 @@ model Activity {
   isAnomalous      Boolean          @default(false)
   anomalies        ActivityAnomaly[]
 
-  // Most Active / Effort scoring
-  effortPoints     Int              @default(0) // Normalized cross-sport effort score
+  // Most Active / Power scoring
+  powerPoints      Int              @default(0) // Normalized cross-sport power score
   rpe              Int?             // Rate of Perceived Exertion (1-10, manual input)
 
-  // V5: Effort Score fields
-  effortScore      Float?           // Calculated: duration × multiplier
-  effortMultiplier Float?           @default(1.0) // Based on RPE
+  // V6: Power fields (rebranded from Effort Score)
+  power            Float?           // Calculated: duration × multiplier
+  powerMultiplier  Float?           @default(1.0) // Based on RPE
   isRace           Boolean          @default(false) // 3x multiplier for races
 
   // v4.2: Tags replace subtype - flexible multi-tagging for activities
@@ -676,7 +664,12 @@ model Team {
   members         TeamMember[]
   posts           TeamPost[]
   joinRequests    TeamJoinRequest[]
-  
+
+  // V6: Crew Wars
+  crewWarsAsChallenger CrewWar[] @relation("CrewWarChallenger")
+  crewWarsAsOpponent   CrewWar[] @relation("CrewWarOpponent")
+  crewWarsWon          CrewWar[] @relation("CrewWarWinner")
+
   @@index([sportId])
   @@index([city, sportId])
 }
@@ -721,86 +714,79 @@ model TeamPost {
   team        Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   postType    String    @default("UPDATE") // Enum: TeamPostType
   content     String
   photos      String    // JSON array
-  
+
   isPinned    Boolean   @default(false)
-  
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@index([teamId, createdAt(sort: Desc)])
 }
 
-model Community {
-  id              String      @id @default(cuid())
-  name            String
-  slug            String      @unique
-  description     String?
-  
-  // Branding
-  coverPhotoUrl   String?
-  
-  // Topic/Focus
-  sportId         String?     // Optional - can be multi-sport
-  sport           Sport?      @relation(fields: [sportId], references: [id])
-  topic           String?     // e.g., "Trail Running", "Beginner Cyclists"
-  
-  // Location (optional)
-  city            String?
-  country         String?
-  
-  // Settings
-  isPublic        Boolean     @default(true)
-  
-  // Stats
-  memberCount     Int         @default(0)
-  
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  
-  members         CommunityMember[]
-  posts           CommunityPost[]
-  
-  @@index([sportId])
-  @@index([city])
+// --- V6: Crew Wars (Team Battles) ---
+
+enum CrewWarStatus {
+  PENDING     // Challenge sent, awaiting acceptance
+  ACTIVE      // Battle in progress
+  COMPLETED   // Battle finished
+  DECLINED    // Challenge declined
+  CANCELLED   // Cancelled by challenger
 }
 
-model CommunityMember {
-  id            String          @id @default(cuid())
-  communityId   String
-  community     Community       @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  userId        String
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  role          String          @default("MEMBER") // Enum: CommunityRole
-  
-  joinedAt      DateTime        @default(now())
-  
-  @@unique([communityId, userId])
-  @@index([userId])
+enum CrewWarDuration {
+  ONE_WEEK
+  TWO_WEEKS
+  ONE_MONTH
 }
 
-model CommunityPost {
-  id            String    @id @default(cuid())
-  communityId   String
-  community     Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  content       String
-  photos        String    // JSON array
-  
-  likesCount    Int       @default(0)
-  commentsCount Int       @default(0)
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  @@index([communityId, createdAt(sort: Desc)])
+model CrewWar {
+  id              String           @id @default(cuid())
+
+  // Challenger team (initiator)
+  challengerTeamId String
+  challengerTeam   Team             @relation("CrewWarChallenger", fields: [challengerTeamId], references: [id], onDelete: Cascade)
+
+  // Opponent team
+  opponentTeamId   String
+  opponentTeam     Team             @relation("CrewWarOpponent", fields: [opponentTeamId], references: [id], onDelete: Cascade)
+
+  // Challenge configuration
+  duration         CrewWarDuration  @default(ONE_WEEK)
+  message          String?          // Challenge message from team captain
+
+  // Timing
+  createdAt        DateTime         @default(now())
+  respondedAt      DateTime?
+  startedAt        DateTime?
+  endsAt           DateTime?
+
+  // Status
+  status           CrewWarStatus    @default(PENDING)
+
+  // Scores (aggregate Power from all team members)
+  challengerPower  Float            @default(0)
+  opponentPower    Float            @default(0)
+
+  // Participation counts
+  challengerParticipants Int        @default(0)
+  opponentParticipants   Int        @default(0)
+
+  // Result
+  winnerTeamId     String?
+  winnerTeam       Team?            @relation("CrewWarWinner", fields: [winnerTeamId], references: [id])
+
+  updatedAt        DateTime         @updatedAt
+
+  @@index([challengerTeamId, status])
+  @@index([opponentTeamId, status])
+  @@index([status, endsAt])
 }
+
+// Community models removed in V6 schema cleanup
 
 // --- Gamification Models ---
 
@@ -1072,54 +1058,7 @@ model PushToken {
   @@index([token])
 }
 
-// --- Social Features Models ---
-
-model PartnerRequest {
-  id              String    @id @default(cuid())
-  creatorId       String
-  creator         User      @relation("createdRequests", fields: [creatorId], references: [id], onDelete: Cascade)
-  
-  sportId         String
-  sport           Sport     @relation(fields: [sportId], references: [id])
-  
-  title           String
-  description     String?
-  
-  // Logistics
-  date            DateTime
-  durationMinutes Int?
-  distanceKm      Float?
-  location        String    // e.g., "Central Park"
-  city            String?
-  
-  // Requirements
-  minParticipants Int       @default(2)
-  maxParticipants Int?
-  
-  status          String    @default("OPEN") // Enum: RequestStatus (OPEN, FULL, CANCELLED, COMPLETED)
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  participants    PartnerRequestParticipant[]
-  
-  @@index([city, sportId, date])
-  @@index([creatorId])
-}
-
-model PartnerRequestParticipant {
-  id              String          @id @default(cuid())
-  requestId       String
-  request         PartnerRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  userId          String
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  status          String          @default("ACCEPTED") // Enum: ParticipantStatus (PENDING, ACCEPTED, REJECTED)
-  joinedAt        DateTime        @default(now())
-  
-  @@unique([requestId, userId])
-  @@index([userId])
-}
+// PartnerRequest models removed in V6 schema cleanup
 
 // --- Monetization Models ---
 
@@ -1221,161 +1160,13 @@ model ActivityGear {
   @@unique([activityId, gearId])
 }
 
-model ProductOffer {
-  id              String    @id @default(cuid())
-  
-  // Product info
-  title           String
-  description     String
-  brand           String
-  productUrl      String
-  imageUrl        String
-  
-  // Pricing
-  originalPrice   Float
-  salePrice       Float?
-  discountCode    String?
-  
-  // Targeting
-  targetGearType  GearType?
-  targetSportId   String?
-  minGearAge      Int?      // Days since purchase
-  minGearDistance Float?    // Meters used
-  
-  // Campaign
-  startDate       DateTime
-  endDate         DateTime
-  isActive        Boolean   @default(true)
-  
-  // Tracking
-  impressions     Int       @default(0)
-  clicks          Int       @default(0)
-  
-  createdAt       DateTime  @default(now())
-  
-  views           ProductOfferView[]
-}
+// ProductOffer models removed in V6 schema cleanup
 
-model ProductOfferView {
-  id          String        @id @default(cuid())
-  offerId     String
-  offer       ProductOffer  @relation(fields: [offerId], references: [id])
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  viewedAt    DateTime      @default(now())
-  clickedAt   DateTime?
-  dismissed   Boolean       @default(false)
-  
-  @@unique([offerId, userId])
-}
-
-// --- Training Plans Models ---
-
-model TrainingPlan {
-  id              String    @id @default(cuid())
-
-  // Plan details
-  name            String
-  description     String
-  duration        Int       // Total weeks
-  level           String    // Enum: BEGINNER, INTERMEDIATE, ADVANCED
-
-  // Sport association
-  sportId         String
-
-  // Settings
-  isTemplate      Boolean   @default(true)  // Pre-built template vs custom
-  isPublic        Boolean   @default(true)
-  creatorId       String?   // null for system templates
-
-  // Metadata
-  imageUrl        String?
-  tags            String    // JSON array: ["marathon", "5K", "beginner"]
-
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  weeks           TrainingPlanWeek[]
-  userPlans       UserTrainingPlan[]
-
-  @@index([sportId, level])
-  @@index([isPublic])
-}
-
-model TrainingPlanWeek {
-  id              String    @id @default(cuid())
-  planId          String
-  plan            TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-
-  weekNumber      Int       // 1-indexed
-  title           String?   // e.g., "Base Building"
-  description     String?
-
-  workouts        TrainingPlanWorkout[]
-
-  @@unique([planId, weekNumber])
-  @@index([planId])
-}
-
-model TrainingPlanWorkout {
-  id              String    @id @default(cuid())
-  weekId          String
-  week            TrainingPlanWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
-
-  dayOfWeek       Int       // 0 = Monday, 6 = Sunday
-  title           String    // e.g., "Easy Run"
-  description     String?   // e.g., "Run at comfortable pace"
-
-  // Target metrics
-  targetType      String    // Enum: DISTANCE, DURATION, REST
-  targetValue     Float?    // km or minutes
-  targetUnit      String?   // "km", "min"
-
-  // Additional guidance
-  intensity       String?   // Enum: EASY, MODERATE, HARD, RACE_PACE
-  notes           String?   // JSON: { warmup: "10min", cooldown: "5min", intervals: [...] }
-
-  @@index([weekId])
-}
-
-model UserTrainingPlan {
-  id              String    @id @default(cuid())
-  userId          String
-  planId          String
-  plan            TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-
-  // Progress
-  startDate       DateTime
-  currentWeek     Int       @default(1)
-  status          String    @default("ACTIVE") // Enum: ACTIVE, PAUSED, COMPLETED, ABANDONED
-
-  // Completion tracking (JSON)
-  completedWorkouts String  @default("[]") // [{weekNumber, dayOfWeek, activityId, completedAt}]
-
-  completedAt     DateTime?
-  pausedAt        DateTime?
-
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@unique([userId, planId])
-  @@index([userId])
-}
+// TrainingPlan models removed in V6 schema cleanup
 
 // --- Benchmark / Personal Best (PB) Models ---
-
-enum BenchmarkMeasurementType {
-  TIME            // seconds; lower is better
-  DISTANCE        // meters/km; higher better
-  SPEED           // km/h; higher better
-  POWER           // watts; higher better
-  WEIGHT_REPS     // kg + reps; used to compute est 1RM, higher better
-  SCORE           // points, rating; higher better
-  COUNT           // reps, waves, matches; higher better
-  GRADE_LEVEL     // ordinal ladder (climbing grade, trick level); higher better
-  RESULT          // win/loss/draw or placing; mapped to score points
-}
+// Note: BenchmarkDefinition, UserBenchmarkBest, ActivityBenchmarkResult removed in V6
+// Kept enums below as they're used by PersonalRecord
 
 enum BenchmarkSource {
   MANUAL
@@ -1394,102 +1185,6 @@ enum BenchmarkVerificationStatus {
   UNVERIFIED
   VERIFIED_LINKED_ACTIVITY
   VERIFIED_IMPORT
-}
-
-enum ActivityResultSource {
-  AUTO
-  USER_CONFIRMED
-  USER_ENTERED
-}
-
-model BenchmarkDefinition {
-  id              String   @id @default(cuid())
-  sportId         String
-  slug            String   // unique per sport (e.g. "5k", "bench-1rm")
-  name            String   // display: "5K", "Bench Press 1RM", "Max Jump"
-  measurementType BenchmarkMeasurementType
-  unit            String   // "sec", "km", "m", "kg", "w", "points", "level"
-  higherIsBetter  Boolean  @default(true)
-
-  // JSON target specification:
-  // TIME/DISTANCE benchmarks may include {distanceMeters: 5000} or {durationSec: 1200}
-  targetJson      Json?
-
-  // Validity window (months) for ranking impact
-  validityMonths  Int      @default(24)
-  // Soft decay threshold (months)
-  decayAfterMonths Int     @default(12)
-
-  // Relative importance for Sport Index seeding
-  rankWeight      Float    @default(1.0)
-  isActive        Boolean  @default(true)
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  sport           Sport    @relation(fields: [sportId], references: [id], onDelete: Cascade)
-  userBests       UserBenchmarkBest[]
-  activityResults ActivityBenchmarkResult[]
-  paceBotRivalries PaceBotRivalry[]
-
-  @@unique([sportId, slug])
-  @@index([sportId, isActive])
-}
-
-model UserBenchmarkBest {
-  id                 String   @id @default(cuid())
-  userId             String
-  benchmarkId        String
-
-  // Store numeric canonical value:
-  // TIME => seconds; DISTANCE => meters; SPEED => kmh; POWER => watts; SCORE/COUNT/LEVEL => numeric
-  value              Float
-  achievedAt         DateTime
-  source             BenchmarkSource @default(MANUAL)
-  verificationStatus BenchmarkVerificationStatus @default(UNVERIFIED)
-  evidenceUrl        String?
-
-  // Convenience flags
-  isLegacy           Boolean  @default(false) // computed at write-time (older than validity window)
-
-  // v4.2: Auditability & traceability
-  externalActivityId String?  // Link to source activity (internal or external ID)
-  metadata           Json?    // Extra context: { race_name, conditions, elevation, etc. }
-  isEligibleGlobal   Boolean  @default(true)  // Computed: passes minTierGlobal check
-  isEligibleCountry  Boolean  @default(true)  // Computed: passes minTierCountry check
-  isEligibleCity     Boolean  @default(true)  // Computed: passes minTierCity check
-  isEligibleTeam     Boolean  @default(true)  // Computed: passes minTierTeam check
-
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  benchmark          BenchmarkDefinition @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, benchmarkId]) // latest/active PB per benchmark
-  @@index([userId])
-  @@index([benchmarkId])
-  @@index([isEligibleGlobal, benchmarkId])  // For efficient global leaderboard queries
-}
-
-model ActivityBenchmarkResult {
-  id               String   @id @default(cuid())
-  activityId       String
-  benchmarkId      String
-
-  value            Float
-  source           ActivityResultSource @default(AUTO)
-
-  isPersonalBest   Boolean  @default(false)
-  countsForRanking Boolean  @default(true)
-
-  computedAt       DateTime @default(now())
-
-  activity         Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  benchmark        BenchmarkDefinition @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
-
-  @@unique([activityId, benchmarkId])
-  @@index([benchmarkId])
 }
 
 // --- Strava Integration Models ---
@@ -2019,58 +1714,46 @@ model RivalryResult {
   @@index([loserUserId])
 }
 
-// --- PaceBot Rivalry System ---
-// Provides pseudo-rivalries for users without real rivals
+// --- V6: Head-to-Head Records (Persistent Rivalry Tracking) ---
 
-enum PaceBotPersona {
-  STEADY     // Consistent performer, slight edge
-  AGGRESSIVE // Always pushing, harder to beat
-  COMEBACK   // Starts slow but improves
-  RANDOM     // Wildcard - unpredictable
+model HeadToHead {
+  id              String    @id @default(cuid())
+
+  // User pair (user1Id < user2Id lexically to ensure uniqueness)
+  user1Id         String
+  user2Id         String
+
+  // All-time record
+  user1Wins       Int       @default(0)
+  user2Wins       Int       @default(0)
+  ties            Int       @default(0)
+  totalMatches    Int       @default(0)
+
+  // Power comparison
+  user1TotalPower Float     @default(0)  // Total Power earned in head-to-head matches
+  user2TotalPower Float     @default(0)
+
+  // Streak tracking
+  currentStreak   Int       @default(0)  // Positive = user1 streak, negative = user2 streak
+  user1BestStreak Int       @default(0)
+  user2BestStreak Int       @default(0)
+
+  // Last match info
+  lastMatchDate   DateTime?
+  lastMatchType   String?   // 'GAUNTLET' | 'RIVALRY' | 'RANK_BATTLE'
+  lastWinnerId    String?
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id])
+  @@index([user2Id])
+  @@index([totalMatches(sort: Desc)])
 }
 
-enum PaceBotRivalryStatus {
-  ACTIVE
-  WON   // User beat the PaceBot
-  LOST  // PaceBot won (user didn't improve)
-}
-
-model PaceBot {
-  id          String           @id @default(cuid())
-  label       String           // Display name e.g. "Steady Sam"
-  avatarUrl   String?          // Optional avatar
-  persona     PaceBotPersona
-  difficulty  String           @default("NORMAL") // EASY, NORMAL, HARD
-
-  // Rivalries using this PaceBot
-  rivalries   PaceBotRivalry[]
-
-  createdAt   DateTime         @default(now())
-
-  @@index([persona])
-}
-
-model PaceBotRivalry {
-  id            String               @id @default(cuid())
-  userId        String
-  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  paceBotId     String
-  paceBot       PaceBot              @relation(fields: [paceBotId], references: [id], onDelete: Cascade)
-  benchmarkId   String
-  benchmark     BenchmarkDefinition  @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
-
-  // Values at rivalry creation
-  userValue     Float                // User's PB value when rivalry started
-  paceBotValue  Float                // PaceBot's target (based on persona offset)
-
-  status        PaceBotRivalryStatus @default(ACTIVE)
-  createdAt     DateTime             @default(now())
-  resolvedAt    DateTime?            // When user won/lost
-
-  @@unique([userId, benchmarkId, status]) // One active rivalry per benchmark
-  @@index([userId, status])
-  @@index([benchmarkId])
-}
+// PaceBot models removed in V6 schema cleanup
 
 // --- V5: Rank Battles ---
 
@@ -2120,6 +1803,134 @@ model RankBattle {
   @@index([opponentId, status])
 }
 
+// --- V6: Gauntlet (User-Initiated 1v1 Challenges) ---
+
+enum GauntletStatus {
+  PENDING     // Waiting for opponent to accept
+  ACTIVE      // Challenge accepted and in progress
+  COMPLETED   // Challenge ended with a winner
+  DECLINED    // Opponent declined
+  EXPIRED     // No response within 48 hours
+  CANCELLED   // Challenger cancelled before acceptance
+}
+
+enum GauntletDuration {
+  ONE_DAY     // 24 hours
+  THREE_DAYS  // 72 hours
+  ONE_WEEK    // 7 days
+}
+
+model Gauntlet {
+  id              String            @id @default(cuid())
+
+  // Challenger (initiator)
+  challengerId    String
+  challenger      User              @relation("GauntletChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
+
+  // Opponent (challenged user)
+  opponentId      String
+  opponent        User              @relation("GauntletOpponent", fields: [opponentId], references: [id], onDelete: Cascade)
+
+  // Challenge configuration
+  duration        GauntletDuration  @default(THREE_DAYS)
+  message         String?           // Optional trash talk / challenge message
+
+  // Timing
+  createdAt       DateTime          @default(now())
+  respondedAt     DateTime?         // When opponent accepted/declined
+  startedAt       DateTime?         // When challenge officially starts
+  endsAt          DateTime?         // When challenge ends
+
+  // Status
+  status          GauntletStatus    @default(PENDING)
+
+  // Scores (Power accumulated during challenge period)
+  challengerPower Float             @default(0)
+  opponentPower   Float             @default(0)
+
+  // Result
+  winnerId        String?
+  winner          User?             @relation("GauntletWinner", fields: [winnerId], references: [id])
+
+  updatedAt       DateTime          @updatedAt
+
+  @@index([challengerId, status])
+  @@index([opponentId, status])
+  @@index([status, endsAt])
+}
+
+// --- V6: Season Mode (Monthly Competitions) ---
+
+enum SeasonStatus {
+  UPCOMING    // Not yet started
+  ACTIVE      // Currently running
+  COMPLETED   // Finished
+  ARCHIVED    // Old season, no longer visible
+}
+
+model Season {
+  id              String        @id @default(cuid())
+  name            String        // e.g., "January 2025", "Winter Championship"
+  description     String?
+
+  // Season timing
+  startDate       DateTime
+  endDate         DateTime
+
+  // Status
+  status          SeasonStatus  @default(UPCOMING)
+
+  // Season theme/badge
+  badgeIcon       String?       // Icon for season badge
+  badgeColor      String?       // Color theme
+
+  // Participation
+  participants    SeasonParticipant[]
+
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model SeasonParticipant {
+  id              String        @id @default(cuid())
+
+  seasonId        String
+  season          Season        @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Season performance
+  totalPower      Float         @default(0)
+  activityCount   Int           @default(0)
+
+  // Ranking (computed)
+  rank            Int?
+  previousRank    Int?          // For tracking movement
+
+  // Achievements in this season
+  badgesEarned    String[]      // Badge IDs earned this season
+
+  // Location for regional rankings
+  country         String?
+  city            String?
+
+  // Timestamps
+  joinedAt        DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([seasonId, userId])
+  @@index([seasonId, totalPower(sort: Desc)])
+  @@index([seasonId, country, totalPower(sort: Desc)])
+  @@index([seasonId, city, totalPower(sort: Desc)])
+  @@index([userId])
+}
+
 // --- Most Active / Universal Activity Score ---
 
 model UserActivityScore {
@@ -2134,7 +1945,7 @@ model UserActivityScore {
   windowDays    Int      @default(28) // 28-day rolling window
 
   // Computed values
-  totalEffort   Int      // Sum of effortPoints in window
+  totalPower    Int      // Sum of powerPoints in window
   activityScore Int      // Scaled 0-1000 for leaderboard
   activityCount Int      @default(0) // Number of activities in window
 
@@ -2150,16 +1961,16 @@ model UserActivityScore {
   @@index([asOfDate, windowDays, city, activityScore(sort: Desc)])
 }
 
-// --- V5: Weekly Effort Score ---
+// --- V6: Weekly Power Score ---
 
-model WeeklyEffortScore {
+model WeeklyPower {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   weekStart   DateTime // Monday 00:00 UTC
   weekEnd     DateTime // Sunday 23:59 UTC
-  totalScore  Float    @default(0)
+  totalPower  Float    @default(0) // Power = duration(min) × multiplier
 
   // Breakdown by intensity
   easyMinutes     Int   @default(0)  // RPE 1-4
@@ -2173,7 +1984,7 @@ model WeeklyEffortScore {
   updatedAt   DateTime @updatedAt
 
   @@unique([userId, weekStart])
-  @@index([weekStart, totalScore(sort: Desc)]) // For leaderboards
+  @@index([weekStart, totalPower(sort: Desc)]) // For leaderboards
   @@index([userId, weekStart])
 }
 
@@ -2437,196 +2248,17 @@ model GarminHealthConnection {
   updatedAt       DateTime                @updatedAt
 }
 
-// =============================================================================
-// CHAPTER 8: PACEBOT RIVALRIES
-// =============================================================================
+// PaceBotProfile removed in V6 schema cleanup
 
-model PaceBotProfile {
-  id              String    @id @default(cuid())
-  disciplineId    String?   // Optional: for discipline-specific bots
-  benchmarkId     String?   // Optional: link to BenchmarkDefinition
+// Cohort models removed in V6 schema cleanup
 
-  // Bot configuration
-  targetValue     Float     // Target time/score/distance
-  label           String    // "25:00 5K", "Sub-20 5K"
-  difficulty      String    @default("MEDIUM") // EASY, MEDIUM, HARD, ELITE
+// League models removed in V6 schema cleanup
 
-  // Display
-  avatarUrl       String?
-  bio             String?
-
-  isActive        Boolean   @default(true)
-
-  createdAt       DateTime  @default(now())
-
-  @@index([disciplineId, isActive])
-  @@index([benchmarkId, isActive])
-}
+// Perk model removed in V6 schema cleanup
 
 // =============================================================================
-// CHAPTER 9: WEEKLY COHORT SQUADS ("ROOKIE LEAGUE")
+// DYNAMIC TARGETS (kept from V5)
 // =============================================================================
-
-model Cohort {
-  id              String    @id @default(cuid())
-  label           String    // "Class of Jan 2026", "Week of 2026-01-06"
-  startAt         DateTime
-  endAt           DateTime
-
-  // Cohort type
-  cohortType      String    @default("WEEKLY") // WEEKLY, MONTHLY, SPECIAL
-
-  // Stats
-  memberCount     Int       @default(0)
-
-  createdAt       DateTime  @default(now())
-
-  members         CohortMember[]
-
-  @@index([startAt, endAt])
-  @@index([cohortType])
-}
-
-model CohortMember {
-  id              String    @id @default(cuid())
-  cohortId        String
-  cohort          Cohort    @relation(fields: [cohortId], references: [id], onDelete: Cascade)
-  userId          String
-
-  // Ranking within cohort
-  rank            Int?
-  score           Float?    // Sport Index or activity score
-
-  joinedAt        DateTime  @default(now())
-
-  @@unique([cohortId, userId])
-  @@index([userId])
-  @@index([cohortId, score(sort: Desc)])
-}
-
-// =============================================================================
-// CHAPTER 10: PRIVATE LEAGUES (CLUBS / COMPANIES)
-// =============================================================================
-
-enum LeagueType {
-  CLUB
-  COMPANY
-  FRIENDS
-  CUSTOM
-}
-
-enum LeagueVisibility {
-  PUBLIC
-  PRIVATE
-  INVITE_ONLY
-}
-
-enum LeagueMemberRole {
-  OWNER
-  ADMIN
-  MEMBER
-}
-
-model League {
-  id              String            @id @default(cuid())
-  name            String
-  slug            String            @unique
-  description     String?
-
-  // Branding
-  logoUrl         String?
-  coverPhotoUrl   String?
-
-  // Type and visibility
-  type            LeagueType        @default(CLUB)
-  visibility      LeagueVisibility  @default(PRIVATE)
-
-  // Invite code for private leagues
-  inviteCode      String?           @unique
-
-  // Owner
-  ownerId         String
-
-  // Stats
-  memberCount     Int               @default(0)
-
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  members         LeagueMember[]
-  leaderboardConfig LeagueLeaderboardConfig?
-
-  @@index([ownerId])
-  @@index([inviteCode])
-}
-
-model LeagueMember {
-  id              String            @id @default(cuid())
-  leagueId        String
-  league          League            @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  userId          String
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  role            LeagueMemberRole  @default(MEMBER)
-
-  // Stats within league
-  rank            Int?
-  score           Float?
-
-  joinedAt        DateTime          @default(now())
-
-  @@unique([leagueId, userId])
-  @@index([userId])
-  @@index([leagueId, score(sort: Desc)])
-}
-
-model LeagueLeaderboardConfig {
-  id                  String    @id @default(cuid())
-  leagueId            String    @unique
-  league              League    @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-
-  // Default discipline for leaderboard
-  defaultDisciplineId String?
-  defaultBenchmarkId  String?
-
-  // Default mode
-  modeDefault         String    @default("COMMUNITY") // CLUBHOUSE (COMMUNITY) or PRO_AM (VERIFIED)
-
-  // Scoring configuration
-  scoringType         String    @default("SPORT_INDEX") // SPORT_INDEX, BENCHMARK, ACTIVITY_SCORE
-
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-}
-
-// =============================================================================
-// CHAPTER 11: PERKS (TROPHY ROOM) + DYNAMIC TARGETS
-// =============================================================================
-
-model Perk {
-  id              String    @id @default(cuid())
-  title           String
-  description     String
-
-  // Partner info
-  partnerName     String?
-  partnerLogoUrl  String?
-  url             String?   // External link to perk
-
-  // Unlock requirements
-  minSportIndex   Int?      // Minimum Sport Index to unlock
-  requireVerified Boolean   @default(false) // Require Verified Athlete status
-
-  // Display
-  imageUrl        String?
-  category        String    @default("GENERAL") // GENERAL, GEAR, NUTRITION, TRAINING, RECOVERY
-
-  isActive        Boolean   @default(true)
-
-  createdAt       DateTime  @default(now())
-
-  @@index([isActive, minSportIndex])
-}
 
 enum TargetStatus {
   ACTIVE

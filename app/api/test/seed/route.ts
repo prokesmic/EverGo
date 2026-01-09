@@ -154,43 +154,9 @@ async function seedTeamMembership(userId: string) {
   return team
 }
 
-async function seedBenchmarkPBs(userId: string, sportId: string | null) {
-  // Get sport
-  const sport = sportId
-    ? await prisma.sport.findUnique({ where: { id: sportId } })
-    : await prisma.sport.findFirst()
-
-  if (!sport) return []
-
-  // Get benchmarks for this sport
-  const benchmarks = await prisma.benchmarkDefinition.findMany({
-    where: { sportId: sport.id, isActive: true },
-    take: 3,
-  })
-
-  // Create PBs for each benchmark
-  const pbs = []
-  for (const benchmark of benchmarks) {
-    pbs.push(
-      prisma.userBenchmarkBest.upsert({
-        where: {
-          userId_benchmarkId: { userId, benchmarkId: benchmark.id },
-        },
-        update: {},
-        create: {
-          userId,
-          benchmarkId: benchmark.id,
-          value: benchmark.higherIsBetter ? 100 + Math.random() * 50 : 300 + Math.random() * 60,
-          achievedAt: new Date(),
-          source: "MANUAL",
-          verificationStatus: "UNVERIFIED",
-          isLegacy: false,
-        },
-      })
-    )
-  }
-
-  return Promise.all(pbs)
+async function seedBenchmarkPBs(_userId: string, _sportId: string | null) {
+  // Benchmarks removed in V6
+  return []
 }
 
 async function seedUserSport(userId: string) {

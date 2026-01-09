@@ -31,16 +31,12 @@ export {
   formatStandingsDisplay,
 } from "./percentile"
 
-// Standings
-export {
-  getUserStandings,
-  getUserBestStanding,
-} from "./standings"
+// Standings removed in V6 (benchmark-based)
+export async function getUserStandings() { return [] }
+export async function getUserBestStanding() { return null }
 
-// Next Tier Ghost
-export {
-  getNextTierGhost,
-  getAllTierGhosts,
-} from "./nextTier"
-
-export type { NextTierGhost, NextTierResult } from "./nextTier"
+// Next Tier Ghost removed in V6 (benchmark-based)
+export async function getNextTierGhost() { return null }
+export async function getAllTierGhosts() { return [] }
+export type NextTierGhost = { targetValue: number; percentileLabel: string }
+export type NextTierResult = NextTierGhost | null

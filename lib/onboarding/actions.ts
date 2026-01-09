@@ -145,68 +145,14 @@ export async function completeOnboarding(rawInput: unknown) {
         })
       }
 
-      // 3. Create initial benchmark PB if provided
-      if (data.initialBenchmark?.benchmarkId) {
-        const benchmark = await tx.benchmarkDefinition.findUnique({
-          where: { id: data.initialBenchmark.benchmarkId },
-          select: { id: true },
-        })
-
-        if (benchmark) {
-          await tx.userBenchmarkBest.upsert({
-            where: {
-              userId_benchmarkId: {
-                userId: user.id,
-                benchmarkId: benchmark.id,
-              },
-            },
-            create: {
-              userId: user.id,
-              benchmarkId: benchmark.id,
-              value: data.initialBenchmark.value,
-              achievedAt: data.initialBenchmark.occurredAt
-                ? new Date(data.initialBenchmark.occurredAt)
-                : new Date(),
-              source: "MANUAL",
-              verificationStatus: "UNVERIFIED",
-              // Manual entry is eligible for local ranks but not global (per spec)
-              isEligibleGlobal: false,
-              isEligibleCountry: false, // Conservative: require verification
-              isEligibleCity: true, // Allow city rank
-              isEligibleTeam: true, // Allow team rank
-              metadata: {
-                rawInput: data.initialBenchmark.rawInput,
-                unit: data.initialBenchmark.unit,
-                source: "onboarding",
-              },
-            },
-            update: {
-              value: data.initialBenchmark.value,
-              achievedAt: data.initialBenchmark.occurredAt
-                ? new Date(data.initialBenchmark.occurredAt)
-                : new Date(),
-              source: "MANUAL",
-              verificationStatus: "UNVERIFIED",
-              isEligibleGlobal: false,
-              isEligibleCountry: false,
-              isEligibleCity: true,
-              isEligibleTeam: true,
-              metadata: {
-                rawInput: data.initialBenchmark.rawInput,
-                unit: data.initialBenchmark.unit,
-                source: "onboarding",
-              },
-            },
-          })
-        }
-      }
+      // 3. Benchmarks removed in V6 - skip initial benchmark creation
 
       // 4. Create/update UserStats if not exists
       await tx.userStats.upsert({
         where: { userId: user.id },
         create: {
           userId: user.id,
-          sportIndex: data.initialBenchmark ? 100 : 0, // Give small boost for benchmark entry
+          sportIndex: 0,
           country: data.countryName,
           city: actualCityName,
         },

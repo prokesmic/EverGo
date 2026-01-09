@@ -16,7 +16,7 @@ const iconMap = {
   rank: Trophy,
   battle: Swords,
   sync: Link2,
-  effort: Flame,
+  power: Flame,
 }
 
 const colorMap = {
@@ -24,7 +24,7 @@ const colorMap = {
   rank: 'bg-amber-100 text-amber-600',
   battle: 'bg-red-100 text-red-600',
   sync: 'bg-sky-100 text-sky-600',
-  effort: 'bg-orange-100 text-orange-600',
+  power: 'bg-violet-100 text-violet-600',
 }
 
 export function FirstWeekTips({ tips, className }: FirstWeekTipsProps) {

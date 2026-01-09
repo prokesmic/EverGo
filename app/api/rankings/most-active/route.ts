@@ -80,7 +80,7 @@ export async function GET(request: Request) {
       displayName: entry.user.displayName,
       avatarUrl: entry.user.avatarUrl,
       activityScore: entry.activityScore,
-      totalEffort: entry.totalEffort,
+      totalPower: entry.totalPower,
       activityCount: entry.activityCount,
       location: entry.user.city || entry.user.country || null,
     }))

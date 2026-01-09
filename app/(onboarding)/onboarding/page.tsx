@@ -59,16 +59,8 @@ export default async function OnboardingPage() {
     dbName: dbSportBySlug.get(sport.slug)!.name,
   }))
 
-  // Fetch benchmark definitions for step 3
-  const benchmarks = await prisma.benchmarkDefinition.findMany({
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-      unit: true,
-      higherIsBetter: true,
-    },
-  })
+  // Benchmarks removed in V6
+  const benchmarks: { id: string; slug: string; name: string; unit: string; higherIsBetter: boolean }[] = []
 
   // Get any pre-existing user data to pre-fill
   const initialData = await getOnboardingData()

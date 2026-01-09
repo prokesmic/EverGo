@@ -7,7 +7,7 @@ import { startOfWeek } from 'date-fns'
  *
  * Triggers encouraging notifications when users are close to:
  * - Ranking up (within X points of next rank)
- * - Weekly effort goal
+ * - Weekly power goal
  * - Winning their rank battle
  * - First week milestones
  */
@@ -27,28 +27,28 @@ export async function checkAlmostThere(userId: string): Promise<AlmostThereCheck
   const checks: AlmostThereCheck[] = []
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
 
-  // Get user's current week effort score
-  const weeklyScore = await prisma.weeklyEffortScore.findUnique({
+  // Get user's current week power score
+  const weeklyScore = await prisma.weeklyPower.findUnique({
     where: { userId_weekStart: { userId, weekStart } },
   })
 
-  const currentScore = weeklyScore?.totalScore ?? 0
+  const currentScore = weeklyScore?.totalPower ?? 0
 
   // Check 1: Almost ranking up (check against user above in leaderboard)
-  const userAbove = await prisma.weeklyEffortScore.findFirst({
+  const userAbove = await prisma.weeklyPower.findFirst({
     where: {
       weekStart,
-      totalScore: { gt: currentScore },
+      totalPower: { gt: currentScore },
     },
-    orderBy: { totalScore: 'asc' },
+    orderBy: { totalPower: 'asc' },
     select: {
-      totalScore: true,
+      totalPower: true,
       user: { select: { displayName: true } },
     },
   })
 
   if (userAbove) {
-    const pointsNeeded = userAbove.totalScore - currentScore
+    const pointsNeeded = userAbove.totalPower - currentScore
     if (pointsNeeded <= RANK_UP_THRESHOLD_POINTS && pointsNeeded > 0) {
       checks.push({
         type: 'ALMOST_RANK_UP',

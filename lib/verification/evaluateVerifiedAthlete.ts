@@ -60,17 +60,9 @@ export async function evaluateVerifiedAthlete(
     },
   })
 
-  // Check for verified PB
-  const verifiedPbCount = await prisma.userBenchmarkBest.count({
-    where: {
-      userId,
-      source: { not: "MANUAL" },
-    },
-  })
-
-  const hasVerifiedPb = verifiedPbCount > 0
+  // Benchmark PB check removed in V6 - verified status based on activity count only
   const activitiesMet = verifiedActivityCount >= REQUIRED_ACTIVITIES
-  const isVerified = activitiesMet && hasVerifiedPb
+  const isVerified = activitiesMet
 
   // Get existing user stats
   const userStats = await prisma.userStats.findUnique({
@@ -90,11 +82,11 @@ export async function evaluateVerifiedAthlete(
     isVerified,
     verifiedSince,
     verifiedActivityCount,
-    hasVerifiedPb,
+    hasVerifiedPb: true, // Deprecated in V6 - always true
     requirements: {
       activitiesNeeded: Math.max(0, REQUIRED_ACTIVITIES - verifiedActivityCount),
       activitiesMet,
-      pbMet: hasVerifiedPb,
+      pbMet: true, // Deprecated in V6
     },
   }
 }

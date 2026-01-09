@@ -191,13 +191,6 @@ async function calculateParticipantScore(
       // Exclude anomalous activities
       isAnomalous: false,
     },
-    include: {
-      benchmarkResults: competition.benchmarkId
-        ? {
-            where: { benchmarkId: competition.benchmarkId },
-          }
-        : undefined,
-    },
   })
 
   if (activities.length === 0) {
@@ -234,45 +227,23 @@ async function calculateParticipantScore(
       break
 
     case "TIME":
-      // For benchmark-based competitions, find best time
-      if (competition.scoringMode === "BENCHMARK") {
-        const times = activities
-          .flatMap((a) => a.benchmarkResults ?? [])
-          .filter((r) => r.value != null)
-          .map((r) => r.value)
-        rawValue = times.length > 0 ? Math.min(...times) : 0
-        // Invert for scoring (lower time = higher score)
-        score = rawValue > 0 ? 10000 / rawValue : 0
-      } else {
-        rawValue = Math.min(
-          ...activities.filter((a) => a.durationSeconds).map((a) => a.durationSeconds!)
-        )
-        score = rawValue > 0 ? 10000 / rawValue : 0
-      }
+      // Best time from activities
+      rawValue = Math.min(
+        ...activities.filter((a) => a.durationSeconds).map((a) => a.durationSeconds!)
+      )
+      score = rawValue > 0 ? 10000 / rawValue : 0
       break
 
     case "REPS":
-      // For benchmark results with rep counts
-      if (competition.benchmarkId) {
-        const reps = activities
-          .flatMap((a) => a.benchmarkResults ?? [])
-          .filter((r) => r.value != null)
-          .map((r) => r.value)
-        rawValue = reps.length > 0 ? Math.max(...reps) : 0
-        score = rawValue
-      }
+      // Benchmarks removed in V6 - use activity count as fallback
+      rawValue = activities.length
+      score = rawValue
       break
 
     case "SCORE":
-      // For benchmark results with scores
-      if (competition.benchmarkId) {
-        const results = activities
-          .flatMap((a) => a.benchmarkResults ?? [])
-          .filter((r) => r.value != null)
-          .map((r) => r.value)
-        rawValue = results.length > 0 ? Math.max(...results) : 0
-        score = rawValue
-      }
+      // Benchmarks removed in V6 - use session count as fallback
+      rawValue = activities.length
+      score = rawValue
       break
 
     case "ELEVATION_GAIN":

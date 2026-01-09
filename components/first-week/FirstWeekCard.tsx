@@ -43,8 +43,8 @@ export function FirstWeekCard({ progress, className }: FirstWeekCardProps) {
             </div>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold">{progress.effortScore}</p>
-            <p className="text-xs text-white/70">effort pts</p>
+            <p className="text-2xl font-bold">{progress.power}</p>
+            <p className="text-xs text-white/70">Power</p>
           </div>
         </div>
 
@@ -76,7 +76,7 @@ export function FirstWeekCard({ progress, className }: FirstWeekCardProps) {
           />
           <MilestoneItem
             completed={progress.milestones.weeklyGoal}
-            label="Reach 100 effort points"
+            label="Reach 100 Power"
           />
           <MilestoneItem
             completed={progress.milestones.fiveActivities}

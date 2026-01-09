@@ -191,157 +191,14 @@ async function computeSportIndexRank(
 // BENCHMARK RANKING (specific benchmark)
 // ============================================================================
 
+// Benchmark rank tiles removed in V6 - benchmarks deprecated
 async function getBenchmarkRankTiles(
-  ctx: UserContext,
-  benchmarkId: string,
-  mode: LeaderboardMode = "COMMUNITY"
+  _ctx: UserContext,
+  _benchmarkId: string,
+  _mode: LeaderboardMode = "COMMUNITY"
 ): Promise<Record<RankTileScope, RankTile>> {
-  // Get benchmark definition to know if higher is better
-  const benchmark = await prisma.benchmarkDefinition.findUnique({
-    where: { id: benchmarkId },
-    select: { higherIsBetter: true },
-  })
-
-  if (!benchmark) {
-    return getDefaultTiles()
-  }
-
-  // Get user's best for this benchmark
-  const userBest = await prisma.userBenchmarkBest.findUnique({
-    where: {
-      userId_benchmarkId: {
-        userId: ctx.id,
-        benchmarkId,
-      },
-    },
-    select: { value: true },
-  })
-
-  const userValue = userBest?.value ?? null
-
-  // Get team member IDs if user has a team
-  let teamMemberIds: string[] = []
-  if (ctx.primaryTeamId) {
-    const members = await prisma.teamMember.findMany({
-      where: { teamId: ctx.primaryTeamId },
-      select: { userId: true },
-    })
-    teamMemberIds = members.map((m) => m.userId)
-  }
-
-  // Parallel rank calculations
-  const [globalRank, countryRank, cityRank, teamRank] = await Promise.all([
-    // GLOBAL
-    userValue !== null
-      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, {}, "global", mode)
-      : Promise.resolve(null),
-
-    // COUNTRY
-    ctx.country && userValue !== null
-      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, { country: ctx.country }, "country", mode)
-      : Promise.resolve(null),
-
-    // CITY
-    ctx.city && userValue !== null
-      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, { city: ctx.city, country: ctx.country }, "city", mode)
-      : Promise.resolve(null),
-
-    // TEAM
-    ctx.primaryTeamId && teamMemberIds.length > 0 && userValue !== null
-      ? computeBenchmarkRank(userValue, benchmarkId, benchmark.higherIsBetter, { id: { in: teamMemberIds } }, "team", mode)
-      : Promise.resolve(null),
-  ])
-
-  const defaultTile = (scope: RankTileScope, missingField?: "country" | "city" | "team"): RankTile => ({
-    scope,
-    rank: null,
-    total: 0,
-    value: userValue,
-    missingField,
-  })
-
-  return {
-    global: globalRank
-      ? { scope: "global", rank: globalRank.rank, total: globalRank.total, value: userValue }
-      : defaultTile("global"),
-    country: countryRank
-      ? { scope: "country", rank: countryRank.rank, total: countryRank.total, value: userValue, scopeValue: ctx.country ?? undefined }
-      : defaultTile("country", ctx.country ? undefined : "country"),
-    city: cityRank
-      ? { scope: "city", rank: cityRank.rank, total: cityRank.total, value: userValue, scopeValue: ctx.city ?? undefined }
-      : defaultTile("city", ctx.city ? undefined : "city"),
-    team: teamRank
-      ? { scope: "team", rank: teamRank.rank, total: teamRank.total, value: userValue, scopeValue: ctx.primaryTeamName ?? undefined }
-      : defaultTile("team", ctx.primaryTeamId ? undefined : "team"),
-  }
-}
-
-/**
- * Get the eligibility field name for a given scope
- */
-function getEligibilityField(scope: RankTileScope): string {
-  switch (scope) {
-    case "global":
-      return "isEligibleGlobal"
-    case "country":
-      return "isEligibleCountry"
-    case "city":
-      return "isEligibleCity"
-    case "team":
-      return "isEligibleTeam"
-    default:
-      return "isEligibleGlobal"
-  }
-}
-
-async function computeBenchmarkRank(
-  value: number,
-  benchmarkId: string,
-  higherIsBetter: boolean,
-  userFilter: Record<string, unknown>,
-  scope: RankTileScope = "global",
-  mode: LeaderboardMode = "COMMUNITY"
-): Promise<{ rank: number; total: number }> {
-  // Count how many users have a better score
-  const betterThan = higherIsBetter ? { gt: value } : { lt: value }
-
-  // Build eligibility filter
-  const eligibilityFilter: Record<string, unknown> = {}
-
-  // In VERIFIED mode, exclude manual entries
-  if (mode === "VERIFIED") {
-    eligibilityFilter.source = { not: "MANUAL" }
-  }
-
-  // Filter by scope-specific eligibility flag
-  const eligibilityField = getEligibilityField(scope)
-  eligibilityFilter[eligibilityField] = true
-
-  const [betterCount, total] = await Promise.all([
-    prisma.userBenchmarkBest.count({
-      where: {
-        benchmarkId,
-        value: betterThan,
-        ...eligibilityFilter,
-        user: {
-          privacyLevel: { not: "PRIVATE" },
-          ...userFilter,
-        },
-      },
-    }),
-    prisma.userBenchmarkBest.count({
-      where: {
-        benchmarkId,
-        ...eligibilityFilter,
-        user: {
-          privacyLevel: { not: "PRIVATE" },
-          ...userFilter,
-        },
-      },
-    }),
-  ])
-
-  return { rank: betterCount + 1, total }
+  console.warn("[Deprecated] Benchmark rank tiles removed in V6")
+  return getDefaultTiles()
 }
 
 // ============================================================================
@@ -362,22 +219,11 @@ async function _getHeroRankLensSnapshot(
 ): Promise<HeroRankLensSnapshot> {
   const { userId, sportId, benchmarkId, mode = "COMMUNITY" } = params
 
-  // Get sport info and benchmarks in parallel with user context
-  const [sport, benchmarks, userCtx] = await Promise.all([
+  // Get sport info and user context (benchmarks removed in V6)
+  const [sport, userCtx] = await Promise.all([
     prisma.sport.findUnique({
       where: { id: sportId },
       select: { id: true, name: true, slug: true },
-    }),
-    prisma.benchmarkDefinition.findMany({
-      where: { sportId, isActive: true },
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        unit: true,
-        higherIsBetter: true,
-      },
-      orderBy: { rankWeight: "desc" },
     }),
     getUserContext(userId),
   ])
@@ -386,17 +232,17 @@ async function _getHeroRankLensSnapshot(
     throw new Error(`Sport not found: ${sportId}`)
   }
 
-  // Find current benchmark if specified
-  const currentBenchmark = benchmarkId
-    ? benchmarks.find((b) => b.id === benchmarkId) ?? null
-    : null
+  // Benchmarks deprecated in V6 - always use Sport Index tiles
+  const benchmarks: BenchmarkOption[] = []
+  const currentBenchmark = null
 
-  // Get rank tiles based on whether we're showing Sport Index or a specific benchmark
+  // Get rank tiles - always use Sport Index (benchmarks removed)
   let tiles: Record<RankTileScope, RankTile>
 
   if (!userCtx) {
     tiles = getDefaultTiles()
-  } else if (benchmarkId && currentBenchmark) {
+  } else if (benchmarkId) {
+    // Legacy support - return default tiles for benchmark requests
     tiles = await getBenchmarkRankTiles(userCtx, benchmarkId, mode)
   } else {
     tiles = await getSportIndexRankTiles(userCtx, sportId)
@@ -428,20 +274,11 @@ export const getHeroRankLensSnapshot = unstable_cache(
 )
 
 /**
- * Get available benchmarks for a sport (for dropdown)
+ * Get available benchmarks for a sport (deprecated in V6)
  */
-export async function getSportBenchmarks(sportId: string): Promise<BenchmarkOption[]> {
-  return prisma.benchmarkDefinition.findMany({
-    where: { sportId, isActive: true },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-      unit: true,
-      higherIsBetter: true,
-    },
-    orderBy: { rankWeight: "desc" },
-  })
+export async function getSportBenchmarks(_sportId: string): Promise<BenchmarkOption[]> {
+  console.warn("[Deprecated] Benchmarks removed in V6")
+  return []
 }
 
 /**

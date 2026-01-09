@@ -17,7 +17,7 @@ interface FloatingRankPillProps {
   global: RankData
   country: RankData | null
   city: RankData | null
-  effortScore: number
+  power: number
   className?: string
 }
 
@@ -27,7 +27,7 @@ export function FloatingRankPill({
   global,
   country,
   city,
-  effortScore,
+  power,
   className,
 }: FloatingRankPillProps) {
   const [activeScope, setActiveScope] = useState<Scope>('global')
@@ -97,10 +97,10 @@ export function FloatingRankPill({
               </p>
             </div>
 
-            {/* Effort score */}
-            <div className="flex items-center justify-between p-2 bg-orange-50 rounded-lg">
-              <span className="text-xs text-orange-700 font-medium">Weekly Effort</span>
-              <span className="text-sm font-bold text-orange-600">{effortScore} pts</span>
+            {/* Power score */}
+            <div className="flex items-center justify-between p-2 bg-violet-50 rounded-lg">
+              <span className="text-xs text-violet-700 font-medium">Weekly Power</span>
+              <span className="text-sm font-bold text-violet-600">{power}</span>
             </div>
 
             {/* Link to full rankings */}
@@ -161,10 +161,10 @@ export function FloatingRankPill({
           {delta !== 0 && Math.abs(delta)}
         </div>
 
-        {/* Effort score */}
+        {/* Power score */}
         <div className="border-l border-slate-200 pl-2 ml-1">
-          <span className="text-sm font-semibold text-orange-600">{effortScore}</span>
-          <span className="text-xs text-slate-400 ml-0.5">pts</span>
+          <span className="text-sm font-semibold text-violet-600">{power}</span>
+          <span className="text-xs text-slate-400 ml-0.5">PWR</span>
         </div>
       </motion.button>
     </div>

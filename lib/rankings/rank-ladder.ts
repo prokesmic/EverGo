@@ -56,10 +56,10 @@ async function _getRankLadder(
   }
   // global = no additional filter
 
-  // Get all scores for this week in scope, ordered by score desc
-  const allScores = await prisma.weeklyEffortScore.findMany({
+  // Get all power scores for this week in scope, ordered by power desc
+  const allScores = await prisma.weeklyPower.findMany({
     where: whereClause,
-    orderBy: { totalScore: 'desc' },
+    orderBy: { totalPower: 'desc' },
     include: {
       user: {
         select: {
@@ -76,15 +76,15 @@ async function _getRankLadder(
   const lastWeekStart = new Date(weekStart)
   lastWeekStart.setDate(lastWeekStart.getDate() - 7)
 
-  const lastWeekScores = await prisma.weeklyEffortScore.findMany({
+  const lastWeekScores = await prisma.weeklyPower.findMany({
     where: {
       ...whereClause,
       weekStart: lastWeekStart
     },
-    select: { userId: true, totalScore: true }
+    select: { userId: true, totalPower: true }
   })
 
-  const lastWeekMap = new Map(lastWeekScores.map(s => [s.userId, s.totalScore]))
+  const lastWeekMap = new Map(lastWeekScores.map(s => [s.userId, s.totalPower]))
 
   // Find user's position
   const userIndex = allScores.findIndex(s => s.userId === userId)
@@ -111,15 +111,15 @@ async function _getRankLadder(
   const entries: RankLadderEntry[] = allScores
     .slice(startIndex, endIndex)
     .map((score, idx) => {
-      const lastWeekScore = lastWeekMap.get(score.userId) ?? 0
-      const delta = Math.round(score.totalScore - lastWeekScore)
+      const lastWeekPower = lastWeekMap.get(score.userId) ?? 0
+      const delta = Math.round(score.totalPower - lastWeekPower)
 
       return {
         userId: score.userId,
         username: score.user.username,
         displayName: score.user.displayName,
         avatarUrl: score.user.avatarUrl,
-        score: Math.round(score.totalScore),
+        score: Math.round(score.totalPower),
         rank: startIndex + idx + 1,
         delta,
         isCurrentUser: score.userId === userId
@@ -132,12 +132,12 @@ async function _getRankLadder(
 
   if (userIndex > 0) {
     pointsBehindPrevRank = Math.round(
-      allScores[userIndex - 1].totalScore - allScores[userIndex].totalScore
+      allScores[userIndex - 1].totalPower - allScores[userIndex].totalPower
     )
   }
   if (userIndex >= 0 && userIndex < allScores.length - 1) {
     pointsToNextRank = Math.round(
-      allScores[userIndex].totalScore - allScores[userIndex + 1].totalScore
+      allScores[userIndex].totalPower - allScores[userIndex + 1].totalPower
     )
   }
 

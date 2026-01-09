@@ -1,10 +1,10 @@
 /**
- * Effort Points System
+ * Power Points System (V6 - rebranded from Effort Points)
  *
- * Provides a normalized "effort" score for any activity, making them
+ * Provides a normalized "power" score for any activity, making them
  * comparable across different sports for the "Most Active" leaderboard.
  *
- * Formula: effortPoints = durationMin * intensityFactor * sportFactor
+ * Formula: powerPoints = durationMin * intensityFactor * sportFactor
  *
  * - intensityFactor is determined by HR, power, or RPE
  * - sportFactor approximates MET baseline for the sport
@@ -80,7 +80,7 @@ const SPORT_FACTORS: Record<string, number> = {
   golf: 0.4,
 }
 
-export type ComputeEffortInput = {
+export type ComputePowerInput = {
   sportSlug: string
   durationMin: number
   distanceKm?: number | null
@@ -90,12 +90,15 @@ export type ComputeEffortInput = {
   rpe?: number | null // 1-10 scale
 }
 
+// Legacy alias
+export type ComputeEffortInput = ComputePowerInput
+
 /**
- * Compute effort points for an activity.
+ * Compute power points for an activity.
  *
- * @returns A normalized effort score (typically 0-500 for a 1-hour workout)
+ * @returns A normalized power score (typically 0-500 for a 1-hour workout)
  */
-export function computeEffortPoints(input: ComputeEffortInput): number {
+export function computePowerPoints(input: ComputePowerInput): number {
   const {
     sportSlug,
     durationMin,
@@ -129,29 +132,32 @@ export function computeEffortPoints(input: ComputeEffortInput): number {
     intensity = 0.4 + (Math.min(10, Math.max(1, rpe)) / 10) * 1.4
   }
 
-  // Calculate final effort points
+  // Calculate final power points
   // A moderate 60-min run would be: 60 * 1.0 * 1.2 = 72 points
-  const effortPoints = Math.round(base * intensity * sportFactor)
+  const powerPoints = Math.round(base * intensity * sportFactor)
 
-  return effortPoints
+  return powerPoints
 }
 
+// Legacy alias
+export const computeEffortPoints = computePowerPoints
+
 /**
- * Compute the "activity score" from total effort points.
+ * Compute the "activity score" from total power points.
  * Uses a logarithmic scale to prevent super-active users from dominating.
  *
- * Target: ~10,000 effort in 28 days for a very active user = score of 1000
+ * Target: ~10,000 power in 28 days for a very active user = score of 1000
  *
- * @param totalEffort Sum of effortPoints over the window
+ * @param totalPower Sum of powerPoints over the window
  * @returns Score from 0-1000
  */
-export function computeActivityScore(totalEffort: number): number {
-  if (totalEffort <= 0) return 0
+export function computeActivityScore(totalPower: number): number {
+  if (totalPower <= 0) return 0
 
-  // Log scale: 1000 * log(1 + effort) / log(1 + 10000)
-  // This gives diminishing returns as effort increases
+  // Log scale: 1000 * log(1 + power) / log(1 + 10000)
+  // This gives diminishing returns as power increases
   const score = Math.round(
-    (1000 * Math.log(1 + totalEffort)) / Math.log(1 + 10000)
+    (1000 * Math.log(1 + totalPower)) / Math.log(1 + 10000)
   )
 
   return Math.min(1000, Math.max(0, score))

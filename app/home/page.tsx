@@ -7,7 +7,6 @@ import { AthleteRibbon, type RankCardData } from "@/components/home/AthleteRibbo
 import { PulseRail } from "@/components/vapor/PulseRail"
 import { CompeteNowDeckWrapper } from "@/components/home/CompeteNowDeckWrapper"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
-import { PartnerFinderWidget } from "@/components/social/partner-finder-widget"
 import { PeopleToFollow } from "@/components/widgets/PeopleToFollow"
 import { CreatePostBox } from "@/components/feed/create-post-box"
 import { Feed } from "@/components/feed/feed"
@@ -18,20 +17,24 @@ import { VirtualizedFollowingFeed } from "@/components/home/VirtualizedFollowing
 import { HomeFeedTabs } from "@/components/home/HomeFeedTabs"
 import { getUserRankScopes } from "@/lib/leaderboards"
 import { getHeroRankLensSnapshot, getUserPrimarySport } from "@/lib/rankings/hero-rank-lens"
-// V5 Components
+// V6 Components
 import { FirstWeekCard } from "@/components/first-week/FirstWeekCard"
 import { FirstWeekTips } from "@/components/first-week/FirstWeekTips"
 import { RankLadder } from "@/components/rankings/RankLadder"
 import { RankBattleCard } from "@/components/battles/RankBattleCard"
 import { AlmostThereCard } from "@/components/notifications/AlmostThereCard"
-import { EffortScoreCard } from "@/components/effort/EffortScoreCard"
+import { PowerCard } from "@/components/power/PowerCard"
 import { FloatingRankPill } from "@/components/rankings/FloatingRankPill"
-// V5 Data fetching
+import { GauntletCard } from "@/components/gauntlet/GauntletCard"
+import { SeasonCard } from "@/components/season/SeasonCard"
+// V6 Data fetching
 import { getFirstWeekProgress, getFirstWeekTips } from "@/lib/first-week"
-import { getRankLadder, getUserRankScopes as getEffortRankScopes } from "@/lib/rankings/rank-ladder"
+import { getRankLadder, getUserRankScopes as getPowerRankScopes } from "@/lib/rankings/rank-ladder"
 import { getUserActiveBattle } from "@/lib/rank-battles"
 import { getAlmostThereInsights } from "@/lib/almost-there"
-import { getUserWeeklyEffort } from "@/lib/effort-score"
+import { getUserWeeklyPower } from "@/lib/power"
+import { getActiveGauntlet, getPendingInvitations } from "@/lib/gauntlet"
+import { getCurrentSeason, getUserSeasonRank } from "@/lib/season"
 import { isFeatureEnabled } from "@/lib/features"
 
 export const dynamic = 'force-dynamic'
@@ -238,47 +241,66 @@ export default async function HomePage() {
     const rankCards = buildRankCards()
 
     // ============================================
-    // V5 DATA FETCHING - Effort Score, Rank Ladder, Battles
+    // V6 DATA FETCHING - Power Score, Rank Ladder, Battles
     // ============================================
     let firstWeekProgress = null
     let firstWeekTips: any[] = []
     let rankLadder = null
     let activeBattle = null
     let almostThereInsights: any[] = []
-    let weeklyEffort = null
-    let effortRankScopes = null
+    let weeklyPower = null
+    let powerRankScopes = null
+    let activeGauntlet = null
+    let pendingGauntlets: any[] = []
+    let currentSeason = null
+    let userSeasonRank = null
 
-    if (isFeatureEnabled('effortScore') || isFeatureEnabled('rankLadder') || isFeatureEnabled('rankBattles')) {
+    if (isFeatureEnabled('power') || isFeatureEnabled('rankLadder') || isFeatureEnabled('rankBattles') || isFeatureEnabled('gauntlet') || isFeatureEnabled('season')) {
       try {
-        const v5Results = await Promise.allSettled([
+        const v6Results = await Promise.allSettled([
           getFirstWeekProgress(user.id),
           getRankLadder(user.id, 'global'),
           getUserActiveBattle(user.id),
           getAlmostThereInsights(user.id),
-          getUserWeeklyEffort(user.id),
-          getEffortRankScopes(user.id),
+          getUserWeeklyPower(user.id),
+          getPowerRankScopes(user.id),
+          getActiveGauntlet(user.id),
+          getPendingInvitations(user.id),
+          getCurrentSeason(),
         ])
 
-        if (v5Results[0].status === 'fulfilled') {
-          firstWeekProgress = v5Results[0].value
+        if (v6Results[0].status === 'fulfilled') {
+          firstWeekProgress = v6Results[0].value
           if (firstWeekProgress) {
             firstWeekTips = getFirstWeekTips(firstWeekProgress)
           }
         }
-        if (v5Results[1].status === 'fulfilled') rankLadder = v5Results[1].value
-        if (v5Results[2].status === 'fulfilled') activeBattle = v5Results[2].value
-        if (v5Results[3].status === 'fulfilled') almostThereInsights = v5Results[3].value
-        if (v5Results[4].status === 'fulfilled') weeklyEffort = v5Results[4].value
-        if (v5Results[5].status === 'fulfilled') effortRankScopes = v5Results[5].value
+        if (v6Results[1].status === 'fulfilled') rankLadder = v6Results[1].value
+        if (v6Results[2].status === 'fulfilled') activeBattle = v6Results[2].value
+        if (v6Results[3].status === 'fulfilled') almostThereInsights = v6Results[3].value
+        if (v6Results[4].status === 'fulfilled') weeklyPower = v6Results[4].value
+        if (v6Results[5].status === 'fulfilled') powerRankScopes = v6Results[5].value
+        if (v6Results[6].status === 'fulfilled') activeGauntlet = v6Results[6].value
+        if (v6Results[7].status === 'fulfilled') pendingGauntlets = v6Results[7].value || []
+        if (v6Results[8].status === 'fulfilled') currentSeason = v6Results[8].value
+
+        // Fetch user's season rank if season exists
+        if (currentSeason) {
+          try {
+            userSeasonRank = await getUserSeasonRank(user.id, currentSeason.id)
+          } catch (e) {
+            console.error('[Home V6] Failed to fetch userSeasonRank:', e)
+          }
+        }
 
         // Log failures
-        v5Results.forEach((r, i) => {
+        v6Results.forEach((r, i) => {
           if (r.status === 'rejected') {
-            console.error(`[Home V5] Promise ${i} failed:`, r.reason)
+            console.error(`[Home V6] Promise ${i} failed:`, r.reason)
           }
         })
       } catch (e) {
-        console.error("[Home V5] Failed to fetch V5 data:", e)
+        console.error("[Home V6] Failed to fetch V6 data:", e)
       }
     }
 
@@ -365,6 +387,29 @@ export default async function HomePage() {
                 </div>
               )}
 
+              {/* V6: Active Gauntlet Challenge */}
+              {activeGauntlet && isFeatureEnabled('gauntlet') && (
+                <div data-testid="home-slot-gauntlet">
+                  <GauntletCard
+                    gauntlet={activeGauntlet}
+                    currentUserId={user.id}
+                  />
+                </div>
+              )}
+
+              {/* V6: Pending Gauntlet Invitations */}
+              {pendingGauntlets.length > 0 && isFeatureEnabled('gauntlet') && (
+                <div data-testid="home-slot-gauntlet-invites" className="space-y-3">
+                  {pendingGauntlets.map((gauntlet: any) => (
+                    <GauntletCard
+                      key={gauntlet.id}
+                      gauntlet={gauntlet}
+                      currentUserId={user.id}
+                    />
+                  ))}
+                </div>
+              )}
+
               {/* Compete Now Deck - Rivalries, Challenges, Battles */}
               <div data-testid="home-slot-compete">
                 <CompeteNowDeckWrapper />
@@ -389,14 +434,27 @@ export default async function HomePage() {
 
             {/* SIDEBAR (Span 4) - Planning & Future */}
             <aside className="lg:col-span-4 space-y-4">
-              {/* V5: Weekly Effort Score */}
-              {weeklyEffort && isFeatureEnabled('effortScore') && (
-                <EffortScoreCard
-                  currentScore={weeklyEffort.currentScore}
-                  delta={weeklyEffort.delta}
-                  percentChange={weeklyEffort.percentChange}
-                  breakdown={weeklyEffort.breakdown}
-                  activityCount={weeklyEffort.activityCount}
+              {/* V6: Weekly Power Score */}
+              {weeklyPower && isFeatureEnabled('power') && (
+                <PowerCard
+                  currentPower={weeklyPower.currentPower}
+                  delta={weeklyPower.delta}
+                  percentChange={weeklyPower.percentChange}
+                  breakdown={weeklyPower.breakdown}
+                  activityCount={weeklyPower.activityCount}
+                />
+              )}
+
+              {/* V6: Current Season */}
+              {currentSeason && isFeatureEnabled('season') && (
+                <SeasonCard
+                  season={currentSeason}
+                  userStats={userSeasonRank ? {
+                    totalPower: userSeasonRank.totalPower,
+                    activityCount: userSeasonRank.activityCount,
+                    rank: userSeasonRank.rank,
+                    total: userSeasonRank.total,
+                  } : null}
                 />
               )}
 
@@ -416,8 +474,7 @@ export default async function HomePage() {
               {/* 1. Upcoming Events (Immediate Future) */}
               <CalendarWidget />
 
-              {/* 2. Partner Finder (Social Planning) */}
-              {isFeatureEnabled('partnerFinder') && <PartnerFinderWidget />}
+              {/* Partner Finder removed in V6 */}
 
               {/* 3. People to Follow (Discovery) */}
               <div className="hidden lg:block">
@@ -428,24 +485,24 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* V5: Mobile Floating Rank Pill */}
-        {effortRankScopes && weeklyEffort && isFeatureEnabled('floatingRankPill') && (
+        {/* V6: Mobile Floating Rank Pill */}
+        {powerRankScopes && weeklyPower && isFeatureEnabled('floatingRankPill') && (
           <FloatingRankPill
             global={{
-              rank: effortRankScopes.global.rank,
-              total: effortRankScopes.global.total,
+              rank: powerRankScopes.global.rank,
+              total: powerRankScopes.global.total,
             }}
-            country={effortRankScopes.country.rank ? {
-              rank: effortRankScopes.country.rank,
-              total: effortRankScopes.country.total,
-              scopeValue: effortRankScopes.country.scopeValue,
+            country={powerRankScopes.country.rank ? {
+              rank: powerRankScopes.country.rank,
+              total: powerRankScopes.country.total,
+              scopeValue: powerRankScopes.country.scopeValue,
             } : null}
-            city={effortRankScopes.city.rank ? {
-              rank: effortRankScopes.city.rank,
-              total: effortRankScopes.city.total,
-              scopeValue: effortRankScopes.city.scopeValue,
+            city={powerRankScopes.city.rank ? {
+              rank: powerRankScopes.city.rank,
+              total: powerRankScopes.city.total,
+              scopeValue: powerRankScopes.city.scopeValue,
             } : null}
-            effortScore={weeklyEffort.currentScore}
+            power={weeklyPower.currentPower}
             className="md:hidden"
           />
         )}

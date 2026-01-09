@@ -34,17 +34,9 @@ async function resetUserTeamMemberships(userId: string) {
   return result.count
 }
 
-async function resetUserBenchmarks(userId: string) {
-  // Delete benchmark results first (foreign key)
-  await prisma.activityBenchmarkResult.deleteMany({
-    where: { activity: { userId } },
-  })
-
-  // Delete benchmark PBs
-  const result = await prisma.userBenchmarkBest.deleteMany({
-    where: { userId },
-  })
-  return result.count
+async function resetUserBenchmarks(_userId: string) {
+  // Benchmarks removed in V6
+  return 0
 }
 
 async function resetTestUser(email: string) {

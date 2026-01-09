@@ -6,6 +6,10 @@ import { authOptions } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { ActionResult, ok, fail, classifyPrismaError } from "@/lib/actions/result"
+import { updateGauntletScores } from "@/lib/gauntlet"
+import { calculatePower } from "@/lib/power"
+import { updateSeasonScore } from "@/lib/season"
+import { updateCrewWarScores } from "@/lib/crew-wars"
 
 // Achievement input schema - value must be numeric
 const AchievementInput = z.object({
@@ -105,17 +109,7 @@ export async function createActivityAction(
             disciplineId = defaultDiscipline?.id || null
         }
 
-        // Filter achievements to those that belong to sport AND have valid numeric values
-        let safeAchievements: Array<{ benchmarkId: string; value: number; note?: string }> = []
-        if (input.achievements.length > 0) {
-            const benchmarkIds = input.achievements.map((a) => a.benchmarkId)
-            const allowedBenchmarks = await prisma.benchmarkDefinition.findMany({
-                where: { id: { in: benchmarkIds }, sportId: input.sportId, isActive: true },
-                select: { id: true },
-            })
-            const allowedSet = new Set(allowedBenchmarks.map((b) => b.id))
-            safeAchievements = input.achievements.filter((a) => allowedSet.has(a.benchmarkId))
-        }
+        // Benchmarks/achievements removed in V6
 
         // Calculate primary value
         const primaryValue = input.distanceMeters || input.durationSeconds || 0
@@ -144,23 +138,7 @@ export async function createActivityAction(
                 select: { id: true },
             })
 
-            // BEST-EFFORT: Insert achievements (don't fail transaction if this fails)
-            if (safeAchievements.length > 0) {
-                try {
-                    await tx.activityBenchmarkResult.createMany({
-                        data: safeAchievements.map((a) => ({
-                            activityId: created.id,
-                            benchmarkId: a.benchmarkId,
-                            value: a.value,
-                            source: "USER_ENTERED" as const,
-                            isPersonalBest: false, // Will be computed separately
-                            countsForRanking: true,
-                        })),
-                    })
-                } catch (e) {
-                    console.error("[createActivity] achievements insert failed (non-blocking)", e)
-                }
-            }
+            // Benchmark results removed in V6
 
             return created
         })
@@ -190,6 +168,22 @@ export async function createActivityAction(
             }
         } catch (e) {
             console.error("[createActivity] createActivityFeedPost failed", e)
+        }
+
+        // Update gauntlet, season, and crew war scores
+        try {
+            const durationSeconds = input.durationSeconds ?? 0
+            const rpe = input.rpe ?? 5
+            const { power: activityPower } = calculatePower(durationSeconds, rpe, false)
+            if (activityPower > 0) {
+                await Promise.all([
+                    updateGauntletScores(user.id, activityPower),
+                    updateSeasonScore(user.id, activityPower),
+                    updateCrewWarScores(user.id, activityPower),
+                ])
+            }
+        } catch (e) {
+            console.error("[createActivity] competition scores update failed", e)
         }
 
         // Revalidate paths

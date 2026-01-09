@@ -1,5 +1,5 @@
 /**
- * EverGo V5 Feature Flags
+ * EverGo V6 Feature Flags
  *
  * CORE features (always enabled):
  * - Activities, Rankings, Challenges, Feed, Following
@@ -17,7 +17,7 @@ export const FEATURES = {
   following: true,
   teams: true, // Keep teams, kill communities
 
-  // DEPRECATED - V5 disables these
+  // DEPRECATED - V6 disables these
   paceBot: false,
   leagues: false,
   cohorts: false,
@@ -28,12 +28,17 @@ export const FEATURES = {
   productOffers: false,
   benchmarks: false, // Merged into rankings
 
-  // NEW V5 FEATURES
-  effortScore: true,
+  // V6 FEATURES
+  power: true, // Rebranded from effortScore
   rankLadder: true,
   rankBattles: true,
   floatingRankPill: true,
   almostThereNotifications: true,
+  gauntlet: true, // 1v1 "Throw the Gauntlet" challenges
+  season: true, // Monthly season competitions
+  rivalry: true, // Persistent head-to-head records
+  crewWars: true, // Team vs team battles
+  liveLadder: true, // Real-time ranking updates
 } as const
 
 export type FeatureKey = keyof typeof FEATURES

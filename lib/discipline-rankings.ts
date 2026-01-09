@@ -696,7 +696,7 @@ export async function updateUserActivityScore(userId: string): Promise<number> {
       },
     },
     update: {
-      totalEffort: score,
+      totalPower: score,
       activityScore: Math.min(1000, Math.round(score / 10)), // Scale to 0-1000
       activityCount,
       country: user?.country,
@@ -706,7 +706,7 @@ export async function updateUserActivityScore(userId: string): Promise<number> {
       userId,
       asOfDate,
       windowDays: 28,
-      totalEffort: score,
+      totalPower: score,
       activityScore: Math.min(1000, Math.round(score / 10)), // Scale to 0-1000
       activityCount,
       country: user?.country,

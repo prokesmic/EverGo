@@ -456,104 +456,8 @@ async function seedAdminData() {
     console.log(`  ✓ Created challenge: ${challengeData.title}`)
   }
 
-  // ==========================================
-  // 5. CREATE PARTNER REQUESTS (Events)
-  // ==========================================
-  console.log('\n📅 Creating partner requests (events)...')
-
-  const eventsData = [
-    {
-      title: 'Morning Run in Letná Park',
-      description: 'Easy 10km run through Letná Park. All paces welcome!',
-      sport: running,
-      date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
-      durationMinutes: 60,
-      distanceKm: 10,
-      location: 'Letná Park',
-      city: 'Prague',
-      minParticipants: 2,
-      maxParticipants: 8,
-    },
-    {
-      title: 'Weekend Cycling Trip',
-      description: 'Scenic 50km ride along the Vltava river. Moderate pace.',
-      sport: cycling,
-      date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
-      durationMinutes: 180,
-      distanceKm: 50,
-      location: 'Vltava Riverside',
-      city: 'Prague',
-      minParticipants: 3,
-      maxParticipants: 12,
-    },
-    {
-      title: 'Interval Training Session',
-      description: 'High intensity interval training at the track. Bring your A-game!',
-      sport: running,
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-      durationMinutes: 45,
-      distanceKm: 6,
-      location: 'Strahov Stadium',
-      city: 'Prague',
-      minParticipants: 4,
-      maxParticipants: 10,
-    },
-    {
-      title: 'Long Run Sunday',
-      description: 'Weekly long run for marathon training. 20-25km at easy pace.',
-      sport: running,
-      date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // 4 days from now
-      durationMinutes: 150,
-      distanceKm: 22,
-      location: 'Stromovka Park',
-      city: 'Prague',
-      minParticipants: 2,
-      maxParticipants: 6,
-    },
-  ]
-
-  for (const eventData of eventsData) {
-    const event = await prisma.partnerRequest.create({
-      data: {
-        creatorId: admin.id,
-        sportId: eventData.sport!.id,
-        title: eventData.title,
-        description: eventData.description,
-        date: eventData.date,
-        durationMinutes: eventData.durationMinutes,
-        distanceKm: eventData.distanceKm,
-        location: eventData.location,
-        city: eventData.city,
-        minParticipants: eventData.minParticipants,
-        maxParticipants: eventData.maxParticipants,
-        status: 'OPEN',
-      }
-    })
-
-    // Add admin as participant (creator)
-    await prisma.partnerRequestParticipant.create({
-      data: {
-        requestId: event.id,
-        userId: admin.id,
-        status: 'CONFIRMED',
-      }
-    })
-
-    // Add some other participants
-    for (let i = 0; i < Math.min(3, competitors.length); i++) {
-      if (Math.random() > 0.4) {
-        await prisma.partnerRequestParticipant.create({
-          data: {
-            requestId: event.id,
-            userId: competitors[i].id,
-            status: Math.random() > 0.3 ? 'CONFIRMED' : 'PENDING',
-          }
-        }).catch(() => {})
-      }
-    }
-
-    console.log(`  ✓ Created event: ${eventData.title}`)
-  }
+  // Partner requests removed in V6
+  console.log('\n📅 Partner requests removed in V6 - skipping...')
 
   // ==========================================
   // 6. CREATE USER STREAK
@@ -677,7 +581,7 @@ Summary:
 - ${competitors.length} competitor users created
 - ${teams.length} teams created
 - ${challenges.length} challenges created
-- ${eventsData.length} events (partner requests) created
+- Partner requests removed in V6
 - Admin user stats and activities populated
 - Social connections established
   `)

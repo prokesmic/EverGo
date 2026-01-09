@@ -18,6 +18,9 @@ import {
   type ImportResult,
 } from "@/lib/import"
 import { isFlagEnabled } from "@/lib/flags"
+import { updateGauntletScores } from "@/lib/gauntlet"
+import { updateSeasonScore } from "@/lib/season"
+import { updateCrewWarScores } from "@/lib/crew-wars"
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
 
@@ -177,7 +180,7 @@ export async function importActivityFile(
         source: "FILE_UPLOAD",
         externalId: importRecord.id,
         verificationTier: "GOLD", // File uploads are verified
-        effortPoints: calculateEffortPoints(normalized),
+        powerPoints: calculatePowerPoints(normalized),
       },
     })
 
@@ -205,6 +208,20 @@ export async function importActivityFile(
     // Update user stats
     await updateUserStatsAfterImport(userId, normalized)
 
+    // Update gauntlet, season, and crew war scores
+    try {
+      const powerPoints = calculatePowerPoints(normalized)
+      if (powerPoints > 0) {
+        await Promise.all([
+          updateGauntletScores(userId, powerPoints),
+          updateSeasonScore(userId, powerPoints),
+          updateCrewWarScores(userId, powerPoints),
+        ])
+      }
+    } catch (e) {
+      console.error("[importActivityFile] competition scores update failed", e)
+    }
+
     return {
       success: true,
       activityId: activity.id,
@@ -221,10 +238,10 @@ export async function importActivityFile(
 }
 
 /**
- * Calculate effort points from activity data
+ * Calculate power points from activity data
  */
-function calculateEffortPoints(data: ActivityNormalized): number {
-  // Base effort from duration (1 point per minute)
+function calculatePowerPoints(data: ActivityNormalized): number {
+  // Base power from duration (1 point per minute)
   let points = Math.round(data.durationSec / 60)
 
   // Bonus for distance
@@ -288,16 +305,9 @@ async function updateUserStatsAfterImport(
     },
   })
 
-  // Check for verified PB
-  const hasVerifiedPb = await prisma.userBenchmarkBest.count({
-    where: {
-      userId,
-      source: { not: "MANUAL" },
-    },
-  })
-
-  // Update verified athlete status
-  const isVerified = verifiedCount >= 5 && hasVerifiedPb > 0
+  // Benchmark PB check removed in V6
+  // Update verified athlete status (based on activity count only)
+  const isVerified = verifiedCount >= 5
 
   await prisma.userStats.update({
     where: { userId },

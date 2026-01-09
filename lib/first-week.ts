@@ -5,12 +5,12 @@ export interface FirstWeekProgress {
   isFirstWeek: boolean
   daysRemaining: number
   activitiesLogged: number
-  effortScore: number
+  power: number
   milestones: {
     firstActivity: boolean
     threeActivities: boolean
     fiveActivities: boolean
-    weeklyGoal: boolean // 100 effort points
+    weeklyGoal: boolean // 100 power points
   }
   nextMilestone: {
     name: string
@@ -21,7 +21,7 @@ export interface FirstWeekProgress {
 }
 
 const FIRST_WEEK_DURATION_DAYS = 7
-const WEEKLY_GOAL_EFFORT = 100
+const WEEKLY_GOAL_POWER = 100
 
 export async function getFirstWeekProgress(userId: string): Promise<FirstWeekProgress> {
   const user = await prisma.user.findUnique({
@@ -37,7 +37,7 @@ export async function getFirstWeekProgress(userId: string): Promise<FirstWeekPro
       isFirstWeek: false,
       daysRemaining: 0,
       activitiesLogged: 0,
-      effortScore: 0,
+      power: 0,
       milestones: {
         firstActivity: false,
         threeActivities: false,
@@ -59,18 +59,18 @@ export async function getFirstWeekProgress(userId: string): Promise<FirstWeekPro
     },
     select: {
       id: true,
-      effortScore: true,
+      power: true,
     },
   })
 
   const activitiesLogged = activities.length
-  const effortScore = activities.reduce((sum, a) => sum + (a.effortScore ?? 0), 0)
+  const totalPower = activities.reduce((sum, a) => sum + (a.power ?? 0), 0)
 
   const milestones = {
     firstActivity: activitiesLogged >= 1,
     threeActivities: activitiesLogged >= 3,
     fiveActivities: activitiesLogged >= 5,
-    weeklyGoal: effortScore >= WEEKLY_GOAL_EFFORT,
+    weeklyGoal: totalPower >= WEEKLY_GOAL_POWER,
   }
 
   // Determine next milestone
@@ -93,9 +93,9 @@ export async function getFirstWeekProgress(userId: string): Promise<FirstWeekPro
   } else if (!milestones.weeklyGoal) {
     nextMilestone = {
       name: 'Weekly Goal',
-      description: 'Reach 100 effort points this week',
-      progress: Math.round(effortScore),
-      target: WEEKLY_GOAL_EFFORT,
+      description: 'Reach 100 Power this week',
+      progress: Math.round(totalPower),
+      target: WEEKLY_GOAL_POWER,
     }
   } else if (!milestones.fiveActivities) {
     nextMilestone = {
@@ -110,7 +110,7 @@ export async function getFirstWeekProgress(userId: string): Promise<FirstWeekPro
     isFirstWeek,
     daysRemaining: Math.max(0, FIRST_WEEK_DURATION_DAYS - daysSinceCreation),
     activitiesLogged,
-    effortScore: Math.round(effortScore),
+    power: Math.round(totalPower),
     milestones,
     nextMilestone,
   }
@@ -134,7 +134,7 @@ export interface FirstWeekTip {
   description: string
   actionLabel: string
   actionUrl: string
-  icon: 'activity' | 'rank' | 'battle' | 'sync' | 'effort'
+  icon: 'activity' | 'rank' | 'battle' | 'sync' | 'power'
 }
 
 export function getFirstWeekTips(progress: FirstWeekProgress): FirstWeekTip[] {
@@ -144,21 +144,21 @@ export function getFirstWeekTips(progress: FirstWeekProgress): FirstWeekTip[] {
     tips.push({
       id: 'log-first',
       title: 'Log Your First Activity',
-      description: 'Every journey begins with a single step. Log an activity to start earning effort points.',
+      description: 'Every journey begins with a single step. Log an activity to start earning Power.',
       actionLabel: 'Log Activity',
       actionUrl: '/activity/log',
       icon: 'activity',
     })
   }
 
-  if (progress.milestones.firstActivity && progress.effortScore < 50) {
+  if (progress.milestones.firstActivity && progress.power < 50) {
     tips.push({
-      id: 'build-effort',
-      title: 'Build Your Effort Score',
-      description: 'Rate your activities by intensity to earn more effort points and climb the rankings.',
-      actionLabel: 'View Effort Score',
+      id: 'build-power',
+      title: 'Build Your Power',
+      description: 'Rate your activities by intensity to earn more Power and climb the rankings.',
+      actionLabel: 'View Power',
       actionUrl: '/rankings',
-      icon: 'effort',
+      icon: 'power',
     })
   }
 

@@ -151,148 +151,19 @@ export async function importStravaActivity(
 }
 
 /**
- * Compute benchmark results for an imported activity
+ * Compute benchmark results (deprecated in V6)
  */
 async function computeActivityBenchmarks(
-  activityId: string,
-  userId: string,
-  sportId: string,
-  stravaActivity: StravaActivity
+  _activityId: string,
+  _userId: string,
+  _sportId: string,
+  _stravaActivity: StravaActivity
 ): Promise<number> {
-  // Get all active benchmarks for this sport
-  const benchmarks = await prisma.benchmarkDefinition.findMany({
-    where: { sportId, isActive: true },
-  })
-
-  let count = 0
-
-  for (const benchmark of benchmarks) {
-    let value: number | null = null
-    const targetJson = benchmark.targetJson as Record<string, unknown> | null
-
-    switch (benchmark.measurementType) {
-      case "TIME":
-        // For time benchmarks, check if this activity matches the target distance
-        if (targetJson?.distanceMeters && stravaActivity.distance) {
-          const targetDistance = targetJson.distanceMeters as number
-          const tolerance = targetDistance * 0.05 // 5% tolerance
-
-          if (Math.abs(stravaActivity.distance - targetDistance) <= tolerance) {
-            value = stravaActivity.moving_time
-          }
-        } else if (!targetJson?.distanceMeters) {
-          // General time benchmark
-          value = stravaActivity.moving_time
-        }
-        break
-
-      case "DISTANCE":
-        value = stravaActivity.distance
-        break
-
-      case "SPEED":
-        value = stravaActivity.average_speed * 3.6 // Convert m/s to km/h
-        break
-
-      case "POWER":
-        if (stravaActivity.weighted_average_watts) {
-          value = stravaActivity.weighted_average_watts
-        } else if (stravaActivity.average_watts) {
-          value = stravaActivity.average_watts
-        }
-        break
-
-      default:
-        continue
-    }
-
-    if (value === null || value <= 0) continue
-
-    // Upsert the benchmark result
-    await prisma.activityBenchmarkResult.upsert({
-      where: {
-        activityId_benchmarkId: {
-          activityId,
-          benchmarkId: benchmark.id,
-        },
-      },
-      create: {
-        activityId,
-        benchmarkId: benchmark.id,
-        value,
-        source: "AUTO",
-        isPersonalBest: false,
-        countsForRanking: true,
-      },
-      update: {
-        value,
-        computedAt: new Date(),
-      },
-    })
-
-    count++
-
-    // Check if this is a new PB
-    await checkAndUpdatePB(userId, benchmark.id, value, benchmark.higherIsBetter, new Date(stravaActivity.start_date))
-  }
-
-  return count
+  // Benchmarks removed in V6
+  return 0
 }
 
-/**
- * Check if value is a new PB and update if so
- */
-async function checkAndUpdatePB(
-  userId: string,
-  benchmarkId: string,
-  value: number,
-  higherIsBetter: boolean,
-  achievedAt: Date
-): Promise<boolean> {
-  const existingPB = await prisma.userBenchmarkBest.findUnique({
-    where: {
-      userId_benchmarkId: {
-        userId,
-        benchmarkId,
-      },
-    },
-  })
-
-  const isBetter = !existingPB ||
-    (higherIsBetter ? value > existingPB.value : value < existingPB.value)
-
-  if (isBetter) {
-    await prisma.userBenchmarkBest.upsert({
-      where: {
-        userId_benchmarkId: {
-          userId,
-          benchmarkId,
-        },
-      },
-      create: {
-        userId,
-        benchmarkId,
-        value,
-        achievedAt,
-        source: "IMPORT_STRAVA",
-        verificationStatus: "VERIFIED_IMPORT",
-        isLegacy: false,
-      },
-      update: {
-        value,
-        achievedAt,
-        source: "IMPORT_STRAVA",
-        verificationStatus: "VERIFIED_IMPORT",
-        updatedAt: new Date(),
-      },
-    })
-
-    console.log(`[Strava Import] New PB for benchmark ${benchmarkId}: ${value}`)
-    return true
-  }
-
-  return false
-}
+// Benchmark functions removed in V6
 
 /**
  * Mark an activity as hidden (for delete events)

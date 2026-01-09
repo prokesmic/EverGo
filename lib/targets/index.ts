@@ -45,18 +45,13 @@ export async function createTarget(params: CreateTargetParams): Promise<Target |
 
   const { userId, disciplineId, benchmarkId, targetValue, targetDate } = params
 
-  // Get current value if targeting a benchmark
-  let currentValue: number | null = null
-  let startValue: number | null = null
+  // Benchmark-based targets deprecated in V6
+  // Current value tracking for benchmarks removed
+  const currentValue: number | null = null
+  const startValue: number | null = null
 
   if (benchmarkId) {
-    const best = await prisma.userBenchmarkBest.findUnique({
-      where: {
-        userId_benchmarkId: { userId, benchmarkId },
-      },
-    })
-    currentValue = best?.value ?? null
-    startValue = currentValue
+    console.warn("[Deprecated] Benchmark-based targets removed in V6")
   }
 
   const progressPct = currentValue != null && targetValue > 0
@@ -188,16 +183,11 @@ export async function refreshUserTargets(userId: string): Promise<void> {
   })
 
   for (const target of targets) {
-    let newValue = target.currentValue
+    const newValue = target.currentValue
 
-    // Update benchmark-based targets
+    // Benchmark-based targets deprecated in V6 - skip benchmark updates
     if (target.benchmarkId) {
-      const best = await prisma.userBenchmarkBest.findUnique({
-        where: {
-          userId_benchmarkId: { userId, benchmarkId: target.benchmarkId },
-        },
-      })
-      newValue = best?.value ?? null
+      continue
     }
 
     // Update progress if value changed
@@ -242,41 +232,11 @@ export async function abandonTarget(targetId: string, userId: string): Promise<b
 }
 
 /**
- * Get suggested targets based on user's benchmarks
+ * Get suggested targets (benchmark-based suggestions removed in V6)
  */
 export async function getSuggestedTargets(
-  userId: string
+  _userId: string
 ): Promise<Array<Omit<CreateTargetParams, "userId">>> {
-  const suggestions: Array<Omit<CreateTargetParams, "userId">> = []
-
-  // Get user's recent benchmark results to suggest improvements
-  const recentBests = await prisma.userBenchmarkBest.findMany({
-    where: { userId },
-    include: {
-      benchmark: {
-        select: {
-          id: true,
-          name: true,
-          higherIsBetter: true,
-        },
-      },
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 5,
-  })
-
-  for (const best of recentBests) {
-    if (!best.benchmark) continue
-
-    // Suggest 5-10% improvement
-    const improvementFactor = best.benchmark.higherIsBetter ? 1.1 : 0.95
-    const targetValue = best.value * improvementFactor
-
-    suggestions.push({
-      benchmarkId: best.benchmarkId,
-      targetValue: Math.round(targetValue * 100) / 100,
-    })
-  }
-
-  return suggestions
+  console.warn("[Deprecated] Benchmark-based target suggestions removed in V6")
+  return []
 }
