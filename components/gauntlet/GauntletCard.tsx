@@ -44,11 +44,11 @@ const durationLabels: Record<GauntletDuration, string> = {
 
 const statusColors: Record<GauntletStatus, string> = {
   PENDING: 'bg-amber-100 text-amber-700',
-  ACTIVE: 'bg-emerald-100 text-emerald-700',
-  COMPLETED: 'bg-slate-100 text-slate-700',
-  DECLINED: 'bg-red-100 text-red-500',
-  EXPIRED: 'bg-slate-100 text-slate-400',
-  CANCELLED: 'bg-slate-100 text-slate-400',
+  ACTIVE: 'bg-primary/10 text-primary',
+  COMPLETED: 'bg-muted text-muted-foreground',
+  DECLINED: 'bg-destructive/10 text-destructive',
+  EXPIRED: 'bg-muted text-muted-foreground',
+  CANCELLED: 'bg-muted text-muted-foreground',
 }
 
 export function GauntletCard({
@@ -78,9 +78,9 @@ export function GauntletCard({
   return (
     <div className={cn(
       "rounded-xl border overflow-hidden",
-      isActive ? "border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50" :
+      isActive ? "border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10" :
       isPending && isOpponent ? "border-amber-200 bg-amber-50" :
-      "border-slate-200 bg-white",
+      "border-border bg-card",
       className
     )}>
       {/* Header */}
@@ -89,15 +89,15 @@ export function GauntletCard({
           <div className="flex items-center gap-2">
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center",
-              isActive ? "bg-violet-100" : "bg-slate-100"
+              isActive ? "bg-primary/10" : "bg-muted"
             )}>
               <Swords className={cn(
                 "w-4 h-4",
-                isActive ? "text-violet-600" : "text-slate-500"
+                isActive ? "text-primary" : "text-muted-foreground"
               )} />
             </div>
             <div>
-              <h3 className="font-semibold text-sm text-slate-900">
+              <h3 className="font-semibold text-sm text-foreground">
                 {isPending && isOpponent ? 'Challenge Received!' : 'Gauntlet'}
               </h3>
               <span className={cn(
@@ -113,7 +113,7 @@ export function GauntletCard({
           </div>
 
           {/* Duration / Time remaining */}
-          <div className="flex items-center gap-1 text-xs text-slate-500">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="w-3 h-3" />
             {isActive && hoursRemaining !== null ? (
               <span>{hoursRemaining}h left</span>
@@ -127,44 +127,44 @@ export function GauntletCard({
         <div className="flex items-center justify-between">
           {/* Current User */}
           <div className="flex-1 text-center">
-            <div className="w-12 h-12 rounded-full bg-slate-200 mx-auto mb-1 overflow-hidden">
+            <div className="w-12 h-12 rounded-full bg-muted mx-auto mb-1 overflow-hidden">
               {/* User avatar placeholder */}
-              <div className="w-full h-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-full h-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-bold text-lg">
                 {(isChallenger ? gauntlet.challenger.displayName : gauntlet.opponent.displayName)?.charAt(0) || 'U'}
               </div>
             </div>
-            <p className="text-xs font-medium text-slate-900 truncate">You</p>
+            <p className="text-xs font-medium text-foreground truncate">You</p>
             {(isActive || isCompleted) && (
               <div className="flex items-center justify-center gap-1 mt-1">
-                <Zap className="w-3 h-3 text-violet-500" />
-                <span className="text-sm font-bold text-violet-600">{Math.round(myPower)}</span>
+                <Zap className="w-3 h-3 text-primary" />
+                <span className="text-sm font-bold text-primary">{Math.round(myPower)}</span>
               </div>
             )}
           </div>
 
           {/* VS */}
           <div className="px-4">
-            <span className="text-lg font-bold text-slate-300">VS</span>
+            <span className="text-lg font-bold text-muted-foreground/50">VS</span>
           </div>
 
           {/* Opponent */}
           <div className="flex-1 text-center">
-            <div className="w-12 h-12 rounded-full bg-slate-200 mx-auto mb-1 overflow-hidden">
+            <div className="w-12 h-12 rounded-full bg-muted mx-auto mb-1 overflow-hidden">
               {opponent.avatarUrl ? (
                 <img src={opponent.avatarUrl} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-full h-full bg-gradient-to-br from-muted-foreground to-muted-foreground/80 flex items-center justify-center text-background font-bold text-lg">
                   {opponent.displayName?.charAt(0) || opponent.username?.charAt(0) || 'O'}
                 </div>
               )}
             </div>
-            <p className="text-xs font-medium text-slate-900 truncate">
+            <p className="text-xs font-medium text-foreground truncate">
               {opponent.displayName || opponent.username}
             </p>
             {(isActive || isCompleted) && (
               <div className="flex items-center justify-center gap-1 mt-1">
-                <Zap className="w-3 h-3 text-slate-400" />
-                <span className="text-sm font-bold text-slate-600">{Math.round(theirPower)}</span>
+                <Zap className="w-3 h-3 text-muted-foreground" />
+                <span className="text-sm font-bold text-muted-foreground">{Math.round(theirPower)}</span>
               </div>
             )}
           </div>
@@ -172,8 +172,8 @@ export function GauntletCard({
 
         {/* Challenge Message */}
         {gauntlet.message && isPending && (
-          <div className="mt-3 p-2 bg-white/50 rounded-lg">
-            <p className="text-xs text-slate-600 italic">"{gauntlet.message}"</p>
+          <div className="mt-3 p-2 bg-background/50 rounded-lg">
+            <p className="text-xs text-muted-foreground italic">"{gauntlet.message}"</p>
           </div>
         )}
 
@@ -181,17 +181,17 @@ export function GauntletCard({
         {isCompleted && (
           <div className={cn(
             "mt-3 py-2 px-3 rounded-lg flex items-center justify-center gap-2",
-            isWinner ? "bg-emerald-100" : isTie ? "bg-slate-100" : "bg-red-50"
+            isWinner ? "bg-primary/10" : isTie ? "bg-muted" : "bg-destructive/10"
           )}>
             {isWinner ? (
               <>
-                <Trophy className="w-4 h-4 text-emerald-600" />
-                <span className="text-sm font-medium text-emerald-700">You Won!</span>
+                <Trophy className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-primary">You Won!</span>
               </>
             ) : isTie ? (
-              <span className="text-sm font-medium text-slate-600">It's a Tie!</span>
+              <span className="text-sm font-medium text-muted-foreground">It's a Tie!</span>
             ) : (
-              <span className="text-sm font-medium text-red-600">Better luck next time</span>
+              <span className="text-sm font-medium text-destructive">Better luck next time</span>
             )}
           </div>
         )}
@@ -199,17 +199,17 @@ export function GauntletCard({
 
       {/* Actions */}
       {isPending && isOpponent && onAccept && onDecline && (
-        <div className="border-t border-amber-200 bg-white/50 p-3 flex gap-2">
+        <div className="border-t border-amber-200 bg-background/50 p-3 flex gap-2">
           <button
             onClick={onDecline}
-            className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
           >
             <X className="w-4 h-4" />
             Decline
           </button>
           <button
             onClick={onAccept}
-            className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-lg bg-violet-600 text-sm font-medium text-white hover:bg-violet-700 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <Check className="w-4 h-4" />
             Accept
@@ -221,7 +221,7 @@ export function GauntletCard({
       {(isActive || isCompleted) && (
         <Link
           href={`/gauntlet/${gauntlet.id}`}
-          className="block border-t border-slate-200 p-3 text-center text-sm font-medium text-violet-600 hover:bg-violet-50 transition-colors"
+          className="block border-t border-border p-3 text-center text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
         >
           View Details →
         </Link>

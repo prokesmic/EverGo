@@ -12,7 +12,7 @@ function RankingsLoading() {
                 <div className="eg-icon-box-sky">
                     <Trophy className="w-6 h-6" />
                 </div>
-                <span className="text-slate-500">Loading rankings...</span>
+                <span className="text-muted-foreground">Loading rankings...</span>
             </div>
         </div>
     )

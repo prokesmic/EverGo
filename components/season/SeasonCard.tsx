@@ -48,8 +48,8 @@ export function SeasonCard({ season, userStats, className }: SeasonCardProps) {
     <div
       className={cn(
         "rounded-xl border overflow-hidden",
-        isActive ? "border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50" :
-        "border-slate-200 bg-white",
+        isActive ? "border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10" :
+        "border-border bg-card",
         className
       )}
     >
@@ -93,47 +93,47 @@ export function SeasonCard({ season, userStats, className }: SeasonCardProps) {
           <div className="grid grid-cols-3 gap-4 mb-4">
             {/* Rank */}
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-slate-500 text-xs mb-1">
+              <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs mb-1">
                 <Trophy className="w-3 h-3" />
                 <span>Rank</span>
               </div>
-              <div className="text-xl font-bold text-slate-900">
+              <div className="text-xl font-bold text-foreground">
                 {userStats.rank ? `#${userStats.rank}` : '-'}
               </div>
               {userStats.total && (
-                <div className="text-xs text-slate-400">of {userStats.total}</div>
+                <div className="text-xs text-muted-foreground">of {userStats.total}</div>
               )}
             </div>
 
             {/* Power */}
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-slate-500 text-xs mb-1">
+              <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs mb-1">
                 <Zap className="w-3 h-3" />
                 <span>Power</span>
               </div>
-              <div className="text-xl font-bold text-violet-600">
+              <div className="text-xl font-bold text-primary">
                 {Math.round(userStats.totalPower).toLocaleString()}
               </div>
             </div>
 
             {/* Activities */}
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-slate-500 text-xs mb-1">
+              <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs mb-1">
                 <TrendingUp className="w-3 h-3" />
                 <span>Activities</span>
               </div>
-              <div className="text-xl font-bold text-slate-900">
+              <div className="text-xl font-bold text-foreground">
                 {userStats.activityCount}
               </div>
             </div>
           </div>
         ) : (
           <div className="text-center py-4">
-            <p className="text-sm text-slate-500 mb-3">
+            <p className="text-sm text-muted-foreground mb-3">
               Join this season to compete!
             </p>
             <button
-              className="px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-medium hover:bg-violet-700 transition-colors"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               Join Season
             </button>
@@ -142,14 +142,14 @@ export function SeasonCard({ season, userStats, className }: SeasonCardProps) {
 
         {/* Participants count */}
         {season._count && (
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="flex items-center justify-between pt-3 border-t border-border">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="w-4 h-4" />
               <span>{season._count.participants.toLocaleString()} athletes competing</span>
             </div>
             <Link
               href={`/season/${season.id}`}
-              className="flex items-center gap-1 text-sm font-medium text-violet-600 hover:text-violet-700"
+              className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80"
             >
               Leaderboard
               <ChevronRight className="w-4 h-4" />

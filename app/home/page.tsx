@@ -185,7 +185,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Home Hero - Photo-based banner (same pattern as Profile) */}
         <HomeHeroBanner

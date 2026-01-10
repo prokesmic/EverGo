@@ -46,15 +46,15 @@ export function MainNav() {
     const isDropdownActive = (hrefs: string[]) => hrefs.some(href => pathname?.startsWith(href))
 
     return (
-        <header data-testid="desktop-nav" className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200 hidden lg:block">
+        <header data-testid="desktop-nav" className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border hidden lg:block">
             <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                 {/* Logo */}
                 <div className="flex items-center gap-2">
                     <Link href="/home" className="flex items-center gap-2">
-                        <span className="text-xl font-black tracking-tight text-slate-900">
+                        <span className="text-xl font-black tracking-tight text-foreground">
                             ⚡EverGo
                         </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-primary/10 text-primary">
                             Aurora
                         </span>
                     </Link>
@@ -73,8 +73,8 @@ export function MainNav() {
                                 className={cn(
                                     "relative flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors",
                                     active
-                                        ? "bg-slate-100 text-slate-900"
-                                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                                        ? "bg-muted text-foreground"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                                 )}
                             >
                                 <Icon className="h-4 w-4" />
@@ -88,8 +88,8 @@ export function MainNav() {
                         <DropdownMenuTrigger asChild>
                             <button
                                 className={cn(
-                                    "relative flex items-center gap-1 px-3 py-2 rounded-lg transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-50 focus:outline-none",
-                                    isDropdownActive(moreHrefs) && "bg-slate-100 text-slate-900"
+                                    "relative flex items-center gap-1 px-3 py-2 rounded-lg transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/50 focus:outline-none",
+                                    isDropdownActive(moreHrefs) && "bg-muted text-foreground"
                                 )}
                             >
                                 More
@@ -103,12 +103,12 @@ export function MainNav() {
                                     <DropdownMenuItem key={item.href} asChild>
                                         <Link href={item.href} className={cn(
                                             "flex items-center gap-3 cursor-pointer py-2",
-                                            isActive(item.href) && "bg-slate-100"
+                                            isActive(item.href) && "bg-muted"
                                         )}>
-                                            <Icon className="h-4 w-4 text-slate-500" />
+                                            <Icon className="h-4 w-4 text-muted-foreground" />
                                             <div>
                                                 <div className="font-medium">{item.label}</div>
-                                                <div className="text-xs text-slate-500">{item.description}</div>
+                                                <div className="text-xs text-muted-foreground">{item.description}</div>
                                             </div>
                                         </Link>
                                     </DropdownMenuItem>
@@ -120,7 +120,7 @@ export function MainNav() {
                     {/* Primary CTA - Throw Gauntlet */}
                     {session && (
                         <Link href="/gauntlets/new" className="ml-2">
-                            <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-4">
+                            <Button className="gap-2 rounded-full px-4">
                                 <Swords className="h-4 w-4" />
                                 <span className="hidden xl:inline">Throw Gauntlet</span>
                             </Button>
@@ -136,17 +136,18 @@ export function MainNav() {
                     {session ? (
                         <div className="flex items-center gap-2">
                             {/* Log Activity Button */}
-                            <Link
-                                href="/activity/create"
-                                data-testid="desktop-log-activity"
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition"
-                            >
-                                <PlusCircle className="h-4 w-4" />
-                                <span>Log Activity</span>
-                            </Link>
+                            <Button asChild variant="secondary" className="rounded-full gap-2">
+                                <Link
+                                    href="/activity/create"
+                                    data-testid="desktop-log-activity"
+                                >
+                                    <PlusCircle className="h-4 w-4" />
+                                    <span>Log Activity</span>
+                                </Link>
+                            </Button>
 
                             {/* Notifications */}
-                            <Button variant="ghost" size="icon" className="text-slate-600 hover:bg-slate-100 rounded-full relative" asChild>
+                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted rounded-full relative" asChild>
                                 <Link href="/notifications">
                                     <Bell className="h-5 w-5" />
                                 </Link>
@@ -155,10 +156,10 @@ export function MainNav() {
                             {/* User Menu */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="relative h-9 w-9 rounded-full border-2 border-slate-200 p-0 overflow-hidden hover:border-indigo-300 transition-all">
+                                    <Button variant="ghost" className="relative h-9 w-9 rounded-full border-2 border-border p-0 overflow-hidden hover:border-primary/30 transition-all">
                                         <Avatar className="h-full w-full">
                                             <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
-                                            <AvatarFallback className="bg-indigo-100 text-indigo-700 text-sm font-semibold">
+                                            <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
                                                 {session.user?.name?.[0]?.toUpperCase() || "U"}
                                             </AvatarFallback>
                                         </Avatar>
@@ -191,16 +192,15 @@ export function MainNav() {
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">
-                            <button className="text-sm font-medium text-slate-700 hover:text-slate-900">
+                            <Button variant="ghost" asChild className="text-sm font-medium">
                                 <Link href="/login">Log in</Link>
-                            </button>
-                            <Link
-                                href="/register"
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition"
-                            >
-                                <Sparkles className="w-4 h-4" />
-                                Sign Up Free
-                            </Link>
+                            </Button>
+                            <Button asChild className="rounded-full gap-2">
+                                <Link href="/register">
+                                    <Sparkles className="w-4 h-4" />
+                                    Sign Up Free
+                                </Link>
+                            </Button>
                         </div>
                     )}
                 </div>

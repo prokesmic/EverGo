@@ -94,7 +94,7 @@ export function MobileHeader() {
                   <SheetTitle className="flex items-center gap-2">
                     <span className="text-2xl">⚡</span>
                     <span className="font-bold text-lg">EverGo</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-primary/10 text-primary">
                       Aurora
                     </span>
                   </SheetTitle>
@@ -113,11 +113,11 @@ export function MobileHeader() {
                           className={cn(
                             "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
                             isActive
-                              ? "bg-indigo-50 text-indigo-700"
-                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                              ? "bg-primary/10 text-primary"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
                           )}
                         >
-                          <item.icon className={cn("w-5 h-5", isActive && "text-indigo-600")} />
+                          <item.icon className={cn("w-5 h-5", isActive && "text-primary")} />
                           {item.label}
                         </Link>
                       )
@@ -127,7 +127,7 @@ export function MobileHeader() {
                   {/* Log Activity CTA */}
                   <div className="mt-6 pt-4 border-t">
                     <Link href="/activity/create" onClick={() => setMenuOpen(false)}>
-                      <Button className="w-full gap-2 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white hover:opacity-90">
+                      <Button className="w-full gap-2">
                         <PlusCircle className="h-4 w-4" />
                         Log Activity
                       </Button>
@@ -140,7 +140,7 @@ export function MobileHeader() {
                       <Link
                         href={`/profile/${session.user?.username || 'me'}`}
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         <User className="w-5 h-5" />
                         Profile
@@ -148,7 +148,7 @@ export function MobileHeader() {
                       <Link
                         href="/settings"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         <Settings className="w-5 h-5" />
                         Settings
@@ -158,7 +158,7 @@ export function MobileHeader() {
                           setMenuOpen(false)
                           signOut({ callbackUrl: "/" })
                         }}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 w-full text-left"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 w-full text-left"
                       >
                         <LogOut className="w-5 h-5" />
                         Log out
@@ -175,7 +175,7 @@ export function MobileHeader() {
                         </Button>
                       </Link>
                       <Link href="/register" onClick={() => setMenuOpen(false)}>
-                        <Button className="w-full bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 text-white">
+                        <Button className="w-full">
                           Sign Up Free
                         </Button>
                       </Link>
@@ -226,14 +226,14 @@ export function MobileHeader() {
                 href={`/profile/${session.user?.username || 'me'}`}
                 className="relative"
               >
-                <Avatar className="w-9 h-9 border-2 border-brand-blue">
+                <Avatar className="w-9 h-9 border-2 border-primary">
                   <AvatarImage src={session.user?.image || undefined} />
-                  <AvatarFallback className="bg-brand-blue text-white text-sm font-semibold">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
                     {session.user?.name?.[0] || "U"}
                   </AvatarFallback>
                 </Avatar>
                 {streak > 0 && (
-                  <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 flex items-center gap-0.5 border-2 border-white">
+                  <div className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 flex items-center gap-0.5 border-2 border-background">
                     <Flame className="w-2.5 h-2.5" />
                     {streak}
                   </div>
@@ -241,7 +241,7 @@ export function MobileHeader() {
               </Link>
             ) : (
               <Link href="/login">
-                <Button size="sm" className="bg-brand-blue text-white hover:bg-brand-blue-dark">
+                <Button size="sm">
                   Login
                 </Button>
               </Link>

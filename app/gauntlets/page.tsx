@@ -38,16 +38,16 @@ export default async function GauntletsPage() {
   const hasAny = pending.length > 0 || active.length > 0 || completed.length > 0
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Gauntlets</h1>
-            <p className="text-slate-500">Challenge athletes to 1v1 competitions</p>
+            <h1 className="text-2xl font-bold text-foreground">Gauntlets</h1>
+            <p className="text-muted-foreground">Challenge athletes to 1v1 competitions</p>
           </div>
           <Link href="/gauntlets/new">
-            <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700">
+            <Button className="gap-2">
               <Plus className="w-4 h-4" />
               Throw Gauntlet
             </Button>
@@ -59,7 +59,7 @@ export default async function GauntletsPage() {
             {/* Pending (needs response) */}
             {pending.length > 0 && (
               <section>
-                <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
                   <span className="text-amber-500">&#9203;</span>
                   Awaiting Response ({pending.length})
                 </h2>
@@ -70,8 +70,8 @@ export default async function GauntletsPage() {
             {/* Active */}
             {active.length > 0 && (
               <section>
-                <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                  <span className="text-violet-500">&#9876;</span>
+                <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <span className="text-primary">&#9876;</span>
                   Active ({active.length})
                 </h2>
                 <GauntletsList gauntlets={active} currentUserId={userId} />
@@ -81,8 +81,8 @@ export default async function GauntletsPage() {
             {/* Completed */}
             {completed.length > 0 && (
               <section>
-                <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                  <span className="text-emerald-500">&#10003;</span>
+                <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <span className="text-primary">&#10003;</span>
                   Recent Results
                 </h2>
                 <GauntletsList gauntlets={completed} currentUserId={userId} />
@@ -92,18 +92,18 @@ export default async function GauntletsPage() {
         ) : (
           /* Empty state */
           <div className="text-center py-16">
-            <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-              <Swords className="w-10 h-10 text-slate-400" />
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Swords className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">
+            <h3 className="text-xl font-semibold text-foreground mb-2">
               No Gauntlets Yet
             </h3>
-            <p className="text-slate-500 mb-6 max-w-md mx-auto">
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
               Challenge someone to a gauntlet and start competing! Power up by logging
               activities during the competition period.
             </p>
             <Link href="/gauntlets/new">
-              <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700">
+              <Button className="gap-2">
                 <Plus className="w-4 h-4" />
                 Throw Your First Gauntlet
               </Button>

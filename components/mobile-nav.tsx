@@ -36,9 +36,9 @@ export function MobileNav() {
       <Link
         href="/activity/create"
         data-testid="fab-log-activity"
-        className="fixed bottom-20 right-4 z-50 lg:hidden w-14 h-14 bg-gradient-to-r from-brand-blue to-blue-600 rounded-full shadow-lg flex items-center justify-center text-white active:scale-95 transition-transform"
+        className="fixed bottom-20 right-4 z-50 lg:hidden w-14 h-14 bg-primary rounded-full shadow-lg flex items-center justify-center text-primary-foreground active:scale-95 transition-transform"
         style={{
-          boxShadow: "0 4px 14px rgba(0, 120, 212, 0.4)",
+          boxShadow: "0 4px 14px hsl(var(--primary) / 0.4)",
         }}
       >
         <Plus className="w-7 h-7" strokeWidth={2.5} />
@@ -47,7 +47,7 @@ export function MobileNav() {
       {/* Bottom Navigation */}
       <nav
         data-testid="mobile-bottom-nav"
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 lg:hidden pb-safe"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border lg:hidden pb-safe"
       >
         <div className="grid h-16 grid-cols-4 max-w-lg mx-auto">
           {navItems.map((item) => {
@@ -60,14 +60,14 @@ export function MobileNav() {
                 className={cn(
                   "flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-all active:scale-95",
                   active
-                    ? "text-emerald-600"
-                    : "text-slate-500"
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 )}
               >
                 <div
                   className={cn(
                     "flex items-center justify-center w-10 h-7 rounded-full transition-all",
-                    active && "bg-emerald-50"
+                    active && "bg-primary/10"
                   )}
                 >
                   <item.icon

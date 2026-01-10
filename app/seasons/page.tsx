@@ -35,19 +35,19 @@ export default async function SeasonsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">Seasons</h1>
-          <p className="text-slate-500">Monthly competitions with fresh starts</p>
+          <h1 className="text-2xl font-bold text-foreground">Seasons</h1>
+          <p className="text-muted-foreground">Monthly competitions with fresh starts</p>
         </div>
 
         {/* Active Season */}
         {activeSeason && (
           <section className="mb-8">
-            <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <span className="text-orange-500">&#128293;</span>
+            <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+              <span className="text-primary">&#128293;</span>
               Current Season
             </h2>
             <Link href={`/seasons/${activeSeason.id}`}>
@@ -71,8 +71,8 @@ export default async function SeasonsPage() {
         {/* Past Seasons */}
         {pastSeasons.length > 0 && (
           <section>
-            <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-slate-400" />
+            <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-muted-foreground" />
               Past Seasons
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -88,13 +88,13 @@ export default async function SeasonsPage() {
         {/* No seasons */}
         {seasons.length === 0 && (
           <div className="text-center py-16">
-            <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-              <Calendar className="w-10 h-10 text-slate-400" />
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">
+            <h3 className="text-xl font-semibold text-foreground mb-2">
               No Seasons Yet
             </h3>
-            <p className="text-slate-500 max-w-md mx-auto">
+            <p className="text-muted-foreground max-w-md mx-auto">
               Seasons are monthly competitions where you compete against athletes
               worldwide. Check back soon!
             </p>

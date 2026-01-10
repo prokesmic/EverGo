@@ -533,7 +533,7 @@ function RankingsContent({ sports }: RankingsClientProps) {
     return (
         <div className="min-h-screen bg-background pb-20 md:pb-0">
             {/* Aurora Header */}
-            <div className="hero-gradient border-b border-slate-200">
+            <div className="hero-gradient border-b border-border">
                 <div className="max-w-6xl mx-auto px-6 py-8">
                     <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
                         <div>
@@ -541,10 +541,10 @@ function RankingsContent({ sports }: RankingsClientProps) {
                                 <span className="eg-live-dot" />
                                 Real-time rankings
                             </p>
-                            <h1 className="text-3xl font-bold text-slate-900">
+                            <h1 className="text-3xl font-bold text-foreground">
                                 {mode === "most-active" ? "Most Active Athletes" : "Performance Rankings"}
                             </h1>
-                            <p className="text-sm text-slate-600 mt-1 max-w-xl">
+                            <p className="text-sm text-muted-foreground mt-1 max-w-xl">
                                 {mode === "most-active"
                                     ? "See who's putting in the most effort across all sports."
                                     : leaderboardData?.meta

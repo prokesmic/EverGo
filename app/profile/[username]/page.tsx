@@ -284,7 +284,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     : null
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-20 md:pb-0">
+    <main className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Full-Width Hero Header - Photo with dark left overlay panel */}
       <div className="px-4 md:px-6 pt-4">
         <ProfileHeroBanner
