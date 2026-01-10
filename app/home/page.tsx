@@ -5,8 +5,8 @@ import { prisma } from "@/lib/db"
 import { Suspense } from "react"
 import { startOfWeek, endOfWeek } from "date-fns"
 
-// V6 Components
-import { WelcomeHero } from "@/components/home/WelcomeHero"
+// V6 Components - Using photo-based hero (same as Profile)
+import { HomeHeroBanner } from "@/components/hero/HomeHeroBanner"
 import { ActiveCompetitions } from "@/components/home/ActiveCompetitions"
 import { RivalriesStrip } from "@/components/home/RivalriesStrip"
 import { CityLadder } from "@/components/home/CityLadder"
@@ -187,8 +187,8 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
-        {/* Welcome Hero - Profile Style */}
-        <WelcomeHero
+        {/* Home Hero - Photo-based banner (same pattern as Profile) */}
+        <HomeHeroBanner
           user={{
             id: user.id,
             displayName: user.displayName,
