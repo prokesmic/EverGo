@@ -2,13 +2,12 @@ import { prisma } from "@/lib/db"
 import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { ProfileHeaderHero } from "@/components/profile/ProfileHeaderHero"
+import { ProfileHeroBanner } from "@/components/profile/ProfileHeroBanner"
 import { ProfileStatsPills } from "@/components/profile/ProfileStatsPills"
 import { ActivityFeedV2 } from "@/components/profile/ActivityFeedV2"
 import { ProfileSideRail } from "@/components/profile/ProfileSideRail"
 import { ProfileTabs } from "@/components/profile/ProfileTabs"
 import { ProfileRivalries } from "@/components/profile/ProfileRivalries"
-import { getHeroForUserPrimarySport } from "@/lib/hero/getHeroForUserPrimarySport"
 import { getUserRivals } from "@/lib/head-to-head"
 export const dynamic = "force-dynamic"
 
@@ -183,9 +182,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const isCurrentUser = session?.user?.email === user.email
   const isFollowing = user.followers.length > 0
 
-  // Get hero image based on user's primary sport
-  const hero = await getHeroForUserPrimarySport(user.id)
-
   // Calculate Weekly Stats
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
@@ -273,38 +269,42 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     _count: { kudos: 0, comments: 0 }, // Activity model doesn't have these relations yet
   }))
 
+  // Format joined date
+  const joinedLabel = user.createdAt
+    ? `Joined ${new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`
+    : null
+
+  // Get primary sport name
+  const primarySport = user.sports[0]
+  const primarySportLabel = primarySport?.sport?.name ?? null
+
+  // Format location
+  const locationLabel = user.city
+    ? `${user.city}${user.country ? `, ${user.country}` : ""}`
+    : null
+
   return (
     <main className="min-h-screen bg-slate-50 pb-20 md:pb-0">
-      {/* Full-Width Hero Header */}
-      <ProfileHeaderHero
-        user={{
-          id: user.id,
-          displayName: user.displayName,
-          username: user.username,
-          avatarUrl: user.avatarUrl,
-          city: user.city,
-          bio: user.bio,
-          createdAt: user.createdAt,
-        }}
-        stats={{
-          followers: user._count.followers,
-          following: user._count.following,
-          activities: user._count.activities,
-        }}
-        hero={hero}
-        sports={user.sports.map((us, index) => ({
-          id: us.id,
-          sportId: us.sportId,
-          isPrimary: index === 0 || us.sportId === user.primarySportId,
-          sport: {
-            id: us.sport.id,
-            name: us.sport.name,
-            slug: us.sport.slug,
-          },
-        }))}
-        isCurrentUser={isCurrentUser}
-        isFollowing={isFollowing}
-      />
+      {/* Full-Width Hero Header - Photo with dark left overlay panel */}
+      <div className="px-4 md:px-6 pt-4">
+        <ProfileHeroBanner
+          isOwnProfile={isCurrentUser}
+          onEditHref="/settings/profile"
+          displayName={user.displayName ?? user.username ?? "User"}
+          handleOrEmail={user.username ? `@${user.username}` : user.email ?? ""}
+          locationLabel={locationLabel}
+          joinedLabel={joinedLabel}
+          bio={user.bio ?? null}
+          primarySportLabel={primarySportLabel}
+          avatarUrl={user.avatarUrl ?? null}
+          bannerUrl={user.coverPhotoUrl ?? null}
+          counts={{
+            activities: user._count.activities,
+            followers: user._count.followers,
+            following: user._count.following,
+          }}
+        />
+      </div>
 
       {/* Stats Pills Strip */}
       <ProfileStatsPills
