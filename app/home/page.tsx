@@ -3,10 +3,10 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { Suspense } from "react"
+import { startOfWeek, endOfWeek } from "date-fns"
 
 // V6 Components
-import { HeroBanner } from "@/components/home/HeroBanner"
-import { HeroBannerSkeleton } from "@/components/home/HeroBannerSkeleton"
+import { WelcomeHero } from "@/components/home/WelcomeHero"
 import { ActiveCompetitions } from "@/components/home/ActiveCompetitions"
 import { RivalriesStrip } from "@/components/home/RivalriesStrip"
 import { CityLadder } from "@/components/home/CityLadder"
@@ -18,7 +18,6 @@ import { SeasonCard } from "@/components/season/SeasonCard"
 import { Skeleton } from "@/components/ui/skeleton"
 
 // V6 Data fetching
-import { getHeroData } from "@/lib/home/getHeroData"
 import { getUserGauntlets, getPendingInvitations } from "@/lib/gauntlet"
 import { getUserRivalries } from "@/lib/rivalry"
 import { getCurrentSeason, getUserSeasonRank } from "@/lib/season"
@@ -31,8 +30,8 @@ export const dynamic = "force-dynamic"
 /**
  * V6 Home Dashboard Page - Competition Platform
  *
- * Clean layout with Hero Banner:
- * - Hero Banner: Sports identity, Power, Ranks, Competition status
+ * Profile-style hero with full cover photo and stats:
+ * - WelcomeHero: Cover photo, avatar, stats strip, metric cards
  * - Main Column: Active Competitions, Rivalries Strip, Feed
  * - Sidebar: Season Card, City Ladder, Quick Actions
  */
@@ -43,14 +42,30 @@ export default async function HomePage() {
     redirect("/login")
   }
 
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
+  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 })
+
+  // Fetch user with full profile data
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: {
       id: true,
       displayName: true,
       username: true,
+      email: true,
+      avatarUrl: true,
+      coverPhotoUrl: true,
       city: true,
       country: true,
+      bio: true,
+      createdAt: true,
+      _count: {
+        select: {
+          activities: true,
+          followers: true,
+          following: true,
+        },
+      },
     },
   })
 
@@ -60,7 +75,51 @@ export default async function HomePage() {
 
   const userId = user.id
 
-  // Get user's team membership separately
+  // Fetch primary sport
+  const primarySportRecord = await prisma.userSport.findFirst({
+    where: { userId, status: "ACTIVE" },
+    orderBy: { priority: "asc" },
+    include: {
+      sport: { select: { name: true, slug: true } },
+    },
+  })
+
+  // Fetch user stats and streak
+  const [userStats, userStreak] = await Promise.all([
+    prisma.userStats.findUnique({
+      where: { userId },
+      select: {
+        sportIndex: true,
+        sportIndexDelta7d: true,
+      },
+    }),
+    prisma.userStreak.findUnique({
+      where: { userId },
+      select: {
+        currentStreak: true,
+      },
+    }),
+  ])
+
+  // Fetch this week's activities for metrics
+  const weekActivities = await prisma.activity.findMany({
+    where: {
+      userId,
+      activityDate: { gte: weekStart, lte: weekEnd },
+    },
+    select: {
+      distanceMeters: true,
+      durationSeconds: true,
+    },
+  })
+
+  // Calculate week metrics
+  const thisWeekKm = weekActivities.reduce((sum, a) => sum + (a.distanceMeters ?? 0), 0) / 1000
+  const activeTimeMinutes = Math.round(
+    weekActivities.reduce((sum, a) => sum + (a.durationSeconds ?? 0), 0) / 60
+  )
+
+  // Get user's team membership
   const teamMembership = await prisma.teamMember.findFirst({
     where: { userId, role: { not: "BANNED" } },
     select: {
@@ -72,7 +131,6 @@ export default async function HomePage() {
 
   // Parallel data fetching with error handling
   const [
-    heroDataResult,
     gauntletsResult,
     pendingGauntletsResult,
     rivalriesResult,
@@ -80,7 +138,6 @@ export default async function HomePage() {
     crewWarResult,
     cityLadderResult,
   ] = await Promise.allSettled([
-    getHeroData(userId),
     getUserGauntlets(userId, 10),
     getPendingInvitations(userId),
     getUserRivalries(userId, 6),
@@ -90,8 +147,6 @@ export default async function HomePage() {
   ])
 
   // Extract results with fallbacks
-  const heroData = heroDataResult.status === "fulfilled" ? heroDataResult.value : null
-
   const allGauntlets =
     gauntletsResult.status === "fulfilled" ? gauntletsResult.value : []
 
@@ -132,18 +187,42 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
-        {/* Hero Banner - Full Width */}
-        {heroData ? (
-          <HeroBanner
-            user={heroData.user}
-            primarySports={heroData.primarySports}
-            weeklyPower={heroData.weeklyPower}
-            seasonRanks={heroData.seasonRanks}
-            competitionStats={heroData.competitionStats}
-          />
-        ) : (
-          <HeroBannerSkeleton />
-        )}
+        {/* Welcome Hero - Profile Style */}
+        <WelcomeHero
+          user={{
+            id: user.id,
+            displayName: user.displayName,
+            username: user.username,
+            email: user.email,
+            avatarUrl: user.avatarUrl,
+            coverPhotoUrl: user.coverPhotoUrl,
+            city: user.city,
+            country: user.country,
+            bio: user.bio,
+            createdAt: user.createdAt,
+          }}
+          primarySport={
+            primarySportRecord
+              ? {
+                  name: primarySportRecord.sport.name,
+                  slug: primarySportRecord.sport.slug,
+                }
+              : null
+          }
+          stats={{
+            activities: user._count.activities,
+            followers: user._count.followers,
+            following: user._count.following,
+          }}
+          metrics={{
+            sportIndex: userStats?.sportIndex ?? 0,
+            sportIndexDelta: userStats?.sportIndexDelta7d ?? 0,
+            dayStreak: userStreak?.currentStreak ?? 0,
+            thisWeekKm,
+            activeTimeMinutes,
+            weekActivities: weekActivities.length,
+          }}
+        />
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
