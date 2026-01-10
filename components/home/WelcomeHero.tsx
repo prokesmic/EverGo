@@ -3,13 +3,7 @@
 /**
  * V6 Welcome Hero Component
  *
- * Profile-style hero for the home page with:
- * - Full cover photo with gradient overlay
- * - Avatar with ring
- * - Name, email, location, join date
- * - Primary sport badge
- * - Stats strip (activities, followers, following)
- * - Metrics cards (Sport Index, Streak, This Week, Active Time, Activities)
+ * Profile-style hero for the home page - matches profile page design exactly
  */
 
 import Image from 'next/image'
@@ -64,7 +58,6 @@ interface WelcomeHeroProps {
   className?: string
 }
 
-// Sport emoji mapping
 const SPORT_EMOJIS: Record<string, string> = {
   running: '🏃',
   cycling: '🚴',
@@ -74,11 +67,6 @@ const SPORT_EMOJIS: Record<string, string> = {
   gym: '🏋️',
   yoga: '🧘',
   tennis: '🎾',
-  skiing: '⛷️',
-  snowboarding: '🏂',
-  surfing: '🏄',
-  climbing: '🧗',
-  rowing: '🚣',
   default: '🏅'
 }
 
@@ -109,80 +97,73 @@ export function WelcomeHero({
     ? 'text-emerald-500'
     : metrics.sportIndexDelta < 0
       ? 'text-red-500'
-      : 'text-slate-400'
+      : 'text-slate-500'
 
   return (
-    <div className={cn("relative rounded-2xl overflow-hidden bg-white shadow-sm", className)}>
-      {/* Cover Photo Section */}
-      <div className="relative h-56 md:h-64">
+    <div className={cn("bg-white rounded-2xl shadow-sm overflow-hidden", className)}>
+      {/* Cover Photo Area */}
+      <div className="relative h-48 md:h-56 lg:h-64">
         {user.coverPhotoUrl ? (
           <Image
             src={user.coverPhotoUrl}
-            alt="Cover"
+            alt="Cover photo"
             fill
             className="object-cover"
             priority
           />
         ) : (
-          /* Default gradient if no cover photo */
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-500" />
+          <div className="absolute inset-0 bg-gradient-to-r from-teal-400 via-cyan-400 to-teal-300" />
         )}
 
-        {/* Gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-        {/* Edit Profile Button */}
+        {/* Edit Profile Button - Top Right */}
         <div className="absolute top-4 right-4">
           <Link href="/settings/profile">
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
-              className="gap-2 bg-white/90 hover:bg-white text-slate-700"
+              className="bg-white/95 hover:bg-white border-0 shadow-sm"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-4 h-4 mr-2" />
               Edit Profile
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* Profile Info Overlay */}
-      <div className="relative px-6 pb-6">
-        {/* Avatar - positioned to overlap cover */}
-        <div className="flex items-end gap-4 -mt-16 mb-4">
-          <Link href={`/profile/${user.username ?? user.id}`}>
-            <Avatar className="w-28 h-28 md:w-32 md:h-32 border-4 border-white shadow-xl ring-4 ring-orange-500">
-              <AvatarImage src={user.avatarUrl ?? undefined} />
-              <AvatarFallback className="text-3xl md:text-4xl bg-orange-500 text-white font-semibold">
-                {(user.displayName ?? user.username ?? 'U')[0].toUpperCase()}
-                {(user.displayName ?? user.username ?? 'U')[1]?.toUpperCase() ?? ''}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+      {/* Profile Content - Below Cover */}
+      <div className="px-6 pb-6">
+        {/* Avatar Row */}
+        <div className="flex items-end -mt-16 mb-4">
+          <Avatar className="w-32 h-32 border-4 border-white shadow-lg ring-4 ring-orange-500">
+            <AvatarImage src={user.avatarUrl ?? undefined} />
+            <AvatarFallback className="text-4xl bg-orange-500 text-white font-bold">
+              {(user.displayName ?? user.username ?? 'U').slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
 
-          {/* Name and details */}
-          <div className="flex-1 pb-2">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
-              {user.displayName ?? user.username ?? 'Athlete'}
-            </h1>
+        {/* Name & Info */}
+        <div className="mb-3">
+          <h1 className="text-2xl font-bold text-slate-900">
+            {user.displayName ?? user.username ?? 'Athlete'}
+          </h1>
+          {user.username && (
+            <p className="text-slate-500">@{user.username}</p>
+          )}
+        </div>
 
-            {user.email && (
-              <p className="text-slate-500 text-sm">@{user.email.split('@')[0]}</p>
-            )}
-
-            <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-slate-600">
-              {user.city && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4 text-slate-400" />
-                  {user.city}{user.country ? `, ${user.country}` : ''}
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                <Calendar className="w-4 h-4 text-slate-400" />
-                Joined {joinMonthYear}
-              </span>
-            </div>
-          </div>
+        {/* Location & Join Date */}
+        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 mb-3">
+          {user.city && (
+            <span className="flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-slate-400" />
+              {user.city}{user.country ? `, ${user.country}` : ''}
+            </span>
+          )}
+          <span className="flex items-center gap-1.5">
+            <Calendar className="w-4 h-4 text-slate-400" />
+            Joined {joinMonthYear}
+          </span>
         </div>
 
         {/* Bio */}
@@ -192,83 +173,81 @@ export function WelcomeHero({
 
         {/* Primary Sport Badge */}
         {primarySport && (
-          <div className="mb-4">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-medium shadow-sm">
-              <span className="text-lg">{sportEmoji}</span>
+          <div className="mb-5">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-medium text-sm">
+              <span>{sportEmoji}</span>
               {primarySport.name}
             </span>
           </div>
         )}
 
-        {/* Stats Strip */}
-        <div className="flex items-center gap-8 mb-6 text-center">
-          <div>
+        {/* Stats Row */}
+        <div className="flex items-center gap-8 mb-6">
+          <div className="text-center">
             <div className="text-2xl font-bold text-slate-900">{stats.activities}</div>
-            <div className="text-xs text-slate-500 uppercase tracking-wide">Activities</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider">Activities</div>
           </div>
-          <div>
+          <div className="text-center">
             <div className="text-2xl font-bold text-slate-900">{stats.followers}</div>
-            <div className="text-xs text-slate-500 uppercase tracking-wide">Followers</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider">Followers</div>
           </div>
-          <div>
+          <div className="text-center">
             <div className="text-2xl font-bold text-slate-900">{stats.following}</div>
-            <div className="text-xs text-slate-500 uppercase tracking-wide">Following</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider">Following</div>
           </div>
         </div>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {/* Sport Index */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <Zap className="w-4 h-4 text-orange-500" />
-              <span className="text-2xl font-bold text-slate-900">{metrics.sportIndex}</span>
+          <div className="bg-slate-50 rounded-xl p-4 text-center border border-slate-100">
+            <div className="flex items-center justify-center gap-1.5 text-slate-900">
+              <Zap className="w-4 h-4 text-amber-500" />
+              <span className="text-xl font-bold">{metrics.sportIndex}</span>
             </div>
-            <div className="flex items-center justify-center gap-1">
-              <TrendIcon className={cn("w-3 h-3", trendColor)} />
-              <span className={cn("text-xs font-medium", trendColor)}>
-                {metrics.sportIndexDelta > 0 ? '+' : ''}{metrics.sportIndexDelta}
-              </span>
+            <div className={cn("flex items-center justify-center gap-1 text-xs mt-1", trendColor)}>
+              <TrendIcon className="w-3 h-3" />
+              <span>{metrics.sportIndexDelta > 0 ? '+' : ''}{metrics.sportIndexDelta}</span>
             </div>
-            <div className="text-xs text-slate-500 uppercase tracking-wide mt-1">Sport Index</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">Sport Index</div>
           </div>
 
           {/* Day Streak */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+          <div className="bg-slate-50 rounded-xl p-4 text-center border border-slate-100">
+            <div className="flex items-center justify-center gap-1.5 text-slate-900">
               <Flame className="w-4 h-4 text-orange-500" />
-              <span className="text-2xl font-bold text-slate-900">{metrics.dayStreak}</span>
+              <span className="text-xl font-bold">{metrics.dayStreak}</span>
             </div>
-            <div className="text-xs text-slate-500 uppercase tracking-wide mt-1">Day Streak</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider mt-2">Day Streak</div>
           </div>
 
-          {/* This Week km */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+          {/* This Week Distance */}
+          <div className="bg-slate-50 rounded-xl p-4 text-center border border-slate-100">
+            <div className="flex items-center justify-center gap-1.5 text-slate-900">
               <Route className="w-4 h-4 text-teal-500" />
-              <span className="text-2xl font-bold text-slate-900">{metrics.thisWeekKm.toFixed(1)}</span>
+              <span className="text-xl font-bold">{metrics.thisWeekKm.toFixed(1)}</span>
               <span className="text-sm text-slate-500">km</span>
             </div>
-            <div className="text-xs text-slate-500 uppercase tracking-wide mt-1">This Week</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider mt-2">This Week</div>
           </div>
 
           {/* Active Time */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+          <div className="bg-slate-50 rounded-xl p-4 text-center border border-slate-100">
+            <div className="flex items-center justify-center gap-1.5 text-slate-900">
               <Clock className="w-4 h-4 text-teal-500" />
-              <span className="text-2xl font-bold text-slate-900">{metrics.activeTimeMinutes}</span>
+              <span className="text-xl font-bold">{metrics.activeTimeMinutes}</span>
               <span className="text-sm text-slate-500">m</span>
             </div>
-            <div className="text-xs text-slate-500 uppercase tracking-wide mt-1">Active Time</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider mt-2">Active Time</div>
           </div>
 
-          {/* Activities */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+          {/* Activities Count */}
+          <div className="bg-slate-50 rounded-xl p-4 text-center border border-slate-100">
+            <div className="flex items-center justify-center gap-1.5 text-slate-900">
               <Activity className="w-4 h-4 text-teal-500" />
-              <span className="text-2xl font-bold text-slate-900">{metrics.weekActivities}</span>
+              <span className="text-xl font-bold">{metrics.weekActivities}</span>
             </div>
-            <div className="text-xs text-slate-500 uppercase tracking-wide mt-1">Activities</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider mt-2">Activities</div>
           </div>
         </div>
       </div>
