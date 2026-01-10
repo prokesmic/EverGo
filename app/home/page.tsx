@@ -7,6 +7,8 @@ import { startOfWeek, endOfWeek } from "date-fns"
 
 // V6 Components - Using photo-based hero (same as Profile)
 import { HomeHeroBanner } from "@/components/hero/HomeHeroBanner"
+import { HomeHeroRibbon } from "@/components/home/HomeHeroRibbon"
+import { FriendsStrip } from "@/components/home/FriendsStrip"
 import { ActiveCompetitions } from "@/components/home/ActiveCompetitions"
 import { RivalriesStrip } from "@/components/home/RivalriesStrip"
 import { CityLadder } from "@/components/home/CityLadder"
@@ -129,6 +131,25 @@ export default async function HomePage() {
   })
   const teamId = teamMembership?.teamId
 
+  // Fetch users the current user is following (for FriendsStrip)
+  const followingUsers = await prisma.follow.findMany({
+    where: { followerId: userId },
+    take: 12,
+    orderBy: { createdAt: "desc" },
+    select: {
+      following: {
+        select: {
+          id: true,
+          displayName: true,
+          username: true,
+          avatarUrl: true,
+        },
+      },
+    },
+  })
+
+  const friends = followingUsers.map((f) => f.following)
+
   // Parallel data fetching with error handling
   const [
     gauntletsResult,
@@ -184,10 +205,20 @@ export default async function HomePage() {
     }
   }
 
+  // Metrics for ribbon
+  const metrics = {
+    sportIndex: userStats?.sportIndex ?? 0,
+    sportIndexDelta: userStats?.sportIndexDelta7d ?? 0,
+    dayStreak: userStreak?.currentStreak ?? 0,
+    thisWeekKm,
+    activeTimeMinutes,
+    weekActivities: weekActivities.length,
+  }
+
   return (
     <main className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
-        {/* Home Hero - Photo-based banner (same pattern as Profile) */}
+      {/* Home Hero - Full width photo banner */}
+      <div className="px-4 md:px-6 pt-4">
         <HomeHeroBanner
           user={{
             id: user.id,
@@ -214,16 +245,14 @@ export default async function HomePage() {
             followers: user._count.followers,
             following: user._count.following,
           }}
-          metrics={{
-            sportIndex: userStats?.sportIndex ?? 0,
-            sportIndexDelta: userStats?.sportIndexDelta7d ?? 0,
-            dayStreak: userStreak?.currentStreak ?? 0,
-            thisWeekKm,
-            activeTimeMinutes,
-            weekActivities: weekActivities.length,
-          }}
         />
+      </div>
 
+      {/* Premium Ribbon - overlaps hero bottom */}
+      <HomeHeroRibbon metrics={metrics} />
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 max-w-7xl">
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           {/* Main Column (2/3) */}
@@ -251,6 +280,9 @@ export default async function HomePage() {
 
           {/* Sidebar (1/3) */}
           <div className="space-y-6">
+            {/* Friends Strip - clickable avatars */}
+            <FriendsStrip friends={friends} />
+
             {/* Season Card */}
             {isFeatureEnabled("season") && activeSeason && (
               <SeasonCard
