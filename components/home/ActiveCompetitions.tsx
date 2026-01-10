@@ -30,7 +30,7 @@ export function ActiveCompetitions({
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">
+        <h2 className="text-lg font-semibold text-foreground">
           Active Competitions
         </h2>
         <Link href="/gauntlets/new">
@@ -76,16 +76,16 @@ export function ActiveCompetitions({
 
 function EmptyCompetitions() {
   return (
-    <div className="rounded-xl border-2 border-dashed border-slate-200 p-8 text-center">
-      <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
-        <Swords className="w-6 h-6 text-slate-400" />
+    <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
+      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+        <Swords className="w-6 h-6 text-muted-foreground" />
       </div>
-      <h3 className="font-medium text-slate-900 mb-1">No Active Competitions</h3>
-      <p className="text-sm text-slate-500 mb-4">
+      <h3 className="font-medium text-card-foreground mb-1">No Active Competitions</h3>
+      <p className="text-sm text-muted-foreground mb-4">
         Challenge someone to a gauntlet and start competing!
       </p>
       <Link href="/gauntlets/new">
-        <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700">
+        <Button className="gap-2">
           <Plus className="w-4 h-4" />
           Find an Opponent
         </Button>

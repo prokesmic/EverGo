@@ -33,27 +33,27 @@ export function CityLadder({ city, entries, currentUserId }: CityLadderProps) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+      <div className="px-4 py-3 border-b border-border bg-muted/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-500" />
-            <span className="font-semibold text-slate-900">{city}</span>
+            <span className="font-semibold text-card-foreground">{city}</span>
           </div>
-          <span className="text-xs text-slate-500">This Week</span>
+          <span className="text-xs text-muted-foreground">This Week</span>
         </div>
       </div>
 
       {/* Entries */}
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-border">
         {entries.map((entry) => (
           <Link
             key={entry.userId}
             href={`/profile/${entry.username ?? entry.userId}`}
             className={cn(
-              "flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors",
-              entry.isCurrentUser && "bg-emerald-50 hover:bg-emerald-100"
+              "flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors",
+              entry.isCurrentUser && "bg-primary/5 hover:bg-primary/10"
             )}
           >
             {/* Rank */}
@@ -61,9 +61,9 @@ export function CityLadder({ city, entries, currentUserId }: CityLadderProps) {
               className={cn(
                 "w-6 text-center font-bold text-sm",
                 entry.rank === 1 && "text-amber-500",
-                entry.rank === 2 && "text-slate-400",
+                entry.rank === 2 && "text-muted-foreground",
                 entry.rank === 3 && "text-amber-700",
-                entry.rank > 3 && "text-slate-400"
+                entry.rank > 3 && "text-muted-foreground"
               )}
             >
               {entry.rank}
@@ -82,18 +82,18 @@ export function CityLadder({ city, entries, currentUserId }: CityLadderProps) {
               <span
                 className={cn(
                   "text-sm font-medium truncate",
-                  entry.isCurrentUser ? "text-emerald-700" : "text-slate-900"
+                  entry.isCurrentUser ? "text-primary" : "text-card-foreground"
                 )}
               >
                 {entry.displayName ?? entry.username}
                 {entry.isCurrentUser && (
-                  <span className="ml-1 text-xs text-emerald-600">(you)</span>
+                  <span className="ml-1 text-xs text-primary/80">(you)</span>
                 )}
               </span>
             </div>
 
             {/* Power */}
-            <div className="text-sm font-semibold text-slate-900">
+            <div className="text-sm font-semibold text-card-foreground">
               {entry.power.toLocaleString()}
             </div>
           </Link>
@@ -101,10 +101,10 @@ export function CityLadder({ city, entries, currentUserId }: CityLadderProps) {
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-slate-100 bg-slate-50">
+      <div className="px-4 py-3 border-t border-border bg-muted/50">
         <Link
           href={`/rankings?scope=city&city=${encodeURIComponent(city)}`}
-          className="flex items-center justify-center gap-1 text-sm text-slate-600 hover:text-slate-900"
+          className="flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           View Full Rankings
           <ChevronRight className="w-4 h-4" />

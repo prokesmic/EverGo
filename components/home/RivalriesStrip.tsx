@@ -37,10 +37,10 @@ export function RivalriesStrip({ rivalries }: RivalriesStripProps) {
   return (
     <section>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold text-slate-900">Your Rivalries</h2>
+        <h2 className="text-lg font-semibold text-foreground">Your Rivalries</h2>
         <Link
           href="/profile?tab=rivalries"
-          className="text-sm text-slate-500 hover:text-slate-700"
+          className="text-sm text-muted-foreground hover:text-foreground"
         >
           View all
         </Link>
@@ -66,9 +66,9 @@ function RivalryChip({ rivalry }: { rivalry: RivalryData }) {
     <Link
       href={`/profile/${opponent.username ?? opponent.id}`}
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg border bg-white",
-        "hover:border-slate-300 transition-colors flex-shrink-0",
-        isIntense && "border-orange-200 bg-orange-50"
+        "flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card",
+        "hover:border-primary/30 transition-colors flex-shrink-0",
+        isIntense && "border-primary/30 bg-primary/5"
       )}
     >
       <Avatar className="w-8 h-8">
@@ -79,22 +79,22 @@ function RivalryChip({ rivalry }: { rivalry: RivalryData }) {
       </Avatar>
 
       <div className="flex flex-col">
-        <span className="text-sm font-medium text-slate-900 truncate max-w-[80px]">
+        <span className="text-sm font-medium text-card-foreground truncate max-w-[80px]">
           {opponent.displayName ?? opponent.username}
         </span>
         <span
           className={cn(
             "text-xs font-medium",
             isWinning && "text-emerald-600",
-            isLosing && "text-red-600",
-            !isWinning && !isLosing && "text-slate-500"
+            isLosing && "text-destructive",
+            !isWinning && !isLosing && "text-muted-foreground"
           )}
         >
           {record}
         </span>
       </div>
 
-      {isIntense && <Flame className="w-4 h-4 text-orange-500 flex-shrink-0" />}
+      {isIntense && <Flame className="w-4 h-4 text-primary flex-shrink-0" />}
     </Link>
   )
 }

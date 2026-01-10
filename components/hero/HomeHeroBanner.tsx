@@ -1,13 +1,14 @@
 // components/hero/HomeHeroBanner.tsx
-// Home page hero banner - uses the same photo-based pattern as Profile
+// Home page hero banner - uses sport-specific images based on user's primary sport
 "use client"
 
 import Image from "next/image"
 import Link from "next/link"
-import { MapPin, CalendarDays, Settings, Zap, Flame, Route, Clock, Activity, TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { MapPin, CalendarDays, Settings, Zap, Flame, Route, Clock, TrendingUp, TrendingDown, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { HeroBanner, DEFAULT_HERO_BANNER } from "./HeroBanner"
+import { HeroBanner } from "./HeroBanner"
 import { cn } from "@/lib/utils"
+import { getSportHeroImage } from "@/lib/sports/media"
 
 interface HomeHeroBannerProps {
   user: {
@@ -86,9 +87,14 @@ export function HomeHeroBanner({
     ? `${user.city}${user.country ? `, ${user.country}` : ""}`
     : null
 
+  // Get sport-specific hero image based on primary sport
+  // Priority: user's cover photo > sport-specific image > generic fallback
+  const sportHeroImage = getSportHeroImage(primarySport?.slug ?? primarySport?.name)
+  const heroImageSrc = user.coverPhotoUrl || sportHeroImage
+
   return (
     <HeroBanner
-      imageSrc={user.coverPhotoUrl}
+      imageSrc={heroImageSrc}
       heightClass="h-[280px]"
       data-testid="home-hero"
       topRight={
