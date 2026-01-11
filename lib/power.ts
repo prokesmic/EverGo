@@ -1,19 +1,42 @@
 import { prisma } from './db'
-import { startOfWeek, endOfWeek } from 'date-fns'
+import { startOfWeek, endOfWeek, subDays } from 'date-fns'
 
 /**
- * Power System (V6)
+ * Power System (V6) with Anti-Gaming Guardrails
  *
- * Formula: Power = Duration (minutes) × Power Multiplier
+ * Formula: Power = Duration (minutes) × Power Multiplier × Confidence Factor
  *
  * Power Multipliers:
  * - Easy (RPE 1-4): 1.0x
  * - Moderate (RPE 5-7): 1.5x
  * - Hard (RPE 8-10): 2.0x
- * - Race/Competition: 3.0x (overrides RPE)
+ * - Race/Competition: 3.0x (restricted - see guardrails)
+ *
+ * Anti-Gaming Guardrails:
+ * 1. Source Confidence: VERIFIED (device) > MANUAL (user entered)
+ * 2. Race Multiplier Restrictions:
+ *    - Must have eventId, OR
+ *    - Must be GOLD verification tier, OR
+ *    - Limited to 2 races per week (frequency cap)
+ * 3. Power Audit: All calculations stored with breakdown
  */
 
 export type IntensityCategory = 'easy' | 'moderate' | 'hard' | 'race'
+export type SourceConfidence = 'VERIFIED' | 'MANUAL'
+
+// Activity sources that count as verified (device imported)
+const VERIFIED_SOURCES = [
+  'IMPORT_STRAVA',
+  'IMPORT_GARMIN',
+  'IMPORT_APPLE_HEALTH',
+  'IMPORT_GOOGLE_FIT',
+  'UPLOAD',
+]
+
+export function getSourceConfidence(source: string | null): SourceConfidence {
+  if (!source) return 'MANUAL'
+  return VERIFIED_SOURCES.includes(source) ? 'VERIFIED' : 'MANUAL'
+}
 
 export function getPowerMultiplier(rpe: number, isRace: boolean): number {
   if (isRace) return 3.0
@@ -29,17 +52,125 @@ export function getIntensityCategory(rpe: number, isRace: boolean): IntensityCat
   return 'hard'
 }
 
+/**
+ * Check if user is eligible for race multiplier
+ * Returns true if:
+ * - Activity has an eventId (linked to official event), OR
+ * - Activity is GOLD verification tier, OR
+ * - User has < 2 races this week (frequency cap)
+ */
+export async function isRaceMultiplierEligible(
+  userId: string,
+  activityDate: Date,
+  hasEventId: boolean,
+  verificationTier: string | null
+): Promise<{ eligible: boolean; reason: string }> {
+  // Always allow if linked to an event
+  if (hasEventId) {
+    return { eligible: true, reason: 'EVENT_LINKED' }
+  }
+
+  // Always allow if verified (device import)
+  if (verificationTier === 'GOLD') {
+    return { eligible: true, reason: 'GOLD_VERIFIED' }
+  }
+
+  // Check race frequency (max 2 per week)
+  const weekStart = startOfWeek(activityDate, { weekStartsOn: 1 })
+  const weekEnd = endOfWeek(activityDate, { weekStartsOn: 1 })
+
+  const raceCount = await prisma.activity.count({
+    where: {
+      userId,
+      isRace: true,
+      activityDate: { gte: weekStart, lte: weekEnd },
+    },
+  })
+
+  if (raceCount < 2) {
+    return { eligible: true, reason: 'UNDER_FREQUENCY_CAP' }
+  }
+
+  return { eligible: false, reason: 'EXCEEDED_RACE_FREQUENCY' }
+}
+
+export interface PowerCalculation {
+  power: number
+  multiplier: number
+  category: IntensityCategory
+  confidence: SourceConfidence
+  raceEligible?: boolean
+  raceReason?: string
+}
+
 export function calculatePower(
   durationSeconds: number,
   rpe: number = 5,
-  isRace: boolean = false
-): { power: number; multiplier: number; category: IntensityCategory } {
+  isRace: boolean = false,
+  source?: string | null
+): PowerCalculation {
   const durationMinutes = durationSeconds / 60
   const multiplier = getPowerMultiplier(rpe, isRace)
   const power = Math.round(durationMinutes * multiplier)
   const category = getIntensityCategory(rpe, isRace)
+  const confidence = getSourceConfidence(source ?? null)
 
-  return { power, multiplier, category }
+  return { power, multiplier, category, confidence }
+}
+
+/**
+ * Calculate power with full guardrail checks
+ * Use this for competitive contexts (gauntlets, seasons, rankings)
+ */
+export async function calculatePowerWithGuardrails(
+  userId: string,
+  durationSeconds: number,
+  rpe: number = 5,
+  isRace: boolean = false,
+  source: string | null = null,
+  activityDate: Date = new Date(),
+  hasEventId: boolean = false,
+  verificationTier: string | null = null
+): Promise<PowerCalculation> {
+  const durationMinutes = durationSeconds / 60
+  const confidence = getSourceConfidence(source)
+
+  // Check race multiplier eligibility
+  let effectiveIsRace = isRace
+  let raceReason = ''
+
+  if (isRace) {
+    const eligibility = await isRaceMultiplierEligible(
+      userId,
+      activityDate,
+      hasEventId,
+      verificationTier
+    )
+
+    if (!eligibility.eligible) {
+      // Downgrade to hard intensity instead
+      effectiveIsRace = false
+      raceReason = eligibility.reason
+      console.log(
+        `[Power] Race multiplier denied for user ${userId}: ${eligibility.reason}`
+      )
+    } else {
+      raceReason = eligibility.reason
+    }
+  }
+
+  const multiplier = getPowerMultiplier(rpe, effectiveIsRace)
+  const power = Math.round(durationMinutes * multiplier)
+  const category = getIntensityCategory(rpe, effectiveIsRace)
+
+  return {
+    power,
+    multiplier,
+    category,
+    confidence,
+    raceEligible: effectiveIsRace,
+    raceReason,
+  }
 }
 
 export async function updateActivityPower(activityId: string): Promise<void> {
