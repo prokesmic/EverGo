@@ -5,7 +5,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { MapPin, CalendarDays, Plus } from "lucide-react"
+import { MapPin, CalendarDays, Plus, Swords } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { HeroBanner } from "./HeroBanner"
 import { cn } from "@/lib/utils"
@@ -67,15 +67,27 @@ export function HomeHeroBanner({
       heightClass="h-[320px]"
       data-testid="home-hero"
       topRight={
-        <Link href="/activity/create">
-          <Button
-            data-testid="home-log-activity-btn"
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Log Activity
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/gauntlets/new">
+            <Button
+              variant="outline"
+              data-testid="home-throw-gauntlet-btn"
+              className="gap-2 bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white"
+            >
+              <Swords className="h-4 w-4" />
+              <span className="hidden sm:inline">Throw Gauntlet</span>
+            </Button>
+          </Link>
+          <Link href="/activity/create">
+            <Button
+              data-testid="home-log-activity-btn"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Log Activity
+            </Button>
+          </Link>
+        </div>
       }
     >
       {/* Left overlay panel - dark glassmorphism card */}

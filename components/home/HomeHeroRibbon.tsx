@@ -28,7 +28,7 @@ export function HomeHeroRibbon({ metrics }: HomeHeroRibbonProps) {
       : Minus
 
   const trendClass = metrics.sportIndexDelta > 0
-    ? "text-emerald-600"
+    ? "text-primary"
     : metrics.sportIndexDelta < 0
       ? "text-destructive"
       : "text-muted-foreground"
