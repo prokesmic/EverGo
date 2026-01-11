@@ -39,6 +39,11 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  // V10: GDPR soft-delete support
+  deletedAt       DateTime? // NULL = active, timestamp = deletion requested
+
+  @@index([deletedAt])
+
   @@index([countryCode])
   @@index([cityId])
   @@index([onboardingCompleted])
