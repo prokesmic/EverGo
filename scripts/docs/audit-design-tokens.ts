@@ -112,7 +112,7 @@ function main() {
 
   console.log(`Found ${files.length} files to scan\n`)
 
-  let allViolations: Violation[] = []
+  const allViolations: Violation[] = []
 
   for (const file of files) {
     const violations = scanFile(file)

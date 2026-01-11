@@ -1,9 +1,14 @@
 // components/profile/ProfileHeroBanner.tsx
+// USES SHARED HeroBanner component - MUST match Home hero exactly
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
 import { MapPin, CalendarDays, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { HeroBanner } from "@/components/hero/HeroBanner"
 import { cn } from "@/lib/utils"
+import { getSportHeroImage, getSportThumbImage } from "@/lib/sports/media"
 
 type ProfileHeroBannerProps = {
   isOwnProfile: boolean
@@ -11,11 +16,14 @@ type ProfileHeroBannerProps = {
 
   // Data
   displayName: string
+  username?: string | null
   handleOrEmail: string
   locationLabel?: string | null
   joinedLabel?: string | null
   bio?: string | null
   primarySportLabel?: string | null
+  /** Sport key/slug for sport-specific hero image */
+  primarySportKey?: string | null
 
   avatarUrl?: string | null
   bannerUrl?: string | null
@@ -27,142 +35,135 @@ type ProfileHeroBannerProps = {
   }
 }
 
-// Using a guaranteed-to-work Unsplash image as default
-// This URL is already allowlisted in next.config.ts
-const DEFAULT_BANNER = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1920&q=80"
-
 export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
   const {
     isOwnProfile,
     onEditHref = "/settings/profile",
     displayName,
+    username,
     handleOrEmail,
     locationLabel,
     joinedLabel,
-    bio,
     primarySportLabel,
+    primarySportKey,
     avatarUrl,
     bannerUrl,
     counts,
   } = props
 
-  // ALWAYS use a real image, never a gradient fallback
-  const heroSrc = bannerUrl && bannerUrl.trim().length > 0 ? bannerUrl : DEFAULT_BANNER
+  // Priority: custom cover > sport-specific image > generic fallback
+  // This matches Home hero logic exactly
+  const sportHeroImage = getSportHeroImage(primarySportKey ?? primarySportLabel)
+  const heroImageSrc = bannerUrl && bannerUrl.trim().length > 0 ? bannerUrl : sportHeroImage
+
+  // Sport thumbnail for chip (matches Home)
+  const sportThumb = primarySportLabel
+    ? getSportThumbImage(primarySportKey ?? primarySportLabel)
+    : null
+
+  // Profile URL for stats links
+  const profileHref = username ? `/profile/${username}` : "/profile/me"
 
   return (
-    <section
+    <HeroBanner
+      imageSrc={heroImageSrc}
+      heightClass="h-[320px]"
       data-testid="profile-hero"
-      className="relative w-full overflow-hidden rounded-2xl"
+      topRight={
+        isOwnProfile ? (
+          <Link href={onEditHref}>
+            <Button
+              data-testid="profile-edit-btn"
+              type="button"
+              variant="outline"
+              className="gap-2 bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white"
+            >
+              <Settings className="h-4 w-4" />
+              Edit Profile
+            </Button>
+          </Link>
+        ) : undefined
+      }
     >
-      {/* HERO HEIGHT MUST MATCH SCREENSHOT #1 */}
-      <div className="relative h-[280px] w-full">
-        {/* Background image - ALWAYS shows a photo */}
-        <Image
-          data-testid="profile-hero-image"
-          src={heroSrc}
-          alt="Profile banner"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
+      {/* Left overlay panel - EXACT SAME as Home */}
+      <div className="h-full w-full flex items-center">
+        <div
+          className={cn(
+            "ml-4 md:ml-6 w-[calc(100%-2rem)] max-w-[400px] rounded-2xl border border-white/15 bg-black/40",
+            "backdrop-blur-md px-5 py-5 text-white"
+          )}
+        >
+          {/* Avatar + Info Row */}
+          <div className="flex items-start gap-4">
+            {/* Avatar */}
+            <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-full border-2 border-white/70 shadow-lg">
+              {avatarUrl ? (
+                <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
+              ) : (
+                <div className="grid h-full w-full place-items-center bg-primary text-xl md:text-2xl font-bold">
+                  {displayName?.slice(0, 2)?.toUpperCase() || "U"}
+                </div>
+              )}
+            </div>
 
-        {/* Dark gradient overlay for readability - left to right fade */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-transparent" />
+            {/* Name + Meta */}
+            <div className="min-w-0 flex-1">
+              <div className="text-xl md:text-2xl font-semibold leading-tight truncate">
+                {displayName}
+              </div>
+              <div className="truncate text-sm text-white/80">{handleOrEmail}</div>
 
-        {/* Edit Profile button in hero (top-right) */}
-        {isOwnProfile && (
-          <div className="absolute right-4 top-4 z-20">
-            <Link href={onEditHref}>
-              <Button
-                data-testid="profile-edit-btn"
-                type="button"
-                variant="secondary"
-                className="bg-white/20 text-white border border-white/25 hover:bg-white/30 backdrop-blur"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Edit Profile
-              </Button>
-            </Link>
+              {/* Location & Joined */}
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-white/80">
+                {locationLabel && (
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {locationLabel}
+                  </span>
+                )}
+                {joinedLabel && (
+                  <span className="inline-flex items-center gap-1">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {joinedLabel}
+                  </span>
+                )}
+              </div>
+
+              {/* Primary Sport Chip with thumbnail - matches Home */}
+              {primarySportLabel && (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-3 py-1.5 text-xs font-medium">
+                  {sportThumb && (
+                    <Image
+                      src={sportThumb}
+                      alt={primarySportLabel}
+                      width={16}
+                      height={16}
+                      className="rounded-full object-cover"
+                    />
+                  )}
+                  {primarySportLabel}
+                </div>
+              )}
+            </div>
           </div>
-        )}
 
-        {/* Left overlay panel - dark glassmorphism card */}
-        <div className="absolute inset-0 z-10 flex items-center">
-          <div
-            className={cn(
-              "ml-4 md:ml-6 w-[calc(100%-2rem)] max-w-[380px] rounded-2xl border border-white/15 bg-black/35",
-              "backdrop-blur-md px-5 py-5 text-white"
-            )}
-          >
-            {/* Avatar + Info Row */}
-            <div className="flex items-start gap-4">
-              {/* Avatar */}
-              <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0 overflow-hidden rounded-full border-2 border-white/70 shadow-lg">
-                {avatarUrl ? (
-                  <Image src={avatarUrl} alt="Avatar" fill className="object-cover" />
-                ) : (
-                  <div className="grid h-full w-full place-items-center bg-orange-500 text-xl md:text-2xl font-bold">
-                    {displayName?.slice(0, 2)?.toUpperCase() || "U"}
-                  </div>
-                )}
-              </div>
-
-              {/* Name + Meta */}
-              <div className="min-w-0 flex-1">
-                <div className="text-xl md:text-2xl font-semibold leading-tight truncate">
-                  {displayName}
-                </div>
-                <div className="truncate text-sm text-white/80">{handleOrEmail}</div>
-
-                {/* Location & Joined */}
-                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-white/80">
-                  {locationLabel && (
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {locationLabel}
-                    </span>
-                  )}
-                  {joinedLabel && (
-                    <span className="inline-flex items-center gap-1">
-                      <CalendarDays className="h-3.5 w-3.5" />
-                      {joinedLabel}
-                    </span>
-                  )}
-                </div>
-
-                {/* Bio */}
-                {bio && (
-                  <div className="mt-2 text-sm text-white/90 line-clamp-2">{bio}</div>
-                )}
-
-                {/* Primary Sport Chip */}
-                {primarySportLabel && (
-                  <div className="mt-3 inline-flex items-center rounded-full bg-orange-500 px-3 py-1 text-xs font-medium">
-                    <span className="mr-1">🏆</span> {primarySportLabel}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Counts row INSIDE hero, like screenshot #1 */}
-            <div className="mt-4 pt-4 border-t border-white/15 flex items-end justify-between">
-              <Count label="ACTIVITIES" value={counts.activities} />
-              <Count label="FOLLOWERS" value={counts.followers} />
-              <Count label="FOLLOWING" value={counts.following} />
-            </div>
+          {/* Stats Row - EXACT SAME as Home */}
+          <div className="mt-4 pt-4 border-t border-white/15 grid grid-cols-3 gap-4">
+            <StatItem label="ACTIVITIES" value={counts.activities} href={profileHref} />
+            <StatItem label="FOLLOWERS" value={counts.followers} href={`${profileHref}?tab=followers`} />
+            <StatItem label="FOLLOWING" value={counts.following} href={`${profileHref}?tab=following`} />
           </div>
         </div>
       </div>
-    </section>
+    </HeroBanner>
   )
 }
 
-function Count({ label, value }: { label: string; value: number }) {
+function StatItem({ label, value, href }: { label: string; value: number; href: string }) {
   return (
-    <div className="text-center">
+    <Link href={href} className="text-center hover:opacity-80 transition-opacity">
       <div className="text-xl font-semibold leading-none text-white">{value}</div>
       <div className="mt-1 text-[10px] tracking-wide text-white/70">{label}</div>
-    </div>
+    </Link>
   )
 }

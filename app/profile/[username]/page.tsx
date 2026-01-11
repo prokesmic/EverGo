@@ -2,8 +2,9 @@ import { prisma } from "@/lib/db"
 import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { startOfWeek, endOfWeek } from "date-fns"
 import { ProfileHeroBanner } from "@/components/profile/ProfileHeroBanner"
-import { ProfileStatsPills } from "@/components/profile/ProfileStatsPills"
+import { HomeHeroRibbon } from "@/components/home/HomeHeroRibbon"
 import { ActivityFeedV2 } from "@/components/profile/ActivityFeedV2"
 import { ProfileSideRail } from "@/components/profile/ProfileSideRail"
 import { ProfileTabs } from "@/components/profile/ProfileTabs"
@@ -200,8 +201,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     weeklyTime += activity.durationSeconds ? activity.durationSeconds / 60 : 0
   })
 
-  // Fetch user teams and rivalries in parallel
-  const [userTeams, rivalries] = await Promise.all([
+  // Fetch user teams, rivalries, and streak in parallel
+  const [userTeams, rivalries, userStreak] = await Promise.all([
     prisma.teamMember.findMany({
       where: { userId: user.id },
       include: {
@@ -215,6 +216,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       take: 3,
     }),
     getUserRivals(user.id, 20),
+    prisma.userStreak.findUnique({
+      where: { userId: user.id },
+      select: { currentStreak: true },
+    }),
   ])
 
   const formattedTeams = userTeams.map((tm) => ({
@@ -287,17 +292,18 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   return (
     <main className="min-h-screen bg-background pb-20 md:pb-0">
-      {/* Full-Width Hero Header - Photo with dark left overlay panel */}
+      {/* Full-Width Hero Header - SAME as Home */}
       <div className="px-4 md:px-6 pt-4">
         <ProfileHeroBanner
           isOwnProfile={isCurrentUser}
           onEditHref="/settings/profile"
           displayName={user.displayName ?? user.username ?? "User"}
+          username={user.username}
           handleOrEmail={user.username ? `@${user.username}` : user.email ?? ""}
           locationLabel={locationLabel}
           joinedLabel={joinedLabel}
-          bio={user.bio ?? null}
           primarySportLabel={primarySportLabel}
+          primarySportKey={primarySport?.sport?.slug ?? primarySport?.sport?.name}
           avatarUrl={user.avatarUrl ?? null}
           bannerUrl={user.coverPhotoUrl ?? null}
           counts={{
@@ -308,16 +314,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         />
       </div>
 
-      {/* Stats Pills Strip */}
-      <ProfileStatsPills
-        sportIndex={user.stats?.sportIndex ?? undefined}
-        sportIndexTrend={38}
-        streakDays={14}
-        weeklyDistance={weeklyDistance}
-        weeklyTime={weeklyTime}
-        weeklyActivities={weeklyActivities.length}
-        globalRank={user.stats?.globalRank ?? undefined}
-        cityRank={user.stats?.cityRank ?? undefined}
+      {/* Premium Ribbon - SAME as Home (overlaps hero bottom) */}
+      <HomeHeroRibbon
+        metrics={{
+          sportIndex: user.stats?.sportIndex ?? 0,
+          sportIndexDelta: user.stats?.sportIndexDelta7d ?? 0,
+          dayStreak: userStreak?.currentStreak ?? 0,
+          thisWeekKm: weeklyDistance,
+          activeTimeMinutes: Math.round(weeklyTime),
+          weekActivities: weeklyActivities.length,
+        }}
       />
 
       {/* Main Content Grid: 12 columns */}
