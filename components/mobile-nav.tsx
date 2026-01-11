@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { Home, Trophy, Swords, User, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
+import { getMyProfileHref } from "@/lib/routes/user"
 
 export function MobileNav() {
   const pathname = usePathname()
@@ -16,11 +17,12 @@ export function MobileNav() {
   }
 
   // V6 Mobile bottom nav - Competition-first: Home, Rankings, Gauntlets, Profile
+  const profileHref = getMyProfileHref(session?.user)
   const navItems = [
     { href: "/home", label: "Home", icon: Home, testId: "nav-home" },
     { href: "/rankings", label: "Rankings", icon: Trophy, testId: "nav-rankings" },
     { href: "/gauntlets", label: "Gauntlets", icon: Swords, testId: "nav-gauntlets" },
-    { href: `/profile/${session?.user?.username || 'me'}`, label: "Profile", icon: User, testId: "nav-profile" },
+    { href: profileHref, label: "Profile", icon: User, testId: "nav-profile" },
   ]
 
   const isActive = (href: string) => {

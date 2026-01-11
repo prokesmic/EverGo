@@ -13,9 +13,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useSession, signOut } from "next-auth/react"
-import { Home, Trophy, Users, Calendar, Swords, Bell, Sparkles, ChevronDown, Settings, Plus, PlusCircle } from "lucide-react"
+import { Home, Trophy, Users, Calendar, Swords, Bell, Sparkles, ChevronDown, Settings, PlusCircle, UserCircle, Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SearchCommand } from "@/components/search-command"
+import { getMyProfileHref, getSettingsHref } from "@/lib/routes/user"
 
 // V6 Navigation configuration - Competition-first hierarchy
 const primaryLinks = [
@@ -27,7 +28,7 @@ const primaryLinks = [
 
 const moreLinks = [
     { href: "/teams", label: "Teams", icon: Users, description: "Join or manage teams" },
-    { href: "/settings", label: "Settings", icon: Settings, description: "Account preferences" },
+    { href: "/settings/profile", label: "Settings", icon: Settings, description: "Account preferences" },
 ]
 
 // Get all hrefs for dropdown to check active state
@@ -176,12 +177,22 @@ export function MainNav() {
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
-                                        <Link href={`/profile/${session.user?.username || 'me'}`}>
+                                        <Link href={getMyProfileHref(session.user)} className="flex items-center gap-2">
+                                            <UserCircle className="h-4 w-4" />
                                             Profile
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/settings">Settings</Link>
+                                        <Link href={getSettingsHref()} className="flex items-center gap-2">
+                                            <Pencil className="h-4 w-4" />
+                                            Edit Profile
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/notifications/settings" className="flex items-center gap-2">
+                                            <Settings className="h-4 w-4" />
+                                            Settings
+                                        </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })} className="text-red-600 focus:text-red-600">

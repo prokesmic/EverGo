@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
-import { Search, Bell, Flame, Menu, Home, Trophy, Target, Users, Calendar, PlusCircle, Settings, LogOut, User } from "lucide-react"
+import { Search, Bell, Flame, Menu, Home, Trophy, Target, Users, Calendar, PlusCircle, Settings, LogOut, User, Pencil } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,6 +16,7 @@ import {
 import { useState, useEffect } from "react"
 import { MobileSearch } from "@/components/mobile-search"
 import { cn } from "@/lib/utils"
+import { getMyProfileHref, getSettingsHref } from "@/lib/routes/user"
 
 export function MobileHeader() {
   const { data: session } = useSession()
@@ -138,7 +139,7 @@ export function MobileHeader() {
                   {session?.user && (
                     <div className="mt-6 pt-4 border-t space-y-1">
                       <Link
-                        href={`/profile/${session.user?.username || 'me'}`}
+                        href={getMyProfileHref(session.user)}
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
@@ -146,7 +147,15 @@ export function MobileHeader() {
                         Profile
                       </Link>
                       <Link
-                        href="/settings"
+                        href={getSettingsHref()}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        <Pencil className="w-5 h-5" />
+                        Edit Profile
+                      </Link>
+                      <Link
+                        href="/notifications/settings"
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
@@ -223,7 +232,7 @@ export function MobileHeader() {
             {/* Profile with Streak */}
             {session?.user ? (
               <Link
-                href={`/profile/${session.user?.username || 'me'}`}
+                href={getMyProfileHref(session.user)}
                 className="relative"
               >
                 <Avatar className="w-9 h-9 border-2 border-primary">
