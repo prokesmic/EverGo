@@ -51,7 +51,8 @@
     "docs:schema": "npx tsx scripts/docs/generate-schema-reference.ts",
     "docs:routes": "npx tsx scripts/docs/generate-routes.ts",
     "docs:generate": "npm run docs:versions && npm run docs:api && npm run docs:schema && npm run docs:routes",
-    "docs:verify": "npx tsx scripts/docs/verify-docs.ts"
+    "docs:verify": "npx tsx scripts/docs/verify-docs.ts",
+    "audit:design": "npx tsx scripts/docs/audit-design-tokens.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
