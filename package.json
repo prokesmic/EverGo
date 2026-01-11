@@ -49,7 +49,9 @@
     "docs:versions": "npx tsx scripts/docs/generate-versions.ts",
     "docs:api": "npx tsx scripts/docs/generate-api-reference.ts",
     "docs:schema": "npx tsx scripts/docs/generate-schema-reference.ts",
-    "docs:generate": "npm run docs:versions && npm run docs:api && npm run docs:schema"
+    "docs:routes": "npx tsx scripts/docs/generate-routes.ts",
+    "docs:generate": "npm run docs:versions && npm run docs:api && npm run docs:schema && npm run docs:routes",
+    "docs:verify": "npx tsx scripts/docs/verify-docs.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

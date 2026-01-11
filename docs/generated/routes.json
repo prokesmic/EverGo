@@ -1,0 +1,312 @@
+{
+  "generatedAt": "2026-01-11T08:18:01.292Z",
+  "totalRoutes": 34,
+  "routes": [
+    {
+      "path": "/",
+      "hasLayout": true,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "core"
+    },
+    {
+      "path": "/(onboarding)/onboarding",
+      "hasLayout": true,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "other"
+    },
+    {
+      "path": "/activity/:id",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": true,
+      "isApi": false,
+      "category": "activities"
+    },
+    {
+      "path": "/activity/track",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "activities"
+    },
+    {
+      "path": "/analytics",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "insights"
+    },
+    {
+      "path": "/calendar",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "activities"
+    },
+    {
+      "path": "/challenges",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "gamification"
+    },
+    {
+      "path": "/challenges/:id",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": true,
+      "isApi": false,
+      "category": "gamification"
+    },
+    {
+      "path": "/challenges/create",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "gamification"
+    },
+    {
+      "path": "/feed",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "social"
+    },
+    {
+      "path": "/forgot-password",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "other"
+    },
+    {
+      "path": "/gauntlets",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "competition"
+    },
+    {
+      "path": "/gauntlets/:id",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": true,
+      "isApi": false,
+      "category": "competition"
+    },
+    {
+      "path": "/gauntlets/new",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "competition"
+    },
+    {
+      "path": "/home",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "core"
+    },
+    {
+      "path": "/home-test",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "other"
+    },
+    {
+      "path": "/leaderboard",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "rankings"
+    },
+    {
+      "path": "/login",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "auth"
+    },
+    {
+      "path": "/notifications",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "social"
+    },
+    {
+      "path": "/notifications/settings",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "social"
+    },
+    {
+      "path": "/offline",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "core"
+    },
+    {
+      "path": "/profile/:username",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": true,
+      "isApi": false,
+      "category": "social"
+    },
+    {
+      "path": "/rankings",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "rankings"
+    },
+    {
+      "path": "/register",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "auth"
+    },
+    {
+      "path": "/rivalries",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "competition"
+    },
+    {
+      "path": "/seasons",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "competition"
+    },
+    {
+      "path": "/seasons/:id",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": true,
+      "isApi": false,
+      "category": "competition"
+    },
+    {
+      "path": "/teams",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "teams"
+    },
+    {
+      "path": "/teams/:slug",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": true,
+      "isApi": false,
+      "category": "teams"
+    },
+    {
+      "path": "/teams/:slug/challenges/create",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "teams"
+    },
+    {
+      "path": "/teams/create",
+      "hasLayout": false,
+      "hasLoading": true,
+      "hasError": true,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "teams"
+    },
+    {
+      "path": "/test",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "other"
+    },
+    {
+      "path": "/training",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "training"
+    },
+    {
+      "path": "/training/:planId",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": true,
+      "isApi": false,
+      "category": "training"
+    }
+  ]
+}
