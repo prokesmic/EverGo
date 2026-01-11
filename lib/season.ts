@@ -182,6 +182,71 @@ export async function joinSeason(userId: string, seasonId?: string) {
 }
 
 /**
+ * Auto-enroll user in current season on activity creation
+ * This is the canonical way to join seasons - no explicit "Join" button needed.
+ * Silent on errors to not block activity creation.
+ *
+ * @param userId - User ID
+ * @param activityDate - Date of the activity (to check if it falls within an active season)
+ */
+export async function enrollOnFirstActivity(
+  userId: string,
+  activityDate: Date = new Date()
+): Promise<void> {
+  try {
+    // Find active season that contains this activity date
+    const season = await prisma.season.findFirst({
+      where: {
+        status: 'ACTIVE',
+        startDate: { lte: activityDate },
+        endDate: { gte: activityDate },
+      },
+    })
+
+    if (!season) {
+      // No active season for this date, nothing to do
+      return
+    }
+
+    // Check if already enrolled
+    const existing = await prisma.seasonParticipant.findUnique({
+      where: {
+        seasonId_userId: {
+          seasonId: season.id,
+          userId,
+        },
+      },
+    })
+
+    if (existing) {
+      // Already enrolled, nothing to do
+      return
+    }
+
+    // Get user's location for regional rankings
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { country: true, city: true },
+    })
+
+    // Enroll user
+    await prisma.seasonParticipant.create({
+      data: {
+        seasonId: season.id,
+        userId,
+        country: user?.country || null,
+        city: user?.city || null,
+      },
+    })
+
+    console.log(`[Season] Auto-enrolled user ${userId} in season ${season.name}`)
+  } catch (error) {
+    // Silent failure - don't block activity creation
+    console.error('[Season] Auto-enroll failed:', error)
+  }
+}
+
+/**
  * Get user's participation in current season
  */
 export async function getUserSeasonParticipation(userId: string) {

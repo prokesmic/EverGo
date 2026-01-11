@@ -76,16 +76,18 @@ export async function POST(request: Request) {
             }
         })
 
-        // Trigger Gamification & Monetization Logic (Async)
+        // Trigger Gamification, Season Enrollment & Monetization Logic (Async)
         try {
             const { updateStreakOnActivity, updateChallengeProgress, checkBadgeCriteria } = await import("@/lib/gamification")
             const { updateGearUsage } = await import("@/lib/monetization")
+            const { enrollOnFirstActivity } = await import("@/lib/season")
 
             await Promise.all([
                 updateStreakOnActivity(user.id, new Date(activityDate)),
                 updateChallengeProgress(user.id, activity),
                 checkBadgeCriteria(user.id),
-                updateGearUsage(activity.id)
+                updateGearUsage(activity.id),
+                enrollOnFirstActivity(user.id, new Date(activityDate))
             ])
         } catch (e) {
             console.error("Gamification/Monetization error:", e)

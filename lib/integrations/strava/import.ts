@@ -141,6 +141,16 @@ export async function importStravaActivity(
   // Compute and store benchmark results
   const benchmarkCount = await computeActivityBenchmarks(activityId, userId, targetSport.id, stravaActivity)
 
+  // Auto-enroll in current season if this is a new activity
+  if (isNew) {
+    try {
+      const { enrollOnFirstActivity } = await import("@/lib/season")
+      await enrollOnFirstActivity(userId, new Date(stravaActivity.start_date))
+    } catch (e) {
+      console.error("[Strava Import] Season enrollment failed:", e)
+    }
+  }
+
   // Update user's Strava connection last sync time
   await prisma.stravaConnection.update({
     where: { userId },
