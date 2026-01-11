@@ -55,6 +55,7 @@ model User {
   posts           Post[]
   comments        Comment[]
   likes           Like[]
+  hypesGiven      ActivityHype[]  @relation("UserHypes")
   followers       Follow[]  @relation("following")
   following       Follow[]  @relation("follower")
   teamMemberships TeamMember[]
@@ -465,6 +466,7 @@ model Activity {
 
   post            Post?
   gearItems       ActivityGear[]
+  hypes           ActivityHype[]
 
   // Rivalry tagging (optional)
   rivalryId       String?
@@ -497,6 +499,20 @@ model Activity {
   @@index([disciplineId])
   @@index([sportId])
   @@index([isAnomalous])
+}
+
+// V6: Hype system - limited daily kudos boost
+model ActivityHype {
+  id          String    @id @default(cuid())
+  activityId  String
+  activity    Activity  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation("UserHypes", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, activityId])
+  @@index([activityId])
+  @@index([userId, createdAt])
 }
 
 model Ranking {
@@ -911,18 +927,25 @@ model UserStreak {
   id              String    @id @default(cuid())
   userId          String    @unique
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   // Daily activity streak
   currentStreak   Int       @default(0)
   longestStreak   Int       @default(0)
   lastActivityDate DateTime?
-  
+
   // Weekly goal streak
   weeklyStreak    Int       @default(0)
   weeklyGoal      Int       @default(3)  // Activities per week
   weeklyProgress  Int       @default(0)  // Current week's count
   weekStartDate   DateTime?
-  
+
+  // V11: Recovery Mode - allows pausing decay during rest periods
+  isRecoveryMode         Boolean   @default(false)
+  recoveryModeStartedAt  DateTime?
+  recoveryModeEndsAt     DateTime?
+  recoveryModeUsesThisSeason Int   @default(0)  // Max 2 per season
+  lastRecoveryModeEndedAt DateTime?  // For cooldown calculation
+
   updatedAt       DateTime  @updatedAt
 }
 
@@ -2342,4 +2365,143 @@ model CronJobRun {
   @@unique([jobName, runId])
   @@index([jobName, status])
   @@index([startedAt])
+}
+
+// =============================================================================
+// V11: COMMUNITY GOALS (Co-op Challenges)
+// =============================================================================
+
+enum CommunityGoalStatus {
+  UPCOMING    // Not yet started
+  ACTIVE      // In progress
+  COMPLETED   // Target reached
+  FAILED      // Time expired without reaching target
+}
+
+model CommunityGoal {
+  id              String              @id @default(cuid())
+
+  // Display
+  name            String              // "Run 1 Million KM Together"
+  description     String?             // Longer explanation
+  iconUrl         String?             // Goal icon
+
+  // Scope
+  sportId         String?             // NULL = all sports, or specific sport
+  cityId          String?             // NULL = global, or city-specific
+  countryCode     String?             // NULL = global, or country-specific
+
+  // Target
+  targetValue     Float               // e.g., 1000000 for 1M km
+  currentValue    Float               @default(0)
+  metricType      String              // "DISTANCE_KM", "DURATION_MIN", "ACTIVITIES"
+
+  // Timing
+  startDate       DateTime
+  endDate         DateTime
+  status          CommunityGoalStatus @default(UPCOMING)
+
+  // Rewards (cosmetic only)
+  rewardBadgeId   String?             // Badge earned on completion
+  participantCount Int                @default(0)
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  contributions   CommunityGoalContribution[]
+
+  @@index([status, startDate])
+  @@index([sportId])
+}
+
+model CommunityGoalContribution {
+  id              String          @id @default(cuid())
+  goalId          String
+  goal            CommunityGoal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  userId          String
+  activityId      String?         // Optional link to activity
+
+  // Contribution
+  value           Float           // Amount contributed
+
+  createdAt       DateTime        @default(now())
+
+  @@index([goalId, createdAt])
+  @@index([userId, goalId])
+}
+
+// =============================================================================
+// V11: CONSISTENCY LEAGUE (Days Active Ranking)
+// =============================================================================
+
+model UserConsistency {
+  id              String    @id @default(cuid())
+  userId          String
+  periodType      String    // "WEEK", "MONTH", "SEASON"
+  periodKey       String    // "2024-W03", "2024-01", "season-spring-2024"
+
+  // Metrics
+  daysActive      Int       @default(0)   // Days with at least 1 activity
+  totalActivities Int       @default(0)   // Total activities in period
+  totalDuration   Int       @default(0)   // Total seconds
+  totalDistance   Float     @default(0)   // Total km
+
+  // Activity days bitmap (JSON array of ISO dates)
+  activeDays      String    @default("[]")
+
+  // Rank (computed by cron)
+  rank            Int?
+  totalInScope    Int?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([userId, periodType, periodKey])
+  @@index([periodType, periodKey, daysActive(sort: Desc)])
+}
+
+// =============================================================================
+// V11: JOB QUEUE (Scalability)
+// =============================================================================
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model JobQueue {
+  id              String    @id @default(cuid())
+
+  // Job type and payload
+  jobType         String    // "RECALC_RANKINGS", "SYNC_STRAVA", "UPDATE_POWER"
+  payload         String    // JSON payload
+
+  // Status
+  status          JobStatus @default(PENDING)
+  attempts        Int       @default(0)
+  maxAttempts     Int       @default(3)
+
+  // Timing
+  scheduledAt     DateTime  @default(now())
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  // Results
+  result          String?   // JSON result or error
+  errorMessage    String?
+
+  // Priority (lower = higher priority)
+  priority        Int       @default(100)
+
+  // Idempotency
+  idempotencyKey  String?   @unique
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status, scheduledAt, priority])
+  @@index([jobType, status])
 }

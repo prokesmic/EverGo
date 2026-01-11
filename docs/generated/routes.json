@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-01-11T08:18:01.292Z",
-  "totalRoutes": 34,
+  "generatedAt": "2026-01-11T12:55:00.406Z",
+  "totalRoutes": 35,
   "routes": [
     {
       "path": "/",
@@ -244,6 +244,15 @@
       "isDynamic": true,
       "isApi": false,
       "category": "competition"
+    },
+    {
+      "path": "/settings/profile",
+      "hasLayout": false,
+      "hasLoading": false,
+      "hasError": false,
+      "isDynamic": false,
+      "isApi": false,
+      "category": "settings"
     },
     {
       "path": "/teams",

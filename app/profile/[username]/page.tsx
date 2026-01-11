@@ -2,9 +2,8 @@ import { prisma } from "@/lib/db"
 import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { startOfWeek, endOfWeek } from "date-fns"
 import { ProfileHeroBanner } from "@/components/profile/ProfileHeroBanner"
-import { HomeHeroRibbon } from "@/components/home/HomeHeroRibbon"
+import { ProfileHeroRibbon } from "@/components/profile/ProfileHeroRibbon"
 import { ActivityFeedV2 } from "@/components/profile/ActivityFeedV2"
 import { ProfileSideRail } from "@/components/profile/ProfileSideRail"
 import { ProfileTabs } from "@/components/profile/ProfileTabs"
@@ -185,21 +184,18 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const isCurrentUser = session?.user?.email === user.email
   const isFollowing = user.followers.length > 0
 
-  // Calculate Weekly Stats
+  // Calculate Lifetime Stats (Profile shows historical, Home shows current competition)
+  let totalDistanceKm = 0
+  let totalTimeMinutes = 0
+
+  user.activities.forEach((activity) => {
+    totalDistanceKm += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
+    totalTimeMinutes += activity.durationSeconds ? activity.durationSeconds / 60 : 0
+  })
+
+  // For 7-day filter we still need this for PRs
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-  const weeklyActivities = user.activities.filter(
-    (a) => new Date(a.activityDate) >= sevenDaysAgo
-  )
-
-  let weeklyDistance = 0
-  let weeklyTime = 0
-
-  weeklyActivities.forEach((activity) => {
-    weeklyDistance += activity.distanceMeters ? activity.distanceMeters / 1000 : 0
-    weeklyTime += activity.durationSeconds ? activity.durationSeconds / 60 : 0
-  })
 
   // Fetch user teams, rivalries, and streak in parallel
   const [userTeams, rivalries, userStreak] = await Promise.all([
@@ -315,16 +311,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         />
       </div>
 
-      {/* Premium Ribbon - SAME as Home (with extra top margin for avatar breach) */}
+      {/* Profile Ribbon - Lifetime stats (different from Home which shows weekly) */}
       <div className="mt-8">
-        <HomeHeroRibbon
+        <ProfileHeroRibbon
           metrics={{
             sportIndex: user.stats?.sportIndex ?? 0,
             sportIndexDelta: user.stats?.sportIndexDelta7d ?? 0,
-            dayStreak: userStreak?.currentStreak ?? 0,
-            thisWeekKm: weeklyDistance,
-            activeTimeMinutes: Math.round(weeklyTime),
-            weekActivities: weeklyActivities.length,
+            totalActivities: user._count.activities,
+            totalDistanceKm,
+            totalTimeMinutes: Math.round(totalTimeMinutes),
+            memberSince: user.createdAt,
+            personalRecordsCount: user.personalRecords.length,
           }}
         />
       </div>

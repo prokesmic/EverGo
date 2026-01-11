@@ -1,8 +1,8 @@
 # App Routes
 
-> Auto-generated on 2026-01-11T08:18:01.297Z
+> Auto-generated on 2026-01-11T12:55:00.411Z
 
-**Total Pages: 34**
+**Total Pages: 35**
 
 ## Core
 
@@ -77,6 +77,12 @@
 |-------|---------|--------|---------|-------|
 | `/training` | - | - | - | - |
 | `/training/:planId` | Yes | - | - | - |
+
+## Settings
+
+| Route | Dynamic | Layout | Loading | Error |
+|-------|---------|--------|---------|-------|
+| `/settings/profile` | - | - | - | - |
 
 ## Insights
 
