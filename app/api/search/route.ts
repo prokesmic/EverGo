@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { rateLimitMiddleware, RATE_LIMITS, getClientIp } from "@/lib/rate-limit"
 import { logger } from "@/lib/logger"
+import { searchQuerySchema, validateQuery, type SearchResultItem } from "@/schemas/api"
 
 export async function GET(req: Request) {
   // Apply search-specific rate limiting
@@ -12,15 +13,16 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url)
-    const query = searchParams.get("q")
-    const type = searchParams.get("type") // users, teams, challenges, or all
-    const limit = parseInt(searchParams.get("limit") || "10")
 
-    if (!query || query.length < 2) {
-      return NextResponse.json({ results: [] })
+    // Validate query params with Zod schema
+    const validation = validateQuery(searchQuerySchema, searchParams)
+    if (!validation.success) {
+      return NextResponse.json({ results: [], error: validation.error }, { status: 400 })
     }
 
-    const results: any[] = []
+    const { q: query, type, limit } = validation.data
+
+    const results: SearchResultItem[] = []
 
     // Search Users
     if (!type || type === "all" || type === "users") {
@@ -42,10 +44,10 @@ export async function GET(req: Request) {
       })
 
       results.push(
-        ...users.map((user) => ({
+        ...users.map((user): SearchResultItem => ({
           type: "user",
-          id: user.username,
-          title: user.displayName,
+          id: user.username ?? user.id, // Privacy: prefer username
+          title: user.displayName ?? user.username ?? "User",
           subtitle: user.city ? `@${user.username} • ${user.city}` : `@${user.username}`,
           image: user.avatarUrl,
         }))
@@ -68,13 +70,13 @@ export async function GET(req: Request) {
       })
 
       results.push(
-        ...teams.map((team) => ({
+        ...teams.map((team): SearchResultItem => ({
           type: "team",
           id: team.slug,
           title: team.name,
           subtitle: `${team.memberCount} members • ${team.sport.name}`,
           image: team.logoUrl,
-          icon: team.sport.icon,
+          icon: team.sport.icon ?? undefined,
         }))
       )
     }
@@ -97,13 +99,13 @@ export async function GET(req: Request) {
       })
 
       results.push(
-        ...challenges.map((challenge) => ({
+        ...challenges.map((challenge): SearchResultItem => ({
           type: "challenge",
           id: challenge.id,
           title: challenge.title,
           subtitle: `${challenge._count.participants} participants${challenge.sport ? ` • ${challenge.sport.name}` : ""}`,
           image: challenge.imageUrl,
-          icon: challenge.sport?.icon || "🏆",
+          icon: challenge.sport?.icon ?? "🏆",
         }))
       )
     }
