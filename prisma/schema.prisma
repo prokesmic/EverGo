@@ -482,7 +482,11 @@ model Activity {
   // v4.2: Tags replace subtype - flexible multi-tagging for activities
   tags             String           @default("[]")  // JSON: ["race", "tempo", "long_run", etc.]
 
+  // V10: Incremental ranking flag - set when activity has been included in ranking calculations
+  rankedAt         DateTime?        // NULL = unprocessed, timestamp = when last ranked
+
   @@unique([source, externalId])
+  @@index([rankedAt])
   @@index([rivalryId])
   @@index([userId, activityDate(sort: Desc)])
   @@index([disciplineId])
