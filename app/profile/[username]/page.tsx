@@ -304,6 +304,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           joinedLabel={joinedLabel}
           primarySportLabel={primarySportLabel}
           primarySportKey={primarySport?.sport?.slug ?? primarySport?.sport?.name}
+          sportIndex={user.stats?.sportIndex ?? 0}
           avatarUrl={user.avatarUrl ?? null}
           bannerUrl={user.coverPhotoUrl ?? null}
           counts={{
@@ -314,20 +315,22 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         />
       </div>
 
-      {/* Premium Ribbon - SAME as Home (overlaps hero bottom) */}
-      <HomeHeroRibbon
-        metrics={{
-          sportIndex: user.stats?.sportIndex ?? 0,
-          sportIndexDelta: user.stats?.sportIndexDelta7d ?? 0,
-          dayStreak: userStreak?.currentStreak ?? 0,
-          thisWeekKm: weeklyDistance,
-          activeTimeMinutes: Math.round(weeklyTime),
-          weekActivities: weeklyActivities.length,
-        }}
-      />
+      {/* Premium Ribbon - SAME as Home (with extra top margin for avatar breach) */}
+      <div className="mt-8">
+        <HomeHeroRibbon
+          metrics={{
+            sportIndex: user.stats?.sportIndex ?? 0,
+            sportIndexDelta: user.stats?.sportIndexDelta7d ?? 0,
+            dayStreak: userStreak?.currentStreak ?? 0,
+            thisWeekKm: weeklyDistance,
+            activeTimeMinutes: Math.round(weeklyTime),
+            weekActivities: weeklyActivities.length,
+          }}
+        />
+      </div>
 
-      {/* Main Content Grid: 12 columns */}
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
+      {/* Main Content Grid: 12 columns - extra top margin for floating elements */}
+      <div className="max-w-6xl mx-auto px-4 md:px-6 pt-8 pb-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Main Column: Activity Feed with Tabs (8 cols) */}
           <div className="lg:col-span-8">
