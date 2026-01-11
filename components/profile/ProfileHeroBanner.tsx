@@ -77,7 +77,6 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
     <div className="relative">
       <HeroBanner
         imageSrc={heroImageSrc}
-        heightClass="h-[340px] md:h-[380px]"
         data-testid="profile-hero"
         glowColor={glowColor}
         topRight={
@@ -97,14 +96,14 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
         }
       >
         {/* Content directly on the hero - NO container box */}
-        <div className="h-full w-full flex flex-col justify-end pb-16 md:pb-20 px-6 md:px-8">
+        <div className="h-full w-full flex flex-col justify-end pb-12 md:pb-14 px-6 md:px-8">
           {/* Primary Sport Pill - prominent glass effect */}
           {primarySportLabel && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mb-3"
+              className="mb-3 flex items-center gap-2"
             >
               <span className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-md border border-white/20 px-4 py-2 text-sm font-medium text-white shadow-lg">
                 {sportThumb && (
@@ -118,6 +117,12 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
                 )}
                 {primarySportLabel}
               </span>
+              {/* DEBUG: Show sport key being used for hero image - REMOVE AFTER VERIFICATION */}
+              {process.env.NODE_ENV === "development" && (
+                <span className="text-[10px] px-2 py-1 bg-yellow-500/80 text-black rounded font-mono">
+                  SPORT_KEY: {primarySportKey ?? primarySportLabel ?? "none"}
+                </span>
+              )}
             </motion.div>
           )}
 
@@ -170,7 +175,7 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-        className="absolute -bottom-10 left-6 md:left-8 z-30"
+        className="absolute -bottom-8 left-6 md:left-8 z-30"
       >
         <div className="relative h-20 w-20 md:h-24 md:w-24 overflow-hidden rounded-full border-4 border-background shadow-2xl">
           {avatarUrl ? (
@@ -188,7 +193,7 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.35 }}
-        className="absolute -bottom-6 right-6 md:right-8 z-30"
+        className="absolute -bottom-4 right-6 md:right-8 z-30"
       >
         <div className="flex items-center gap-4 bg-background/90 backdrop-blur-md rounded-2xl border border-border shadow-xl px-5 py-3">
           <StatBadge value={counts.activities} label="Activities" href={profileHref} />

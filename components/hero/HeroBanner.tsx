@@ -12,6 +12,10 @@ import { motion, useScroll, useTransform } from "framer-motion"
 // Using the SAME default image as Profile (guaranteed to work on prod)
 export const DEFAULT_HERO_BANNER = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1920&q=80"
 
+// SINGLE SOURCE OF TRUTH for hero banner height
+// Change this value to adjust height across all hero banners
+export const HERO_HEIGHT_CLASS = "h-[220px] md:h-[260px] lg:h-[280px]"
+
 interface HeroBannerProps {
   /** Image source URL. Falls back to DEFAULT_HERO_BANNER if empty/null */
   imageSrc?: string | null
@@ -19,7 +23,7 @@ interface HeroBannerProps {
   children?: ReactNode
   /** Optional top-right slot (e.g., Edit button) */
   topRight?: ReactNode
-  /** Height class - default matches Profile hero */
+  /** Height class - uses HERO_HEIGHT_CLASS by default (single source of truth) */
   heightClass?: string
   /** Additional classes for the outer section */
   className?: string
@@ -37,7 +41,7 @@ export function HeroBanner({
   imageSrc,
   children,
   topRight,
-  heightClass = "h-[280px]",
+  heightClass = HERO_HEIGHT_CLASS,
   className,
   alt = "Hero banner",
   "data-testid": testId = "hero-banner",

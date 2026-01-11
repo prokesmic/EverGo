@@ -7,7 +7,7 @@ import { startOfWeek, endOfWeek } from "date-fns"
 
 // V6 Components - Using photo-based hero (same as Profile)
 import { HomeHeroBanner } from "@/components/hero/HomeHeroBanner"
-import { HomeHeroRibbon } from "@/components/home/HomeHeroRibbon"
+import { HeroRibbon } from "@/components/hero/HeroRibbon"
 import { FriendsStrip } from "@/components/home/FollowingStrip"
 import { ActiveCompetitions } from "@/components/home/ActiveCompetitions"
 import { RivalriesStrip } from "@/components/home/RivalriesStrip"
@@ -251,7 +251,9 @@ export default async function HomePage() {
 
       {/* Premium Ribbon - overlaps hero bottom (with extra top margin for avatar breach) */}
       <div className="mt-8">
-        <HomeHeroRibbon metrics={metrics} />
+        <Suspense fallback={<RibbonSkeleton />}>
+          <HeroRibbon defaultRange="week" context="home" />
+        </Suspense>
       </div>
 
       {/* Main Content */}
@@ -328,6 +330,27 @@ function FeedSkeleton() {
       <Skeleton className="h-12 w-full" />
       <Skeleton className="h-32 w-full" />
       <Skeleton className="h-32 w-full" />
+    </div>
+  )
+}
+
+function RibbonSkeleton() {
+  return (
+    <div className="relative z-20 -mt-6 px-4 md:px-6">
+      <div className="mx-auto max-w-5xl">
+        <div className="rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-2xl p-4 md:p-5">
+          <div className="flex justify-center gap-2 mb-4">
+            <Skeleton className="h-8 w-64" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -269,11 +269,23 @@ const SPORT_MEDIA_REGISTRY: Record<string, SportMedia> = {
 
 // Aliases for common variations
 const SPORT_ALIASES: Record<string, string> = {
-  // Kitesurfing variations
+  // Kitesurfing variations - COMPREHENSIVE coverage
   "kite surfing": "kitesurfing",
   "kite-surfing": "kitesurfing",
+  "kite_surfing": "kitesurfing",
   "kiteboarding": "kitesurfing",
   "kite boarding": "kitesurfing",
+  "kite-boarding": "kitesurfing",
+  "kite_boarding": "kitesurfing",
+  "kitesurf": "kitesurfing",
+  "kite surf": "kitesurfing",
+  "kite": "kitesurfing",
+  "kitesurfboard": "kitesurfing",
+  "kitesurfing/snowkite": "kitesurfing",
+  "snowkite": "kitesurfing",
+  "snow kite": "kitesurfing",
+  "snow-kite": "kitesurfing",
+  "snowkiting": "kitesurfing",
 
   // Running variations
   "trail running": "trailrunning",
@@ -325,6 +337,7 @@ const SPORT_ALIASES: Record<string, string> = {
 /**
  * Normalizes a sport key for lookup.
  * Handles various input formats: labels, slugs, enums.
+ * Bulletproof for: kitesurfing, KITE_SURFING, kite-surfing, etc.
  */
 function normalizeSportKey(sportKey: string): string {
   // Lowercase and trim
@@ -333,13 +346,19 @@ function normalizeSportKey(sportKey: string): string {
   // Remove diacritics
   normalized = normalized.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
 
+  // Replace underscores with spaces for alias matching
+  const withSpaces = normalized.replace(/_/g, " ")
+
   // Check aliases first (before removing special chars)
   if (SPORT_ALIASES[normalized]) {
     return SPORT_ALIASES[normalized]
   }
+  if (SPORT_ALIASES[withSpaces]) {
+    return SPORT_ALIASES[withSpaces]
+  }
 
-  // Remove spaces and hyphens for matching
-  const condensed = normalized.replace(/[\s-]/g, "")
+  // Remove spaces, hyphens, and underscores for matching
+  const condensed = normalized.replace(/[\s\-_]/g, "")
 
   // Check condensed form in registry
   if (SPORT_MEDIA_REGISTRY[condensed]) {
@@ -348,7 +367,7 @@ function normalizeSportKey(sportKey: string): string {
 
   // Check aliases with condensed form
   for (const [alias, target] of Object.entries(SPORT_ALIASES)) {
-    if (alias.replace(/[\s-]/g, "") === condensed) {
+    if (alias.replace(/[\s\-_]/g, "") === condensed) {
       return target
     }
   }

@@ -3,7 +3,9 @@ import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { ProfileHeroBanner } from "@/components/profile/ProfileHeroBanner"
-import { ProfileHeroRibbon } from "@/components/profile/ProfileHeroRibbon"
+import { HeroRibbon } from "@/components/hero/HeroRibbon"
+import { Suspense } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ActivityFeedV2 } from "@/components/profile/ActivityFeedV2"
 import { ProfileSideRail } from "@/components/profile/ProfileSideRail"
 import { ProfileTabs } from "@/components/profile/ProfileTabs"
@@ -311,19 +313,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         />
       </div>
 
-      {/* Profile Ribbon - Lifetime stats (different from Home which shows weekly) */}
+      {/* Profile Ribbon - Lifetime stats by default (switchable to weekly/monthly/yearly) */}
       <div className="mt-8">
-        <ProfileHeroRibbon
-          metrics={{
-            sportIndex: user.stats?.sportIndex ?? 0,
-            sportIndexDelta: user.stats?.sportIndexDelta7d ?? 0,
-            totalActivities: user._count.activities,
-            totalDistanceKm,
-            totalTimeMinutes: Math.round(totalTimeMinutes),
-            memberSince: user.createdAt,
-            personalRecordsCount: user.personalRecords.length,
-          }}
-        />
+        <Suspense fallback={<RibbonSkeleton />}>
+          <HeroRibbon defaultRange="all" context="profile" />
+        </Suspense>
       </div>
 
       {/* Main Content Grid: 12 columns - extra top margin for floating elements */}
@@ -361,5 +355,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         </div>
       </div>
     </main>
+  )
+}
+
+function RibbonSkeleton() {
+  return (
+    <div className="relative z-20 -mt-6 px-4 md:px-6">
+      <div className="mx-auto max-w-5xl">
+        <div className="rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-2xl p-4 md:p-5">
+          <div className="flex justify-center gap-2 mb-4">
+            <Skeleton className="h-8 w-64" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
