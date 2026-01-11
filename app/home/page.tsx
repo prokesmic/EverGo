@@ -8,7 +8,7 @@ import { startOfWeek, endOfWeek } from "date-fns"
 // V6 Components - Using photo-based hero (same as Profile)
 import { HomeHeroBanner } from "@/components/hero/HomeHeroBanner"
 import { HomeHeroRibbon } from "@/components/home/HomeHeroRibbon"
-import { FriendsStrip } from "@/components/home/FriendsStrip"
+import { FriendsStrip } from "@/components/home/FollowingStrip"
 import { ActiveCompetitions } from "@/components/home/ActiveCompetitions"
 import { RivalriesStrip } from "@/components/home/RivalriesStrip"
 import { CityLadder } from "@/components/home/CityLadder"

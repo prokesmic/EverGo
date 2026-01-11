@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 
 interface SuggestedAthlete {
   id: string
+  username: string | null  // Privacy: use this for profile URLs, not id
   displayName: string
   avatarUrl: string | null
   city: string | null
@@ -252,7 +253,7 @@ function AthleteCard({
         "border border-transparent hover:border-slate-200"
       )}
     >
-      <Link href={`/profile/${athlete.id}`} className="block mb-3">
+      <Link href={`/profile/${athlete.username || athlete.id}`} className="block mb-3">
         <Avatar className="w-14 h-14 mx-auto ring-2 ring-white shadow-sm">
           <AvatarImage src={athlete.avatarUrl || undefined} alt={athlete.displayName} />
           <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-600 text-white font-semibold">
@@ -261,7 +262,7 @@ function AthleteCard({
         </Avatar>
       </Link>
 
-      <Link href={`/profile/${athlete.id}`} className="block hover:underline">
+      <Link href={`/profile/${athlete.username || athlete.id}`} className="block hover:underline">
         <h4 className="font-medium text-sm text-slate-900 truncate">{athlete.displayName}</h4>
       </Link>
 
@@ -306,7 +307,7 @@ function AthleteListItem({
 
   return (
     <div className="flex items-start gap-3 pb-3 border-b border-slate-100 last:border-0 last:pb-0">
-      <Link href={`/profile/${athlete.id}`}>
+      <Link href={`/profile/${athlete.username || athlete.id}`}>
         <Avatar className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-orange-500 transition-all">
           <AvatarImage src={athlete.avatarUrl || undefined} alt={athlete.displayName} />
           <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-600 text-white text-sm font-semibold">
@@ -316,7 +317,7 @@ function AthleteListItem({
       </Link>
 
       <div className="flex-1 min-w-0">
-        <Link href={`/profile/${athlete.id}`} className="hover:underline">
+        <Link href={`/profile/${athlete.username || athlete.id}`} className="hover:underline">
           <h4 className="font-semibold text-sm text-slate-900 truncate">{athlete.displayName}</h4>
         </Link>
 

@@ -547,6 +547,10 @@ model Follow {
   @@unique([followerId, followingId])
 }
 
+// DEPRECATED: FriendRequest is no longer used in the UI.
+// Social model: Follow is canonical. "Friends" = mutual follows (derived).
+// Kept for data migration - do not add new features using this model.
+// See lib/follow.ts for the canonical social graph utilities.
 model FriendRequest {
   id          String    @id @default(cuid())
   requesterId String
@@ -556,7 +560,7 @@ model FriendRequest {
   status      String    @default("PENDING") // Enum: FriendRequestStatus
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@unique([requesterId, addresseeId])
 }
 

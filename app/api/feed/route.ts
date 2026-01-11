@@ -33,8 +33,9 @@ export async function GET(request: Request) {
             const followingIds = user.following.map(f => f.followingId)
             whereClause.userId = { in: [...followingIds, user.id] }
         } else if (type === "friends") {
-            // Assuming friends are mutual followers or separate table. 
-            // For now, let's treat following as friends for MVP or just filter by following.
+            // Social Model: Follow is canonical. "Friends" = mutual follows (derived)
+            // See lib/follow.ts for utilities (getMutualFollows, areMutualFollows)
+            // For feed purposes, friends tab shows same as following
             const followingIds = user.following.map(f => f.followingId)
             whereClause.userId = { in: [...followingIds, user.id] }
         }

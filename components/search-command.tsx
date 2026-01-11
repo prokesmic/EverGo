@@ -13,10 +13,17 @@ import {
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-interface SearchResult {
-    users: Array<{ id: string, displayName: string, username: string, avatarUrl: string | null }>
-    teams: Array<{ id: string, name: string, logoUrl: string | null, sport: { name: string } }>
-    challenges: Array<{ id: string, title: string, targetType: string }>
+interface SearchResultItem {
+    type: "user" | "team" | "challenge"
+    id: string
+    title: string
+    subtitle?: string
+    image?: string | null
+    icon?: string
+}
+
+interface SearchResults {
+    results: SearchResultItem[]
 }
 
 const quickActions = [
@@ -37,7 +44,7 @@ const userActions = [
 export function SearchCommand() {
     const [open, setOpen] = React.useState(false)
     const [query, setQuery] = React.useState("")
-    const [results, setResults] = React.useState<SearchResult | null>(null)
+    const [results, setResults] = React.useState<SearchResultItem[]>([])
     const router = useRouter()
 
     React.useEffect(() => {
@@ -62,15 +69,15 @@ export function SearchCommand() {
 
     React.useEffect(() => {
         if (query.length < 2) {
-            setResults(null)
+            setResults([])
             return
         }
 
         const timer = setTimeout(async () => {
             try {
                 const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-                const data = await res.json()
-                setResults(data)
+                const data: SearchResults = await res.json()
+                setResults(data.results || [])
             } catch (error) {
                 console.error("Search failed", error)
             }
@@ -85,11 +92,10 @@ export function SearchCommand() {
         router.push(path)
     }
 
-    const hasSearchResults = results && (
-        (results.users && results.users.length > 0) ||
-        (results.teams && results.teams.length > 0) ||
-        (results.challenges && results.challenges.length > 0)
-    )
+    const hasSearchResults = results.length > 0
+    const userResults = results.filter(r => r.type === "user")
+    const teamResults = results.filter(r => r.type === "team")
+    const challengeResults = results.filter(r => r.type === "challenge")
 
     return (
         <>
@@ -154,30 +160,32 @@ export function SearchCommand() {
                         </CommandEmpty>
                     )}
 
-                    {results?.users && results.users.length > 0 && (
-                        <CommandGroup heading="Users">
-                            {results.users.map((user) => (
+                    {userResults.length > 0 && (
+                        <CommandGroup heading="People">
+                            {userResults.map((user) => (
                                 <CommandItem
                                     key={user.id}
-                                    onSelect={() => handleSelect(`/profile/${user.username || user.id}`)}
+                                    onSelect={() => handleSelect(`/profile/${user.id}`)}
                                     className="flex items-center gap-3"
                                 >
                                     <Avatar className="h-7 w-7">
-                                        <AvatarImage src={user.avatarUrl || ""} />
-                                        <AvatarFallback className="text-xs">{user.displayName?.[0]}</AvatarFallback>
+                                        <AvatarImage src={user.image || ""} />
+                                        <AvatarFallback className="text-xs">{user.title?.[0]}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
-                                        <span className="font-medium">{user.displayName}</span>
-                                        <span className="text-xs text-muted-foreground">@{user.username}</span>
+                                        <span className="font-medium">{user.title}</span>
+                                        {user.subtitle && (
+                                            <span className="text-xs text-muted-foreground">{user.subtitle}</span>
+                                        )}
                                     </div>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
                     )}
 
-                    {results?.teams && results.teams.length > 0 && (
+                    {teamResults.length > 0 && (
                         <CommandGroup heading="Teams">
-                            {results.teams.map((team) => (
+                            {teamResults.map((team) => (
                                 <CommandItem
                                     key={team.id}
                                     onSelect={() => handleSelect(`/teams/${team.id}`)}
@@ -187,17 +195,19 @@ export function SearchCommand() {
                                         <Users className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="font-medium">{team.name}</span>
-                                        <span className="text-xs text-muted-foreground">{team.sport?.name}</span>
+                                        <span className="font-medium">{team.title}</span>
+                                        {team.subtitle && (
+                                            <span className="text-xs text-muted-foreground">{team.subtitle}</span>
+                                        )}
                                     </div>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
                     )}
 
-                    {results?.challenges && results.challenges.length > 0 && (
+                    {challengeResults.length > 0 && (
                         <CommandGroup heading="Challenges">
-                            {results.challenges.map((challenge) => (
+                            {challengeResults.map((challenge) => (
                                 <CommandItem
                                     key={challenge.id}
                                     onSelect={() => handleSelect(`/challenges/${challenge.id}`)}

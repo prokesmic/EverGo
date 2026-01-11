@@ -25,17 +25,20 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const username = decodeURIComponent(rawUsername)
 
   // Handle "me" route - redirect to current user's profile
+  // IMPORTANT: Use username, not ID, to avoid privacy leaks
   if (username === "me") {
     if (!session?.user?.email) {
       redirect("/login")
     }
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { username: true, id: true },
+      select: { username: true },
     })
-    if (currentUser) {
-      redirect(`/profile/${currentUser.id}`)
+    if (currentUser?.username) {
+      redirect(`/profile/${currentUser.username}`)
     }
+    // User has no username - redirect to settings to create one
+    redirect("/settings/profile?needsUsername=true")
   }
 
   // Fetch user data with all necessary relations
@@ -107,12 +110,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     },
   })
 
-  // If not found by username, try by user ID
+  // If not found by username, try by user ID (for backwards compat)
+  // NOTE: Email lookup removed for privacy - emails should never be in URLs
   if (!user) {
     user = await prisma.user.findFirst({
-      where: {
-        OR: [{ id: username }, { email: { equals: username, mode: "insensitive" } }],
-      },
+      where: { id: username },
       include: {
         _count: {
           select: {
