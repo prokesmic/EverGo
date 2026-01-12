@@ -358,7 +358,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
 function RibbonSkeleton() {
   return (
-    <div className="border-t border-white/10 bg-black/35 backdrop-blur-md px-3 py-2 md:px-4 md:py-2.5">
+    <div className="rounded-b-3xl border-t border-white/10 bg-black/50 backdrop-blur-md px-3 py-2 md:px-4 md:py-2.5">
       <div className="flex justify-center gap-2 mb-2">
         <Skeleton className="h-6 w-48 bg-white/10" />
       </div>
