@@ -176,9 +176,9 @@ export function HeroRibbon({
       )}>
         {/* Aurora Glass Ribbon - Premium frosted glass effect */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
           className={cn(
             "overflow-hidden",
             isDocked
@@ -187,6 +187,7 @@ export function HeroRibbon({
                   "rounded-b-3xl",
                   "border-t border-white/10",
                   "bg-black/30 backdrop-blur-md",
+                  "min-h-[100px]", // Fixed height to prevent layout shift
                 ]
               : [
                   // Floating variant: light glass card
@@ -237,7 +238,7 @@ export function HeroRibbon({
               </nav>
 
               {/* Sport Badge + Caption */}
-              <div className="flex items-center gap-2 font-mono text-[10px] tracking-wider">
+              <div className="flex items-center gap-2 font-mono text-[10px] tracking-wider min-h-[20px]">
                 {viewModel?.sportName && (
                   <span className={cn(
                     "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase",
