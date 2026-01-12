@@ -183,24 +183,24 @@ export function HomeHeroBanner({
               Joined {joinMonthYear}
             </span>
           </motion.div>
-
-          {/* Stats Strip - Glass panel inside hero */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="mt-4"
-          >
-            <div className="inline-flex items-center rounded-xl border border-white/15 bg-black/25 backdrop-blur-md px-4 py-2.5">
-              <StatsStripItem value={stats.activities} label="Activities" href="/profile/me" />
-              <div className="w-px h-6 bg-white/15 mx-4" />
-              <StatsStripItem value={stats.followers} label="Followers" href="/profile/me?tab=followers" />
-              <div className="w-px h-6 bg-white/15 mx-4" />
-              <StatsStripItem value={stats.following} label="Following" href="/profile/me?tab=following" />
-            </div>
-          </motion.div>
         </div>
       </HeroBanner>
+
+      {/* Stats Strip - Outside hero, below banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mt-4 px-4 md:px-6"
+      >
+        <div className="inline-flex items-center rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm">
+          <StatsStripItem value={stats.activities} label="Activities" href="/profile/me" />
+          <div className="w-px h-6 bg-border mx-4" />
+          <StatsStripItem value={stats.followers} label="Followers" href="/profile/me?tab=followers" />
+          <div className="w-px h-6 bg-border mx-4" />
+          <StatsStripItem value={stats.following} label="Following" href="/profile/me?tab=following" />
+        </div>
+      </motion.div>
     </div>
   )
 }
@@ -208,8 +208,8 @@ export function HomeHeroBanner({
 function StatsStripItem({ value, label, href }: { value: number; label: string; href: string }) {
   return (
     <Link href={href} className="text-center hover:opacity-70 transition-opacity">
-      <div className="text-base font-semibold text-white">{value}</div>
-      <div className="text-[10px] uppercase tracking-wide text-white/70">{label}</div>
+      <div className="text-base font-semibold text-foreground">{value}</div>
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
     </Link>
   )
 }
