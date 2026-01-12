@@ -64,6 +64,8 @@ interface BenchmarkOption {
     slug: string
     name: string
     unit: string
+    requiresSensor?: boolean
+    description?: string
 }
 
 // Inner component that uses useSearchParams
@@ -162,6 +164,7 @@ function RankingsContent({ sports }: RankingsClientProps) {
     }, [session])
 
     // Fetch benchmarks when sport changes (for benchmark mode)
+    // V11: Auto-select sport's primaryMetric (vanity metric)
     useEffect(() => {
         if (mode !== "benchmark") return
 
@@ -170,8 +173,23 @@ function RankingsContent({ sports }: RankingsClientProps) {
                 const res = await fetch(`/api/rankings/benchmark?sportSlug=${sport}`)
                 const data = await res.json()
                 setBenchmarks(data.benchmarks || [])
-                if (data.benchmarks?.length > 0 && !selectedBenchmark) {
-                    setSelectedBenchmark(data.benchmarks[0].id)
+
+                // V11: Default to sport's primary vanity metric
+                if (data.benchmarks?.length > 0) {
+                    // If primaryMetric is available, use it
+                    if (data.primaryMetric) {
+                        const primaryBenchmark = data.benchmarks.find(
+                            (b: BenchmarkOption) => b.id === data.primaryMetric
+                        )
+                        if (primaryBenchmark) {
+                            setSelectedBenchmark(primaryBenchmark.id)
+                            return
+                        }
+                    }
+                    // Fallback to first benchmark
+                    if (!selectedBenchmark) {
+                        setSelectedBenchmark(data.benchmarks[0].id)
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching benchmarks:", error)

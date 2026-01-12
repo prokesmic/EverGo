@@ -106,3 +106,49 @@ describe("All Configs", () => {
     expect(UNIVERSAL_FALLBACK[0].key).toBe("GLOBAL_RANK")
   })
 })
+
+// =============================================================================
+// V11: VANITY METRICS TESTS
+// =============================================================================
+
+describe("V11: Vanity Metrics", () => {
+  test("kitesurfing has MAX_JUMP as primary vanity metric", () => {
+    const config = SPORT_OVERRIDES["kitesurfing"]
+    expect(config[1].key).toBe("MAX_JUMP")
+  })
+
+  test("skiing has VERTICAL as primary vanity metric", () => {
+    const config = SPORT_OVERRIDES["skiing"]
+    expect(config[1].key).toBe("VERTICAL")
+  })
+
+  test("running has PACE_5K as primary vanity metric", () => {
+    const config = SPORT_OVERRIDES["running"]
+    expect(config[1].key).toBe("PACE_5K")
+  })
+
+  test("cycling has POWER_WKG as primary vanity metric", () => {
+    const config = SPORT_OVERRIDES["cycling"]
+    expect(config[1].key).toBe("POWER_WKG")
+  })
+
+  test("climbing has PYRAMID_SCORE as primary vanity metric", () => {
+    const config = SPORT_OVERRIDES["climbing"]
+    expect(config[1].key).toBe("PYRAMID_SCORE")
+  })
+
+  test("gym-strength has STRENGTH_INDEX as primary vanity metric", () => {
+    const config = SPORT_OVERRIDES["gym-strength"]
+    expect(config[1].key).toBe("STRENGTH_INDEX")
+  })
+
+  test("multisport has MULTISPORT_INDEX as primary metric", () => {
+    expect(MULTISPORT_CONFIG[1].key).toBe("MULTISPORT_INDEX")
+  })
+
+  test("team sports have MATCHES as primary vanity metric", () => {
+    expect(SPORT_OVERRIDES["football"][1].key).toBe("MATCHES")
+    expect(SPORT_OVERRIDES["basketball"][1].key).toBe("MATCHES")
+    expect(SPORT_OVERRIDES["tennis"][1].key).toBe("MATCHES")
+  })
+})

@@ -25,24 +25,40 @@ export type RibbonRange = "week" | "month" | "year" | "all"
  * These map to data fields and determine what gets computed/displayed.
  */
 export type RibbonMetricKey =
-  | "GLOBAL_RANK"      // User's global rank for their primary sport
-  | "SPORT_INDEX"      // Overall Sport Index score (0-1000)
-  | "POWER"            // Total power earned in range
-  | "SESSIONS"         // Number of workout sessions
-  | "ACTIVITIES"       // Activity count (alias for sessions in most contexts)
-  | "ACTIVE_TIME"      // Total active time in range
-  | "DISTANCE"         // Total distance (for GPS sports)
-  | "ELEVATION"        // Total elevation gain (for outdoor/endurance)
-  | "DAYS_ACTIVE"      // Unique days with activities
-  | "VARIETY"          // Number of distinct sports practiced (MultiSport)
-  | "ELO"              // ELO rating (for competitive sports)
-  | "WIN_RATE"         // Win percentage (team/combat/racket sports)
-  | "STREAK"           // Current day streak
-  | "PR_COUNT"         // Personal records achieved in range
-  | "VOLUME"           // Total volume/tonnage (strength sports)
-  | "AVG_PACE"         // Average pace (endurance sports)
-  | "AVG_HEART_RATE"   // Average heart rate
-  | "CALORIES"         // Total calories burned
+  | "GLOBAL_RANK"        // User's global rank for their primary sport
+  | "SPORT_INDEX"        // Overall Sport Index score (0-1000)
+  | "MULTISPORT_INDEX"   // MultiSport Index (Podium Points)
+  | "POWER"              // Total power earned in range
+  | "SESSIONS"           // Number of workout sessions
+  | "ACTIVITIES"         // Activity count (alias for sessions in most contexts)
+  | "ACTIVE_TIME"        // Total active time in range
+  | "DISTANCE"           // Total distance (for GPS sports)
+  | "ELEVATION"          // Total elevation gain (for outdoor/endurance)
+  | "DAYS_ACTIVE"        // Unique days with activities
+  | "VARIETY"            // Number of distinct sports practiced (MultiSport)
+  | "ELO"                // ELO rating (for competitive sports)
+  | "WIN_RATE"           // Win percentage (team/combat/racket sports)
+  | "STREAK"             // Current day streak
+  | "PR_COUNT"           // Personal records achieved in range
+  | "VOLUME"             // Total volume/tonnage (strength sports)
+  | "AVG_PACE"           // Average pace (endurance sports)
+  | "AVG_HEART_RATE"     // Average heart rate
+  | "CALORIES"           // Total calories burned
+  // V11: Vanity Metrics
+  | "MAX_JUMP"           // Kitesurfing: max jump height
+  | "AIRTIME"            // Kitesurfing: total airtime
+  | "MAX_SPEED"          // Top speed (water/winter sports)
+  | "VERTICAL"           // Skiing/snowboarding: vertical descent
+  | "LONGEST_RIDE"       // Surfing: longest wave ride
+  | "STOKE_SCORE"        // Surfing: session rating
+  | "POWER_WKG"          // Cycling: 20min power W/kg
+  | "PACE_5K"            // Running: best 5K pace
+  | "PYRAMID_SCORE"      // Climbing: pyramid top-5 points
+  | "HARDEST_GRADE"      // Climbing: hardest grade
+  | "STRENGTH_INDEX"     // Gym: composite strength score
+  | "TONNAGE"            // Gym: total weight moved
+  | "BENCHMARK_WOD"      // CrossFit: best benchmark WOD
+  | "MATCHES"            // Team sports: matches played
 
 /**
  * Format types for displaying metric values
@@ -183,6 +199,87 @@ const METRIC = {
     unit: "bpm",
     format: "int",
   },
+  // V11: Vanity Metrics
+  MULTISPORT_INDEX: {
+    key: "MULTISPORT_INDEX",
+    label: "MultiSport",
+    format: "score",
+  },
+  MAX_JUMP: {
+    key: "MAX_JUMP",
+    label: "Max Jump",
+    unit: "m",
+    format: "float1",
+  },
+  AIRTIME: {
+    key: "AIRTIME",
+    label: "Airtime",
+    format: "duration",
+  },
+  MAX_SPEED: {
+    key: "MAX_SPEED",
+    label: "Max Speed",
+    unit: "km/h",
+    format: "float1",
+  },
+  VERTICAL: {
+    key: "VERTICAL",
+    label: "Vert",
+    unit: "m",
+    format: "int",
+  },
+  LONGEST_RIDE: {
+    key: "LONGEST_RIDE",
+    label: "Best Ride",
+    format: "duration",
+  },
+  STOKE_SCORE: {
+    key: "STOKE_SCORE",
+    label: "Stoke",
+    format: "int",
+  },
+  POWER_WKG: {
+    key: "POWER_WKG",
+    label: "20m Power",
+    unit: "W/kg",
+    format: "float1",
+  },
+  PACE_5K: {
+    key: "PACE_5K",
+    label: "5K Pace",
+    format: "pace",
+  },
+  PYRAMID_SCORE: {
+    key: "PYRAMID_SCORE",
+    label: "Pyramid",
+    format: "int",
+  },
+  HARDEST_GRADE: {
+    key: "HARDEST_GRADE",
+    label: "Hardest",
+    format: "int", // Will be formatted as grade string
+  },
+  STRENGTH_INDEX: {
+    key: "STRENGTH_INDEX",
+    label: "Strength",
+    format: "score",
+  },
+  TONNAGE: {
+    key: "TONNAGE",
+    label: "Tonnage",
+    unit: "kg",
+    format: "int",
+  },
+  BENCHMARK_WOD: {
+    key: "BENCHMARK_WOD",
+    label: "Benchmark",
+    format: "duration",
+  },
+  MATCHES: {
+    key: "MATCHES",
+    label: "Matches",
+    format: "int",
+  },
 } as const satisfies Record<RibbonMetricKey, RibbonMetricDescriptor>
 
 // =============================================================================
@@ -206,13 +303,14 @@ export const UNIVERSAL_FALLBACK: RibbonConfig = [
 
 /**
  * MultiSport users see variety-focused metrics
+ * V11: Primary metric is now MULTISPORT_INDEX (Podium Points)
  */
 export const MULTISPORT_CONFIG: RibbonConfig = [
   METRIC.GLOBAL_RANK,
-  METRIC.SPORT_INDEX,
+  METRIC.MULTISPORT_INDEX,  // V11: Podium Points score
+  METRIC.VARIETY,           // Number of sports practiced
   METRIC.DAYS_ACTIVE,
   METRIC.ACTIVE_TIME,
-  METRIC.VARIETY,
 ]
 
 // =============================================================================
@@ -226,18 +324,20 @@ export const MULTISPORT_CONFIG: RibbonConfig = [
  */
 export const CATEGORY_DEFAULTS: Partial<Record<SportCategory, RibbonConfig>> = {
   // ENDURANCE: Distance-focused sports (running, triathlon, etc.)
+  // V11: Primary vanity metric is pace or distance
   ENDURANCE: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.PACE_5K,        // V11: Vanity metric - best pace
     METRIC.DISTANCE,
     METRIC.ACTIVE_TIME,
-    METRIC.ELEVATION,
+    METRIC.STREAK,
   ],
 
-  // CYCLING: Similar to endurance but always has distance/elevation
+  // CYCLING: Power-focused with distance/elevation
+  // V11: Primary vanity metric is W/kg
   CYCLING: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.POWER_WKG,      // V11: Vanity metric - 20min power W/kg
     METRIC.DISTANCE,
     METRIC.ELEVATION,
     METRIC.ACTIVE_TIME,
@@ -246,82 +346,88 @@ export const CATEGORY_DEFAULTS: Partial<Record<SportCategory, RibbonConfig>> = {
   // SWIMMING: Duration-focused, no GPS
   SWIMMING: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.DISTANCE,
-    METRIC.ACTIVE_TIME,
+    METRIC.DISTANCE,       // Primary for swimming
     METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
+    METRIC.STREAK,
   ],
 
   // STRENGTH: Volume and session focused
+  // V11: Primary vanity metric is strength index or tonnage
   STRENGTH: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.STRENGTH_INDEX, // V11: Vanity metric - composite strength
+    METRIC.TONNAGE,        // V11: Total weight moved
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
   ],
 
   // TEAM: Match-based, win rate matters
+  // V11: Primary vanity metric is matches played
   TEAM: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MATCHES,        // V11: Vanity metric - matches played
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
   ],
 
   // RACKET: Match-based competitive sports
+  // V11: Primary vanity metric is matches
   RACKET: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MATCHES,        // V11: Vanity metric - matches played
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
   ],
 
   // COMBAT: Session and intensity focused
   COMBAT: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.SESSIONS,
+    METRIC.SESSIONS,       // Primary for combat sports
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
+    METRIC.DAYS_ACTIVE,
   ],
 
   // WATER_BOARD: Session-based board/water sports (kitesurfing, surfing, etc.)
+  // V11: Primary vanity metric is max jump or max speed
   WATER_BOARD: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MAX_JUMP,       // V11: Vanity metric - max jump height
+    METRIC.AIRTIME,        // V11: Total airtime
+    METRIC.MAX_SPEED,      // V11: Top speed
     METRIC.SESSIONS,
-    METRIC.ACTIVE_TIME,
-    METRIC.DISTANCE,
   ],
 
   // OUTDOOR: Hiking, climbing - elevation matters
+  // V11: Primary vanity metric is pyramid score for climbing
   OUTDOOR: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.ELEVATION,      // Primary for outdoor
     METRIC.DISTANCE,
-    METRIC.ELEVATION,
     METRIC.ACTIVE_TIME,
+    METRIC.SESSIONS,
   ],
 
-  // WINTER: Similar to endurance, elevation matters
+  // WINTER: Vertical descent is the brag metric
+  // V11: Primary vanity metric is vertical
   WINTER: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.DISTANCE,
-    METRIC.ELEVATION,
+    METRIC.VERTICAL,       // V11: Vanity metric - vertical descent
+    METRIC.MAX_SPEED,      // V11: Top speed
     METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
   ],
 
   // MINDBODY: Yoga, pilates - consistency matters
   MINDBODY: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.DAYS_ACTIVE,
+    METRIC.DAYS_ACTIVE,    // Primary for mind/body
     METRIC.ACTIVE_TIME,
     METRIC.STREAK,
+    METRIC.SESSIONS,
   ],
 
   // GENERIC: For MultiSport and general-purpose
@@ -334,243 +440,345 @@ export const CATEGORY_DEFAULTS: Partial<Record<SportCategory, RibbonConfig>> = {
 
 /**
  * Sport-specific configurations (by slug)
- * These override category defaults when more specific metrics make sense.
+ *
+ * V11 VANITY METRICS: Each sport shows its "brag" metric as Tile 2
+ * Format: [GLOBAL_RANK, primaryMetric, ...secondaryMetrics]
  */
 export const SPORT_OVERRIDES: Record<string, RibbonConfig> = {
   // ========== MULTISPORT ==========
   multisport: MULTISPORT_CONFIG,
 
   // ========== ENDURANCE ==========
+  // Running: Brag = 5K pace (how fast can you run?)
   running: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.PACE_5K,        // V11: Vanity metric - best 5K pace
     METRIC.DISTANCE,
     METRIC.ACTIVE_TIME,
     METRIC.STREAK,
   ],
 
+  // Trail Running: Brag = distance (how far can you go?)
+  "trail-running": [
+    METRIC.GLOBAL_RANK,
+    METRIC.DISTANCE,       // Primary: total distance
+    METRIC.ELEVATION,      // Secondary: elevation gain
+    METRIC.ACTIVE_TIME,
+    METRIC.SESSIONS,
+  ],
+
+  // Cycling: Brag = W/kg (how much power can you push?)
   cycling: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.POWER_WKG,      // V11: Vanity metric - 20min power W/kg
     METRIC.DISTANCE,
     METRIC.ELEVATION,
     METRIC.ACTIVE_TIME,
   ],
 
-  swimming: [
+  // Mountain Biking: Brag = distance with elevation
+  "mountain-biking": [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.DISTANCE,
-    METRIC.ACTIVE_TIME,
+    METRIC.DISTANCE,       // Primary: total distance
+    METRIC.ELEVATION,
     METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
   ],
 
+  // Swimming: Brag = distance (how many laps/meters?)
+  swimming: [
+    METRIC.GLOBAL_RANK,
+    METRIC.DISTANCE,       // Primary: distance covered
+    METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
+    METRIC.STREAK,
+  ],
+
+  // Triathlon: Multi-sport variety matters
   triathlon: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.DISTANCE,
+    METRIC.DISTANCE,       // Primary: total distance
+    METRIC.VARIETY,        // Sports practiced
     METRIC.ACTIVE_TIME,
-    METRIC.VARIETY,
+    METRIC.SESSIONS,
   ],
 
   // ========== WATER SPORTS ==========
+  // Kitesurfing: Brag = Max Jump Height (how high can you fly?)
   kitesurfing: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MAX_JUMP,       // V11: Vanity metric - max jump height (sensor only)
+    METRIC.AIRTIME,        // Total airtime
+    METRIC.MAX_SPEED,      // Top speed
     METRIC.SESSIONS,
-    METRIC.ACTIVE_TIME,
-    METRIC.DISTANCE,
   ],
 
+  // Surfing: Brag = Stoke Score / Session Rating
   surfing: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.STOKE_SCORE,    // V11: Vanity metric - session rating
+    METRIC.LONGEST_RIDE,   // Best wave ride duration
+    METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
+  ],
+
+  // Windsurfing: Brag = Max Speed
+  windsurfing: [
+    METRIC.GLOBAL_RANK,
+    METRIC.MAX_SPEED,      // V11: Vanity metric - top speed
+    METRIC.SESSIONS,
+    METRIC.DISTANCE,
+    METRIC.ACTIVE_TIME,
+  ],
+
+  // SUP: Consistency matters
+  sup: [
+    METRIC.GLOBAL_RANK,
+    METRIC.DISTANCE,       // Primary: distance paddled
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
     METRIC.DAYS_ACTIVE,
   ],
 
-  windsurfing: [
-    METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.SESSIONS,
-    METRIC.ACTIVE_TIME,
-    METRIC.DISTANCE,
-  ],
-
   // ========== WINTER SPORTS ==========
+  // Skiing: Brag = Vertical Descent (how much vert did you ski?)
   skiing: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.DISTANCE,
-    METRIC.ELEVATION,
+    METRIC.VERTICAL,       // V11: Vanity metric - vertical descent
+    METRIC.MAX_SPEED,      // Top speed
     METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
   ],
 
+  // Snowboarding: Same as skiing - Vert is king
   snowboarding: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.DISTANCE,
-    METRIC.ELEVATION,
+    METRIC.VERTICAL,       // V11: Vanity metric - vertical descent
+    METRIC.MAX_SPEED,
     METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
   ],
 
+  // Cross-Country Skiing: Endurance focused
   "cross-country-skiing": [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.DISTANCE,
-    METRIC.ACTIVE_TIME,
+    METRIC.DISTANCE,       // Primary: distance covered
     METRIC.ELEVATION,
+    METRIC.ACTIVE_TIME,
+    METRIC.SESSIONS,
   ],
 
   // ========== STRENGTH ==========
+  // Gym/Strength: Brag = Strength Index or Tonnage
   "gym-strength": [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.STRENGTH_INDEX, // V11: Vanity metric - composite strength score
+    METRIC.TONNAGE,        // Total weight moved
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.STREAK,
   ],
 
+  // CrossFit: Brag = Benchmark WOD Time
   crossfit: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.BENCHMARK_WOD,  // V11: Vanity metric - best benchmark time
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.VARIETY,
   ],
 
+  // Olympic Weightlifting: Brag = Total lifted
   weightlifting: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.TONNAGE,        // V11: Vanity metric - total tonnage (Sinclair coming)
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
     METRIC.PR_COUNT,
   ],
 
   // ========== RACKET SPORTS ==========
+  // Tennis: Brag = Matches played
   tennis: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MATCHES,        // V11: Vanity metric - matches played
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
   ],
 
+  // Padel: Same as tennis
   padel: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MATCHES,        // V11: Vanity metric - matches played
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
   ],
 
+  // Badminton
   badminton: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MATCHES,
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
   ],
 
+  // Squash
   squash: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MATCHES,
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
+  ],
+
+  // Table Tennis
+  "table-tennis": [
+    METRIC.GLOBAL_RANK,
+    METRIC.MATCHES,
+    METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
+    METRIC.STREAK,
+  ],
+
+  // Pickleball
+  pickleball: [
+    METRIC.GLOBAL_RANK,
+    METRIC.MATCHES,
+    METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
+    METRIC.STREAK,
   ],
 
   // ========== TEAM SPORTS ==========
+  // Football/Soccer: Brag = Matches played
   football: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MATCHES,        // V11: Vanity metric - matches played
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
     METRIC.DISTANCE,
   ],
 
+  // Basketball
   basketball: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MATCHES,        // V11: Vanity metric - matches played
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
   ],
 
+  // Volleyball
   volleyball: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.MATCHES,
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
+  ],
+
+  // Beach Volleyball
+  "beach-volleyball": [
+    METRIC.GLOBAL_RANK,
+    METRIC.MATCHES,
+    METRIC.SESSIONS,
+    METRIC.ACTIVE_TIME,
+    METRIC.STREAK,
   ],
 
   // ========== OUTDOOR ==========
+  // Hiking: Elevation is the brag
   hiking: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.ELEVATION,      // V11: Vanity metric - total elevation gain
     METRIC.DISTANCE,
-    METRIC.ELEVATION,
     METRIC.ACTIVE_TIME,
+    METRIC.SESSIONS,
   ],
 
+  // Climbing: Brag = Pyramid Score (hardest climbs)
   climbing: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.PYRAMID_SCORE,  // V11: Vanity metric - pyramid top-5 points
+    METRIC.HARDEST_GRADE,  // Hardest grade sent
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.ELEVATION,
   ],
 
+  // Bouldering: Same as climbing
   bouldering: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
+    METRIC.PYRAMID_SCORE,  // V11: Vanity metric - pyramid points
+    METRIC.HARDEST_GRADE,
     METRIC.SESSIONS,
-    METRIC.ACTIVE_TIME,
     METRIC.DAYS_ACTIVE,
   ],
 
   // ========== MIND & BODY ==========
+  // Yoga: Consistency is key
   yoga: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.DAYS_ACTIVE,
+    METRIC.DAYS_ACTIVE,    // Primary: consistency
     METRIC.ACTIVE_TIME,
     METRIC.STREAK,
+    METRIC.SESSIONS,
   ],
 
+  // Pilates: Same as yoga
   pilates: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
     METRIC.DAYS_ACTIVE,
     METRIC.ACTIVE_TIME,
     METRIC.STREAK,
+    METRIC.SESSIONS,
+  ],
+
+  // Meditation
+  meditation: [
+    METRIC.GLOBAL_RANK,
+    METRIC.STREAK,         // Primary: how many days in a row?
+    METRIC.DAYS_ACTIVE,
+    METRIC.ACTIVE_TIME,
+    METRIC.SESSIONS,
+  ],
+
+  // Stretching
+  stretching: [
+    METRIC.GLOBAL_RANK,
+    METRIC.DAYS_ACTIVE,
+    METRIC.ACTIVE_TIME,
+    METRIC.STREAK,
+    METRIC.SESSIONS,
   ],
 
   // ========== COMBAT ==========
+  // Boxing: Sessions and training time
   boxing: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
-    METRIC.SESSIONS,
+    METRIC.SESSIONS,       // Primary: training frequency
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
+    METRIC.DAYS_ACTIVE,
   ],
 
+  // MMA: Same as boxing
   mma: [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
+    METRIC.DAYS_ACTIVE,
   ],
 
-  judo: [
+  // Jiu-Jitsu/BJJ
+  "jiu-jitsu": [
     METRIC.GLOBAL_RANK,
-    METRIC.SPORT_INDEX,
     METRIC.SESSIONS,
     METRIC.ACTIVE_TIME,
-    METRIC.POWER,
+    METRIC.STREAK,
+    METRIC.DAYS_ACTIVE,
   ],
 }
 

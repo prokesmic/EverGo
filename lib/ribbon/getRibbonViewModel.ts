@@ -67,6 +67,23 @@ type RawStats = {
   globalRank: number | null
   globalTotal: number
   globalPercentile: number | null
+
+  // V11: Vanity Metrics
+  multisportIndex: number
+  maxJumpHeight: number | null  // Kitesurfing
+  totalAirtime: number | null   // Kitesurfing
+  maxSpeed: number | null       // Water/winter sports
+  verticalDescent: number | null // Skiing/snowboarding
+  longestRide: number | null    // Surfing
+  stokeScore: number | null     // Surfing session rating
+  powerWkg: number | null       // Cycling W/kg
+  pace5k: number | null         // Running
+  pyramidScore: number | null   // Climbing
+  hardestGrade: string | null   // Climbing
+  strengthIndex: number | null  // Gym
+  tonnageKg: number | null      // Gym/weightlifting
+  benchmarkWod: number | null   // CrossFit
+  matchesPlayed: number         // Team/racket sports
 }
 
 // =============================================================================
@@ -231,6 +248,7 @@ async function computeRibbonStats(
       select: {
         sportIndex: true,
         sportIndexDelta7d: true,
+        multisportIndex: true,
       },
     }),
 
@@ -243,6 +261,35 @@ async function computeRibbonStats(
     // Global rank
     computeGlobalRank(userId, sportSlug),
   ])
+
+  // Fetch vanity metrics aggregates
+  const vanityAggregates = await prisma.activity.aggregate({
+    where: {
+      userId,
+      activityDate: { gte: rangeStart, lte: rangeEnd },
+    },
+    _max: {
+      maxJumpHeightMeters: true,
+      avgSpeed: true,
+      best5kPaceSeconds: true,
+    },
+    _sum: {
+      totalAirtimeSeconds: true,
+      verticalDescentMeters: true,
+      longestRideSeconds: true,
+      sessionRating: true,
+      tonnageKg: true,
+    },
+  })
+
+  // Count matches (activities that are matches/games)
+  const matchesCount = await prisma.activity.count({
+    where: {
+      userId,
+      activityDate: { gte: rangeStart, lte: rangeEnd },
+      // Activities in team/racket sports are considered matches
+    },
+  })
 
   return {
     // Range-based
@@ -265,6 +312,23 @@ async function computeRibbonStats(
     globalRank: globalRankData.rank,
     globalTotal: globalRankData.total,
     globalPercentile: globalRankData.percentile,
+
+    // V11: Vanity Metrics
+    multisportIndex: userStats?.multisportIndex ?? 0,
+    maxJumpHeight: vanityAggregates._max.maxJumpHeightMeters,
+    totalAirtime: vanityAggregates._sum.totalAirtimeSeconds,
+    maxSpeed: vanityAggregates._max.avgSpeed, // Using avgSpeed as proxy for now
+    verticalDescent: vanityAggregates._sum.verticalDescentMeters,
+    longestRide: vanityAggregates._sum.longestRideSeconds,
+    stokeScore: vanityAggregates._sum.sessionRating,
+    powerWkg: null, // Requires user weight - TODO
+    pace5k: vanityAggregates._max.best5kPaceSeconds,
+    pyramidScore: null, // Climbing pyramid - TODO
+    hardestGrade: null, // Climbing grade - TODO
+    strengthIndex: null, // Composite strength - TODO
+    tonnageKg: vanityAggregates._sum.tonnageKg,
+    benchmarkWod: null, // CrossFit benchmark - TODO
+    matchesPlayed: matchesCount,
   }
 }
 
@@ -346,10 +410,13 @@ function formatMetric(
 
 function getMetricValue(key: RibbonMetricKey, stats: RawStats): number | string | null {
   switch (key) {
+    // Core metrics
     case "GLOBAL_RANK":
       return stats.globalRank
     case "SPORT_INDEX":
       return stats.sportIndex
+    case "MULTISPORT_INDEX":
+      return stats.multisportIndex
     case "POWER":
       return stats.powerTotal
     case "SESSIONS":
@@ -372,7 +439,7 @@ function getMetricValue(key: RibbonMetricKey, stats: RawStats): number | string 
     case "CALORIES":
       return stats.caloriesTotal
     case "VOLUME":
-      return null  // Not yet implemented
+      return stats.tonnageKg
     case "ELO":
       return null  // Not yet implemented
     case "WIN_RATE":
@@ -381,6 +448,35 @@ function getMetricValue(key: RibbonMetricKey, stats: RawStats): number | string 
       return null  // Not yet implemented
     case "AVG_HEART_RATE":
       return null  // Not yet implemented
+    // V11: Vanity Metrics
+    case "MAX_JUMP":
+      return stats.maxJumpHeight
+    case "AIRTIME":
+      return stats.totalAirtime
+    case "MAX_SPEED":
+      return stats.maxSpeed
+    case "VERTICAL":
+      return stats.verticalDescent
+    case "LONGEST_RIDE":
+      return stats.longestRide
+    case "STOKE_SCORE":
+      return stats.stokeScore
+    case "POWER_WKG":
+      return stats.powerWkg
+    case "PACE_5K":
+      return stats.pace5k
+    case "PYRAMID_SCORE":
+      return stats.pyramidScore
+    case "HARDEST_GRADE":
+      return stats.hardestGrade
+    case "STRENGTH_INDEX":
+      return stats.strengthIndex
+    case "TONNAGE":
+      return stats.tonnageKg
+    case "BENCHMARK_WOD":
+      return stats.benchmarkWod
+    case "MATCHES":
+      return stats.matchesPlayed
     default:
       return null
   }

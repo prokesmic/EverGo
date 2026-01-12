@@ -153,10 +153,19 @@ model UserStats {
   verifiedActivityCount Int      @default(0)   // Count of verified activities in last 60 days
   lastVerificationCheck DateTime?
 
+  // V11: MultiSport Index (Podium Points method)
+  multisportIndex      Int       @default(0)   // 0-1000 combined score
+  multisportRank       Int?                    // Global rank for multisport
+  eligibleSportsCount  Int       @default(0)   // Sports with >= 5 activities
+
+  // V11: Trust Score for manual entry weighting
+  trustScore           Float     @default(1.0) // 0.75-1.0 based on verification status
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   @@index([sportIndex(sort: Desc)])
+  @@index([multisportIndex(sort: Desc)])
   @@index([country, sportIndex(sort: Desc)])
   @@index([city, sportIndex(sort: Desc)])
   @@index([isVerifiedAthlete])
@@ -491,6 +500,33 @@ model Activity {
 
   // V10: Incremental ranking flag - set when activity has been included in ranking calculations
   rankedAt         DateTime?        // NULL = unprocessed, timestamp = when last ranked
+
+  // V11: Vanity Metrics - Sport-specific "brag" data
+  // Water sports (kitesurfing, surfing)
+  maxJumpHeightMeters  Float?       // WOO or similar device
+  totalAirtimeSeconds  Int?         // Cumulative airtime in session
+  longestRideSeconds   Int?         // Surfing: longest wave ride
+  waveCount            Int?         // Number of waves caught
+  sessionRating        Int?         // 1-10 self-rated session quality
+
+  // Winter sports (skiing, snowboarding)
+  verticalDescentMeters Float?      // Total vertical meters descended
+
+  // Cycling
+  avgPowerWatts        Float?       // Average power in watts
+  normalizedPowerWatts Float?       // Normalized power (NP)
+  maxPowerWatts        Float?       // Peak power
+
+  // Running
+  best5kPaceSeconds    Float?       // Best 5K pace in session (s/km)
+  best10kPaceSeconds   Float?       // Best 10K pace in session (s/km)
+
+  // Climbing
+  climbingGrade        String?      // Hardest grade in session (V-scale or French)
+  routesCompleted      Int?         // Number of routes/problems completed
+
+  // Strength
+  tonnageKg            Float?       // Total weight moved (sets × reps × weight)
 
   @@unique([source, externalId])
   @@index([rankedAt])

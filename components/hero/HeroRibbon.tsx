@@ -34,6 +34,14 @@ import {
   Target,
   Award,
   Dumbbell,
+  Gauge,
+  Timer,
+  Waves,
+  Snowflake,
+  Bike,
+  Footprints,
+  Swords,
+  Users,
   type LucideIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -86,8 +94,10 @@ const RANGE_OPTIONS: { value: RibbonRange; label: string; caption: (createdAt?: 
 
 // Metric key to icon mapping
 const METRIC_ICONS: Record<RibbonMetricKey, LucideIcon> = {
+  // Core metrics
   GLOBAL_RANK: Trophy,
   SPORT_INDEX: Target,
+  MULTISPORT_INDEX: Target,
   POWER: Zap,
   SESSIONS: Activity,
   ACTIVITIES: Activity,
@@ -104,6 +114,21 @@ const METRIC_ICONS: Record<RibbonMetricKey, LucideIcon> = {
   AVG_PACE: Clock,
   AVG_HEART_RATE: Activity,
   CALORIES: Flame,
+  // V11: Vanity Metrics
+  MAX_JUMP: TrendingUp,      // Kitesurfing: max jump height
+  AIRTIME: Timer,            // Kitesurfing: total airtime
+  MAX_SPEED: Gauge,          // Top speed
+  VERTICAL: Snowflake,       // Skiing: vertical descent
+  LONGEST_RIDE: Waves,       // Surfing: longest wave ride
+  STOKE_SCORE: Flame,        // Surfing: session rating
+  POWER_WKG: Bike,           // Cycling: 20min power W/kg
+  PACE_5K: Footprints,       // Running: best 5K pace
+  PYRAMID_SCORE: Mountain,   // Climbing: pyramid points
+  HARDEST_GRADE: Mountain,   // Climbing: hardest grade
+  STRENGTH_INDEX: Dumbbell,  // Gym: composite strength
+  TONNAGE: Dumbbell,         // Gym: total weight moved
+  BENCHMARK_WOD: Timer,      // CrossFit: benchmark time
+  MATCHES: Swords,           // Team sports: matches played
 }
 
 // =============================================================================
