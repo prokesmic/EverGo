@@ -85,13 +85,12 @@ export async function getRibbonViewModel(
   range: RibbonRange,
   now: Date = new Date()
 ): Promise<RibbonViewModel> {
-  // 1. Get user with primary sport
+  // 1. Get user creation date
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
       createdAt: true,
-      primarySportId: true,
     },
   })
 
@@ -99,30 +98,34 @@ export async function getRibbonViewModel(
     throw new Error(`User not found: ${userId}`)
   }
 
-  // 2. Get primary sport details (or MultiSport default)
+  // 2. Get primary sport from UserSport (priority = 0 is primary)
+  // This matches how home page and settings get primary sport
+  const primaryUserSport = await prisma.userSport.findFirst({
+    where: { userId, status: "ACTIVE" },
+    orderBy: { priority: "asc" },
+    include: {
+      sport: { select: { slug: true, name: true, category: true } },
+    },
+  })
+
+  // 3. Resolve sport details (or MultiSport default)
   let sportSlug = "multisport"
   let sportName = "MultiSport"
-  let sportCategory: SportCategory | null = "GENERAL" as SportCategory
+  let sportCategory: SportCategory | null = "GENERIC" as SportCategory
 
-  if (user.primarySportId) {
-    const sport = await prisma.sport.findUnique({
-      where: { id: user.primarySportId },
-      select: { slug: true, name: true, category: true },
-    })
-    if (sport) {
-      sportSlug = normalizeSportSlug(sport.slug) ?? sport.slug
-      sportName = sport.name
-      sportCategory = sport.category as SportCategory
-    }
+  if (primaryUserSport?.sport) {
+    sportSlug = normalizeSportSlug(primaryUserSport.sport.slug) ?? primaryUserSport.sport.slug
+    sportName = primaryUserSport.sport.name
+    sportCategory = primaryUserSport.sport.category as SportCategory
   }
 
-  // 3. Get ribbon config for this sport
+  // 4. Get ribbon config for this sport
   const config = resolveRibbonConfig(sportSlug, sportCategory)
 
-  // 4. Compute all required stats
+  // 5. Compute all required stats
   const stats = await computeRibbonStats(userId, range, sportSlug, now, user.createdAt)
 
-  // 5. Map config to formatted metrics
+  // 6. Map config to formatted metrics
   const metrics = config.map((descriptor) =>
     formatMetric(descriptor, stats)
   )
