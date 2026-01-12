@@ -2,12 +2,22 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
+import { Loader2, Star, Check } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { getSportThumbImage } from "@/lib/sports/media"
+
+interface Sport {
+  id: string
+  name: string
+  slug: string
+  icon: string | null
+}
 
 interface ProfileEditFormProps {
   initialData: {
@@ -18,10 +28,12 @@ interface ProfileEditFormProps {
     country: string
     avatarUrl: string
     coverPhotoUrl: string
+    primarySportId: string
   }
+  sports: Sport[]
 }
 
-export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
+export function ProfileEditForm({ initialData, sports }: ProfileEditFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState(initialData)
@@ -137,6 +149,69 @@ export function ProfileEditForm({ initialData }: ProfileEditFormProps) {
             />
           </div>
         </div>
+      </div>
+
+      {/* Primary Sport Selection */}
+      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
+          <h2 className="text-lg font-semibold text-foreground">Primary Sport</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Your primary sport determines your hero banner image and is shown on your profile.
+        </p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {sports.map((sport) => {
+            const isSelected = formData.primarySportId === sport.id
+            const sportThumb = getSportThumbImage(sport.slug ?? sport.name)
+
+            return (
+              <button
+                key={sport.id}
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, primarySportId: sport.id }))}
+                className={cn(
+                  "relative flex items-center gap-3 p-3 rounded-xl border-2 transition-all",
+                  "hover:border-primary/50 hover:bg-primary/5",
+                  isSelected
+                    ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                    : "border-border bg-background"
+                )}
+              >
+                {sportThumb && (
+                  <div className="relative h-10 w-10 rounded-lg overflow-hidden shrink-0">
+                    <Image
+                      src={sportThumb}
+                      alt={sport.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <span className={cn(
+                  "font-medium text-sm text-left",
+                  isSelected ? "text-primary" : "text-foreground"
+                )}>
+                  {sport.name}
+                </span>
+                {isSelected && (
+                  <Check className="absolute top-2 right-2 h-4 w-4 text-primary" />
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {formData.primarySportId && (
+          <button
+            type="button"
+            onClick={() => setFormData((prev) => ({ ...prev, primarySportId: "" }))}
+            className="text-sm text-muted-foreground hover:text-foreground underline"
+          >
+            Clear selection
+          </button>
+        )}
       </div>
 
       <div className="flex gap-3 pt-4">

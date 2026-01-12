@@ -56,6 +56,8 @@ interface HeroRibbonProps {
   initialStats?: RibbonStats
   /** Page context for analytics */
   context?: "home" | "profile"
+  /** Variant: "docked" (inside hero) or "floating" (overlapping card) */
+  variant?: "docked" | "floating"
 }
 
 // =============================================================================
@@ -77,7 +79,9 @@ export function HeroRibbon({
   defaultRange = "week",
   initialStats,
   context = "home",
+  variant = "docked",
 }: HeroRibbonProps) {
+  const isDocked = variant === "docked"
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
@@ -147,28 +151,52 @@ export function HeroRibbon({
       : "text-muted-foreground"
 
   return (
-    <div className="relative z-20 -mt-6 px-4 md:px-6">
-      <div className="mx-auto max-w-5xl">
+    <div className={cn(
+      isDocked
+        ? "" // Docked: No wrapper styling, fits inside hero
+        : "relative z-20 -mt-6 px-4 md:px-6" // Floating: overlaps hero
+    )}>
+      <div className={cn(
+        isDocked
+          ? "" // Docked: full width inside hero
+          : "mx-auto max-w-5xl" // Floating: centered with max width
+      )}>
         {/* Aurora Glass Ribbon - Premium frosted glass effect */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
           className={cn(
-            "rounded-2xl overflow-hidden",
-            "bg-white/70 dark:bg-slate-900/70",
-            "backdrop-blur-xl backdrop-saturate-150",
-            "border border-white/40 dark:border-white/10",
-            "shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
-            "ring-1 ring-inset ring-white/20 dark:ring-white/5"
+            "overflow-hidden",
+            isDocked
+              ? [
+                  // Docked variant: dark glass inside hero
+                  "border-t border-white/10",
+                  "bg-black/35 backdrop-blur-md",
+                ]
+              : [
+                  // Floating variant: light glass card
+                  "rounded-2xl",
+                  "bg-white/70 dark:bg-slate-900/70",
+                  "backdrop-blur-xl backdrop-saturate-150",
+                  "border border-white/40 dark:border-white/10",
+                  "shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
+                  "ring-1 ring-inset ring-white/20 dark:ring-white/5",
+                ]
           )}
         >
           {/* Range Switcher Header - More compact Aurora style */}
-          <div className="px-4 md:px-5 pt-3 pb-2 border-b border-black/5 dark:border-white/5">
+          <div className={cn(
+            "px-4 md:px-5 pt-3 pb-2 border-b",
+            isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
+          )}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               {/* Segmented Control - Pill style */}
               <nav
-                className="inline-flex items-center rounded-full bg-black/5 dark:bg-white/5 p-0.5"
+                className={cn(
+                  "inline-flex items-center rounded-full p-0.5",
+                  isDocked ? "bg-white/10" : "bg-black/5 dark:bg-white/5"
+                )}
                 role="tablist"
                 aria-label="Select time range"
               >
@@ -184,7 +212,9 @@ export function HeroRibbon({
                       "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                       currentRange === option.value
                         ? "bg-primary text-primary-foreground shadow-md"
-                        : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                        : isDocked
+                          ? "text-white/70 hover:text-white hover:bg-white/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
                     )}
                   >
                     {option.label}
@@ -194,8 +224,8 @@ export function HeroRibbon({
 
               {/* Caption - Mono style */}
               <div className="flex items-center gap-2 font-mono text-[10px] tracking-wider">
-                <Calendar className="w-3 h-3 text-muted-foreground/60" />
-                <span className="text-muted-foreground uppercase">
+                <Calendar className={cn("w-3 h-3", isDocked ? "text-white/50" : "text-muted-foreground/60")} />
+                <span className={cn("uppercase", isDocked ? "text-white/60" : "text-muted-foreground")}>
                   {currentCaption}
                 </span>
                 {(isLoading || isPending) && (
@@ -214,7 +244,7 @@ export function HeroRibbon({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="text-center py-8 text-muted-foreground"
+                  className={cn("text-center py-8", isDocked ? "text-white/60" : "text-muted-foreground")}
                 >
                   {error}
                 </motion.div>
@@ -228,8 +258,14 @@ export function HeroRibbon({
                   className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-0"
                 >
                   {/* Sport Index (always current) - Premium Bento Style */}
-                  <div className="flex flex-col items-center md:border-r border-black/5 dark:border-white/5 md:pr-4">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-2">
+                  <div className={cn(
+                    "flex flex-col items-center md:border-r md:pr-4",
+                    isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
+                  )}>
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      isDocked ? "text-white/50" : "text-muted-foreground/70"
+                    )}>
                       Sport Index
                     </span>
                     <div className="relative flex items-center gap-3">
@@ -237,7 +273,10 @@ export function HeroRibbon({
                         <span className="text-3xl md:text-4xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-red-500 to-rose-600">
                           {isLoading ? "—" : stats?.always.sportIndex ?? 0}
                         </span>
-                        <span className="text-base font-mono text-muted-foreground/50">/1000</span>
+                        <span className={cn(
+                          "text-base font-mono",
+                          isDocked ? "text-white/40" : "text-muted-foreground/50"
+                        )}>/1000</span>
                       </div>
                       <SportIndexGauge
                         score={stats?.always.sportIndex ?? 0}
@@ -253,11 +292,17 @@ export function HeroRibbon({
                   </div>
 
                   {/* Day Streak (always current) - Animated Flame */}
-                  <div className="flex flex-col items-center md:border-r border-black/5 dark:border-white/5 md:px-4 relative overflow-hidden">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-2">
+                  <div className={cn(
+                    "flex flex-col items-center md:border-r md:px-4 relative overflow-hidden",
+                    isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
+                  )}>
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      isDocked ? "text-white/50" : "text-muted-foreground/70"
+                    )}>
                       Streak
                     </span>
-                    <StreakDots streak={stats?.always.currentStreakDays ?? 0} isLoading={isLoading} />
+                    <StreakDots streak={stats?.always.currentStreakDays ?? 0} isLoading={isLoading} isDocked={isDocked} />
                     <div className="flex items-center gap-1.5 mt-2">
                       <motion.div
                         animate={(stats?.always.currentStreakDays ?? 0) > 0 ? {
@@ -270,13 +315,19 @@ export function HeroRibbon({
                           "w-5 h-5",
                           (stats?.always.currentStreakDays ?? 0) > 0
                             ? "text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]"
-                            : "text-muted-foreground/40"
+                            : isDocked ? "text-white/30" : "text-muted-foreground/40"
                         )} />
                       </motion.div>
-                      <span className="text-2xl font-black font-mono text-foreground">
+                      <span className={cn(
+                        "text-2xl font-black font-mono",
+                        isDocked ? "text-white" : "text-foreground"
+                      )}>
                         {isLoading ? "—" : stats?.always.currentStreakDays ?? 0}
                       </span>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">days</span>
+                      <span className={cn(
+                        "text-[10px] uppercase tracking-wider",
+                        isDocked ? "text-white/50" : "text-muted-foreground"
+                      )}>days</span>
                     </div>
                     {/* Subtle flame glow background */}
                     {(stats?.always.currentStreakDays ?? 0) > 0 && (
@@ -285,12 +336,18 @@ export function HeroRibbon({
                   </div>
 
                   {/* Power (range-based) - Bold mono display */}
-                  <div className="flex flex-col items-center md:border-r border-black/5 dark:border-white/5 md:px-4">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-2">
+                  <div className={cn(
+                    "flex flex-col items-center md:border-r md:px-4",
+                    isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
+                  )}>
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      isDocked ? "text-white/50" : "text-muted-foreground/70"
+                    )}>
                       Power
                     </span>
                     <div className="relative mb-1">
-                      <Zap className="w-8 h-8 text-primary/20" />
+                      <Zap className={cn("w-8 h-8", isDocked ? "text-primary/30" : "text-primary/20")} />
                       <motion.div
                         className="absolute inset-0 flex items-center justify-center"
                         animate={!isLoading && (stats?.rangeBased.powerTotal ?? 0) > 0 ? {
@@ -302,28 +359,43 @@ export function HeroRibbon({
                       </motion.div>
                     </div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-black font-mono text-foreground">
+                      <span className={cn(
+                        "text-2xl font-black font-mono",
+                        isDocked ? "text-white" : "text-foreground"
+                      )}>
                         {isLoading ? "—" : (stats?.rangeBased.powerTotal ?? 0).toLocaleString()}
                       </span>
                     </div>
                   </div>
 
                   {/* Active Time (range-based) - Time display */}
-                  <div className="flex flex-col items-center md:border-r border-black/5 dark:border-white/5 md:px-4">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-2">
+                  <div className={cn(
+                    "flex flex-col items-center md:border-r md:px-4",
+                    isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
+                  )}>
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      isDocked ? "text-white/50" : "text-muted-foreground/70"
+                    )}>
                       Active Time
                     </span>
-                    <TimeDisplay seconds={stats?.rangeBased.activeTimeSeconds ?? 0} isLoading={isLoading} />
+                    <TimeDisplay seconds={stats?.rangeBased.activeTimeSeconds ?? 0} isLoading={isLoading} isDocked={isDocked} />
                   </div>
 
                   {/* Activities (range-based) - Bar visualization */}
                   <div className="flex flex-col items-center md:pl-4">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 mb-2">
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      isDocked ? "text-white/50" : "text-muted-foreground/70"
+                    )}>
                       Activities
                     </span>
-                    <ActivityBars count={stats?.rangeBased.activitiesCount ?? 0} isLoading={isLoading} />
+                    <ActivityBars count={stats?.rangeBased.activitiesCount ?? 0} isLoading={isLoading} isDocked={isDocked} />
                     <div className="flex items-baseline gap-1 mt-2">
-                      <span className="text-2xl font-black font-mono text-foreground">
+                      <span className={cn(
+                        "text-2xl font-black font-mono",
+                        isDocked ? "text-white" : "text-foreground"
+                      )}>
                         {isLoading ? "—" : stats?.rangeBased.activitiesCount ?? 0}
                       </span>
                     </div>
@@ -352,7 +424,7 @@ function isValidRange(range: string): range is RibbonRange {
 
 // StatValue removed - using inline font-mono styles instead
 
-function StreakDots({ streak, isLoading }: { streak: number; isLoading?: boolean }) {
+function StreakDots({ streak, isLoading, isDocked }: { streak: number; isLoading?: boolean; isDocked?: boolean }) {
   const days = Array.from({ length: 7 }, (_, i) => i < streak)
 
   return (
@@ -366,10 +438,10 @@ function StreakDots({ streak, isLoading }: { streak: number; isLoading?: boolean
           className={cn(
             "w-2.5 h-2.5 rounded-full transition-colors",
             isLoading
-              ? "bg-gray-200 dark:bg-gray-700"
+              ? isDocked ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700"
               : isActive
                 ? "bg-gradient-to-r from-orange-400 to-red-500 shadow-[0_0_6px_rgba(249,115,22,0.5)]"
-                : "bg-gray-200 dark:bg-gray-700"
+                : isDocked ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700"
           )}
         />
       ))}
@@ -377,7 +449,7 @@ function StreakDots({ streak, isLoading }: { streak: number; isLoading?: boolean
   )
 }
 
-function TimeDisplay({ seconds, isLoading }: { seconds: number; isLoading?: boolean }) {
+function TimeDisplay({ seconds, isLoading, isDocked }: { seconds: number; isLoading?: boolean; isDocked?: boolean }) {
   const totalMinutes = Math.round(seconds / 60)
   const hours = Math.floor(totalMinutes / 60)
   const mins = totalMinutes % 60
@@ -385,7 +457,7 @@ function TimeDisplay({ seconds, isLoading }: { seconds: number; isLoading?: bool
   return (
     <div className="flex flex-col items-center">
       <div className="relative mb-1">
-        <Clock className="w-8 h-8 text-primary/20" />
+        <Clock className={cn("w-8 h-8", isDocked ? "text-primary/30" : "text-primary/20")} />
         <motion.div
           initial={{ rotate: 0 }}
           animate={{ rotate: isLoading ? 0 : 360 }}
@@ -397,18 +469,18 @@ function TimeDisplay({ seconds, isLoading }: { seconds: number; isLoading?: bool
       </div>
       <div className="flex items-baseline gap-0.5">
         {isLoading ? (
-          <span className="text-2xl font-black font-mono text-foreground">—</span>
+          <span className={cn("text-2xl font-black font-mono", isDocked ? "text-white" : "text-foreground")}>—</span>
         ) : hours > 0 ? (
           <>
-            <span className="text-2xl font-black font-mono text-foreground">{hours}</span>
-            <span className="text-[10px] uppercase text-muted-foreground">h</span>
-            <span className="text-lg font-black font-mono text-foreground">{mins}</span>
-            <span className="text-[10px] uppercase text-muted-foreground">m</span>
+            <span className={cn("text-2xl font-black font-mono", isDocked ? "text-white" : "text-foreground")}>{hours}</span>
+            <span className={cn("text-[10px] uppercase", isDocked ? "text-white/50" : "text-muted-foreground")}>h</span>
+            <span className={cn("text-lg font-black font-mono", isDocked ? "text-white" : "text-foreground")}>{mins}</span>
+            <span className={cn("text-[10px] uppercase", isDocked ? "text-white/50" : "text-muted-foreground")}>m</span>
           </>
         ) : (
           <>
-            <span className="text-2xl font-black font-mono text-foreground">{mins}</span>
-            <span className="text-[10px] uppercase text-muted-foreground">min</span>
+            <span className={cn("text-2xl font-black font-mono", isDocked ? "text-white" : "text-foreground")}>{mins}</span>
+            <span className={cn("text-[10px] uppercase", isDocked ? "text-white/50" : "text-muted-foreground")}>min</span>
           </>
         )}
       </div>
@@ -416,7 +488,7 @@ function TimeDisplay({ seconds, isLoading }: { seconds: number; isLoading?: bool
   )
 }
 
-function ActivityBars({ count, isLoading }: { count: number; isLoading?: boolean }) {
+function ActivityBars({ count, isLoading, isDocked }: { count: number; isLoading?: boolean; isDocked?: boolean }) {
   const maxBars = 7
   const filledBars = Math.min(count, maxBars)
 
@@ -435,7 +507,7 @@ function ActivityBars({ count, isLoading }: { count: number; isLoading?: boolean
               "w-1.5 rounded-full",
               isFilled
                 ? "bg-gradient-to-t from-primary/60 to-primary"
-                : "bg-gray-200 dark:bg-gray-700"
+                : isDocked ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700"
             )}
           />
         )

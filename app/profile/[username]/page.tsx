@@ -290,7 +290,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   return (
     <main className="min-h-screen bg-background pb-20 md:pb-0">
-      {/* Full-Width Hero Header - SAME as Home */}
+      {/* Full-Width Hero Header - SAME as Home, with docked ribbon */}
       <div className="px-4 md:px-6 pt-4">
         <ProfileHeroBanner
           isOwnProfile={isCurrentUser}
@@ -310,14 +310,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             followers: user._count.followers,
             following: user._count.following,
           }}
+          bottomDock={
+            <Suspense fallback={<RibbonSkeleton />}>
+              <HeroRibbon defaultRange="all" context="profile" variant="docked" />
+            </Suspense>
+          }
         />
-      </div>
-
-      {/* Profile Ribbon - Lifetime stats by default (switchable to weekly/monthly/yearly) */}
-      <div className="mt-4">
-        <Suspense fallback={<RibbonSkeleton />}>
-          <HeroRibbon defaultRange="all" context="profile" />
-        </Suspense>
       </div>
 
       {/* Main Content Grid: 12 columns */}
@@ -360,20 +358,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
 function RibbonSkeleton() {
   return (
-    <div className="relative z-20 -mt-6 px-4 md:px-6">
-      <div className="mx-auto max-w-5xl">
-        <div className="rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-2xl p-4 md:p-5">
-          <div className="flex justify-center gap-2 mb-4">
-            <Skeleton className="h-8 w-64" />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-        </div>
+    <div className="border-t border-white/10 bg-black/35 backdrop-blur-md p-4 md:p-5">
+      <div className="flex justify-center gap-2 mb-4">
+        <Skeleton className="h-8 w-64 bg-white/10" />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Skeleton className="h-24 w-full bg-white/10" />
+        <Skeleton className="h-24 w-full bg-white/10" />
+        <Skeleton className="h-24 w-full bg-white/10" />
+        <Skeleton className="h-24 w-full bg-white/10" />
+        <Skeleton className="h-24 w-full bg-white/10" />
       </div>
     </div>
   )

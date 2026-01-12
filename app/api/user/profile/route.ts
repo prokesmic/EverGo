@@ -25,6 +25,7 @@ export async function PATCH(req: NextRequest) {
       gender,
       avatarUrl,
       coverPhotoUrl,
+      primarySportId,
     } = body
 
     // Find current user
@@ -66,6 +67,10 @@ export async function PATCH(req: NextRequest) {
         ...(gender !== undefined && { gender }),
         ...(avatarUrl !== undefined && { avatarUrl }),
         ...(coverPhotoUrl !== undefined && { coverPhotoUrl }),
+        // Handle primarySportId - empty string means clear, otherwise set
+        ...(primarySportId !== undefined && {
+          primarySportId: primarySportId === "" ? null : primarySportId,
+        }),
       },
       select: {
         id: true,
@@ -82,6 +87,7 @@ export async function PATCH(req: NextRequest) {
         cityId: true,
         cityName: true,
         gender: true,
+        primarySportId: true,
       },
     })
 

@@ -35,6 +35,8 @@ interface HomeHeroBannerProps {
   }
   /** Sport Index for glow effect threshold */
   sportIndex?: number
+  /** Bottom dock slot (e.g., HeroRibbon) - renders inside hero at bottom */
+  bottomDock?: React.ReactNode
 }
 
 export function HomeHeroBanner({
@@ -42,6 +44,7 @@ export function HomeHeroBanner({
   primarySport,
   stats,
   sportIndex = 0,
+  bottomDock,
 }: HomeHeroBannerProps) {
   const joinDate = new Date(user.createdAt)
   const joinMonthYear = joinDate.toLocaleDateString('en-US', {
@@ -78,6 +81,7 @@ export function HomeHeroBanner({
         imageSrc={heroImageSrc}
         data-testid="home-hero"
         glowColor={glowColor}
+        bottomDock={bottomDock}
         topRight={
           <div className="flex items-center gap-2">
             <Link href="/gauntlets/new">

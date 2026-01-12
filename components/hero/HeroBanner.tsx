@@ -12,9 +12,11 @@ import { motion, useScroll, useTransform } from "framer-motion"
 // Using the SAME default image as Profile (guaranteed to work on prod)
 export const DEFAULT_HERO_BANNER = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1920&q=80"
 
-// SINGLE SOURCE OF TRUTH for hero banner height
-// Change this value to adjust height across all hero banners
-export const HERO_HEIGHT_CLASS = "h-[220px] md:h-[260px] lg:h-[280px]"
+// SINGLE SOURCE OF TRUTH for hero banner height (increased to accommodate dock)
+export const HERO_HEIGHT_CLASS = "h-[320px] md:h-[380px] lg:h-[420px]"
+
+// Height reserved for the docked ribbon at bottom
+export const DOCK_HEIGHT = 120
 
 interface HeroBannerProps {
   /** Image source URL. Falls back to DEFAULT_HERO_BANNER if empty/null */
@@ -23,6 +25,8 @@ interface HeroBannerProps {
   children?: ReactNode
   /** Optional top-right slot (e.g., Edit button) */
   topRight?: ReactNode
+  /** Optional bottom dock slot (e.g., HeroRibbon) - renders inside hero at bottom */
+  bottomDock?: ReactNode
   /** Height class - uses HERO_HEIGHT_CLASS by default (single source of truth) */
   heightClass?: string
   /** Additional classes for the outer section */
@@ -41,6 +45,7 @@ export function HeroBanner({
   imageSrc,
   children,
   topRight,
+  bottomDock,
   heightClass = HERO_HEIGHT_CLASS,
   className,
   alt = "Hero banner",
@@ -107,9 +112,21 @@ export function HeroBanner({
           <div className="absolute right-4 top-4 z-20">{topRight}</div>
         )}
 
-        {/* Main content slot - positioned inside the hero */}
+        {/* Main content slot - positioned inside the hero, with bottom padding for dock */}
         {children && (
-          <div className="absolute inset-0 z-10">{children}</div>
+          <div
+            className="absolute inset-0 z-10"
+            style={{ paddingBottom: bottomDock ? DOCK_HEIGHT : 0 }}
+          >
+            {children}
+          </div>
+        )}
+
+        {/* Bottom dock slot - pinned to bottom inside hero */}
+        {bottomDock && (
+          <div className="absolute inset-x-0 bottom-0 z-20">
+            {bottomDock}
+          </div>
         )}
       </div>
     </section>

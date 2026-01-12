@@ -36,6 +36,9 @@ type ProfileHeroBannerProps = {
     followers: number
     following: number
   }
+
+  /** Bottom dock slot (e.g., HeroRibbon) - renders inside hero at bottom */
+  bottomDock?: React.ReactNode
 }
 
 export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
@@ -53,6 +56,7 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
     avatarUrl,
     bannerUrl,
     counts,
+    bottomDock,
   } = props
 
   // Resolve hero image using single source of truth (handles placeholder detection)
@@ -82,6 +86,7 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
         imageSrc={heroImageSrc}
         data-testid="profile-hero"
         glowColor={glowColor}
+        bottomDock={bottomDock}
         topRight={
           isOwnProfile ? (
             <Link href={onEditHref}>

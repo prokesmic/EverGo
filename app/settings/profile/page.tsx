@@ -13,20 +13,33 @@ export default async function SettingsProfilePage() {
     redirect("/login")
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    select: {
-      id: true,
-      displayName: true,
-      username: true,
-      email: true,
-      bio: true,
-      avatarUrl: true,
-      coverPhotoUrl: true,
-      city: true,
-      country: true,
-    },
-  })
+  // Fetch user data and all available sports in parallel
+  const [user, sports] = await Promise.all([
+    prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: {
+        id: true,
+        displayName: true,
+        username: true,
+        email: true,
+        bio: true,
+        avatarUrl: true,
+        coverPhotoUrl: true,
+        city: true,
+        country: true,
+        primarySportId: true,
+      },
+    }),
+    prisma.sport.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        icon: true,
+      },
+      orderBy: { name: "asc" },
+    }),
+  ])
 
   if (!user) {
     redirect("/login")
@@ -45,7 +58,9 @@ export default async function SettingsProfilePage() {
             country: user.country ?? "",
             avatarUrl: user.avatarUrl ?? "",
             coverPhotoUrl: user.coverPhotoUrl ?? "",
+            primarySportId: user.primarySportId ?? "",
           }}
+          sports={sports}
         />
       </div>
     </main>
