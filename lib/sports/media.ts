@@ -328,10 +328,31 @@ const SPORT_ALIASES: Record<string, string> = {
   "american football": "football",
   "beach volleyball": "volleyball",
 
+  // Winter sports
+  "alpine skiing": "skiing",
+  "alpine-skiing": "skiing",
+  "downhill skiing": "skiing",
+  "downhill-skiing": "skiing",
+  "backcountry skiing": "skiing",
+  "backcountry-skiing": "skiing",
+  "ski": "skiing",
+  "cross-country skiing": "skiing",
+  "cross country skiing": "skiing",
+  "nordic skiing": "skiing",
+  "freestyle skiing": "skiing",
+  "freestyle-skiing": "skiing",
+  "telemark": "skiing",
+  "telemark skiing": "skiing",
+  "ice skating": "skiing",
+  "ice-skating": "skiing",
+  "figure skating": "skiing",
+  "speed skating": "skiing",
+  "snowboard": "snowboarding",
+  "snow board": "snowboarding",
+  "snow-board": "snowboarding",
+
   // Other
   "rock climbing": "climbing",
-  "ice skating": "skiing",
-  "cross-country skiing": "skiing",
 }
 
 /**
