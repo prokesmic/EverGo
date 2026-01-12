@@ -186,7 +186,7 @@ export function HeroRibbon({
                   // Docked variant: dark glass inside hero - rounded bottom to match hero
                   "rounded-b-3xl",
                   "border-t border-white/10",
-                  "bg-black/50 backdrop-blur-md",
+                  "bg-black/30 backdrop-blur-md",
                 ]
               : [
                   // Floating variant: light glass card
