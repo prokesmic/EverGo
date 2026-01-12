@@ -185,12 +185,12 @@ export function HeroRibbon({
                 ]
           )}
         >
-          {/* Range Switcher Header - More compact Aurora style */}
+          {/* Range Switcher Header - Compact Aurora style */}
           <div className={cn(
-            "px-4 md:px-5 pt-3 pb-2 border-b",
+            "px-3 md:px-4 pt-2 pb-1.5 border-b",
             isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
           )}>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               {/* Segmented Control - Pill style */}
               <nav
                 className={cn(
@@ -236,7 +236,7 @@ export function HeroRibbon({
           </div>
 
           {/* Stats Grid */}
-          <div className="p-4 md:p-5">
+          <div className="px-3 py-2 md:px-4 md:py-2.5">
             <AnimatePresence mode="wait">
               {error ? (
                 <motion.div
@@ -244,7 +244,7 @@ export function HeroRibbon({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className={cn("text-center py-8", isDocked ? "text-white/60" : "text-muted-foreground")}
+                  className={cn("text-center py-4", isDocked ? "text-white/60" : "text-muted-foreground")}
                 >
                   {error}
                 </motion.div>
@@ -255,26 +255,26 @@ export function HeroRibbon({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0.5 }}
                   transition={{ duration: 0.2 }}
-                  className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-0"
+                  className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-0"
                 >
-                  {/* Sport Index (always current) - Premium Bento Style */}
+                  {/* Sport Index (always current) - Compact Bento Style */}
                   <div className={cn(
-                    "flex flex-col items-center md:border-r md:pr-4",
+                    "flex flex-col items-center md:border-r md:pr-3",
                     isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
                   )}>
                     <span className={cn(
-                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      "text-[9px] font-bold uppercase tracking-widest mb-1",
                       isDocked ? "text-white/50" : "text-muted-foreground/70"
                     )}>
                       Sport Index
                     </span>
-                    <div className="relative flex items-center gap-3">
+                    <div className="relative flex items-center gap-2">
                       <div className="text-center">
-                        <span className="text-3xl md:text-4xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-red-500 to-rose-600">
+                        <span className="text-2xl md:text-3xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-red-500 to-rose-600">
                           {isLoading ? "—" : stats?.always.sportIndex ?? 0}
                         </span>
                         <span className={cn(
-                          "text-base font-mono",
+                          "text-sm font-mono",
                           isDocked ? "text-white/40" : "text-muted-foreground/50"
                         )}>/1000</span>
                       </div>
@@ -284,8 +284,8 @@ export function HeroRibbon({
                         className="hidden sm:block"
                       />
                     </div>
-                    <div className={cn("flex items-center gap-1 text-xs font-mono font-medium mt-1", trendClass)}>
-                      <TrendIcon className="w-3 h-3" />
+                    <div className={cn("flex items-center gap-1 text-[10px] font-mono font-medium", trendClass)}>
+                      <TrendIcon className="w-2.5 h-2.5" />
                       {(stats?.always.sportIndexDelta ?? 0) > 0 ? "+" : ""}
                       {stats?.always.sportIndexDelta ?? 0}
                     </div>
@@ -293,17 +293,17 @@ export function HeroRibbon({
 
                   {/* Day Streak (always current) - Animated Flame */}
                   <div className={cn(
-                    "flex flex-col items-center md:border-r md:px-4 relative overflow-hidden",
+                    "flex flex-col items-center md:border-r md:px-3 relative overflow-hidden",
                     isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
                   )}>
                     <span className={cn(
-                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      "text-[9px] font-bold uppercase tracking-widest mb-1",
                       isDocked ? "text-white/50" : "text-muted-foreground/70"
                     )}>
                       Streak
                     </span>
                     <StreakDots streak={stats?.always.currentStreakDays ?? 0} isLoading={isLoading} isDocked={isDocked} />
-                    <div className="flex items-center gap-1.5 mt-2">
+                    <div className="flex items-center gap-1 mt-1">
                       <motion.div
                         animate={(stats?.always.currentStreakDays ?? 0) > 0 ? {
                           scale: [1, 1.1, 1],
@@ -312,42 +312,42 @@ export function HeroRibbon({
                         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                       >
                         <Flame className={cn(
-                          "w-5 h-5",
+                          "w-4 h-4",
                           (stats?.always.currentStreakDays ?? 0) > 0
                             ? "text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]"
                             : isDocked ? "text-white/30" : "text-muted-foreground/40"
                         )} />
                       </motion.div>
                       <span className={cn(
-                        "text-2xl font-black font-mono",
+                        "text-xl font-black font-mono",
                         isDocked ? "text-white" : "text-foreground"
                       )}>
                         {isLoading ? "—" : stats?.always.currentStreakDays ?? 0}
                       </span>
                       <span className={cn(
-                        "text-[10px] uppercase tracking-wider",
+                        "text-[9px] uppercase tracking-wider",
                         isDocked ? "text-white/50" : "text-muted-foreground"
                       )}>days</span>
                     </div>
                     {/* Subtle flame glow background */}
                     {(stats?.always.currentStreakDays ?? 0) > 0 && (
-                      <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-20 h-20 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
+                      <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
                     )}
                   </div>
 
                   {/* Power (range-based) - Bold mono display */}
                   <div className={cn(
-                    "flex flex-col items-center md:border-r md:px-4",
+                    "flex flex-col items-center md:border-r md:px-3",
                     isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
                   )}>
                     <span className={cn(
-                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      "text-[9px] font-bold uppercase tracking-widest mb-1",
                       isDocked ? "text-white/50" : "text-muted-foreground/70"
                     )}>
                       Power
                     </span>
-                    <div className="relative mb-1">
-                      <Zap className={cn("w-8 h-8", isDocked ? "text-primary/30" : "text-primary/20")} />
+                    <div className="relative mb-0.5">
+                      <Zap className={cn("w-6 h-6", isDocked ? "text-primary/30" : "text-primary/20")} />
                       <motion.div
                         className="absolute inset-0 flex items-center justify-center"
                         animate={!isLoading && (stats?.rangeBased.powerTotal ?? 0) > 0 ? {
@@ -355,12 +355,12 @@ export function HeroRibbon({
                         } : {}}
                         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                       >
-                        <Zap className="w-5 h-5 text-primary drop-shadow-[0_0_4px_rgba(249,115,22,0.4)]" />
+                        <Zap className="w-4 h-4 text-primary drop-shadow-[0_0_4px_rgba(249,115,22,0.4)]" />
                       </motion.div>
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className={cn(
-                        "text-2xl font-black font-mono",
+                        "text-xl font-black font-mono",
                         isDocked ? "text-white" : "text-foreground"
                       )}>
                         {isLoading ? "—" : (stats?.rangeBased.powerTotal ?? 0).toLocaleString()}
@@ -370,11 +370,11 @@ export function HeroRibbon({
 
                   {/* Active Time (range-based) - Time display */}
                   <div className={cn(
-                    "flex flex-col items-center md:border-r md:px-4",
+                    "flex flex-col items-center md:border-r md:px-3",
                     isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
                   )}>
                     <span className={cn(
-                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      "text-[9px] font-bold uppercase tracking-widest mb-1",
                       isDocked ? "text-white/50" : "text-muted-foreground/70"
                     )}>
                       Active Time
@@ -383,17 +383,17 @@ export function HeroRibbon({
                   </div>
 
                   {/* Activities (range-based) - Bar visualization */}
-                  <div className="flex flex-col items-center md:pl-4">
+                  <div className="flex flex-col items-center md:pl-3">
                     <span className={cn(
-                      "text-[10px] font-bold uppercase tracking-widest mb-2",
+                      "text-[9px] font-bold uppercase tracking-widest mb-1",
                       isDocked ? "text-white/50" : "text-muted-foreground/70"
                     )}>
                       Activities
                     </span>
                     <ActivityBars count={stats?.rangeBased.activitiesCount ?? 0} isLoading={isLoading} isDocked={isDocked} />
-                    <div className="flex items-baseline gap-1 mt-2">
+                    <div className="flex items-baseline gap-1 mt-1">
                       <span className={cn(
-                        "text-2xl font-black font-mono",
+                        "text-xl font-black font-mono",
                         isDocked ? "text-white" : "text-foreground"
                       )}>
                         {isLoading ? "—" : stats?.rangeBased.activitiesCount ?? 0}
@@ -428,7 +428,7 @@ function StreakDots({ streak, isLoading, isDocked }: { streak: number; isLoading
   const days = Array.from({ length: 7 }, (_, i) => i < streak)
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-0.5">
       {days.map((isActive, i) => (
         <motion.div
           key={i}
@@ -436,11 +436,11 @@ function StreakDots({ streak, isLoading, isDocked }: { streak: number; isLoading
           animate={{ scale: 1 }}
           transition={{ delay: isLoading ? 0 : 0.1 + i * 0.05 }}
           className={cn(
-            "w-2.5 h-2.5 rounded-full transition-colors",
+            "w-2 h-2 rounded-full transition-colors",
             isLoading
               ? isDocked ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700"
               : isActive
-                ? "bg-gradient-to-r from-orange-400 to-red-500 shadow-[0_0_6px_rgba(249,115,22,0.5)]"
+                ? "bg-gradient-to-r from-orange-400 to-red-500 shadow-[0_0_4px_rgba(249,115,22,0.5)]"
                 : isDocked ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700"
           )}
         />
@@ -456,31 +456,31 @@ function TimeDisplay({ seconds, isLoading, isDocked }: { seconds: number; isLoad
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative mb-1">
-        <Clock className={cn("w-8 h-8", isDocked ? "text-primary/30" : "text-primary/20")} />
+      <div className="relative mb-0.5">
+        <Clock className={cn("w-6 h-6", isDocked ? "text-primary/30" : "text-primary/20")} />
         <motion.div
           initial={{ rotate: 0 }}
           animate={{ rotate: isLoading ? 0 : 360 }}
           transition={{ duration: 2, ease: "easeOut", delay: 0.3 }}
           className="absolute inset-0 flex items-center justify-center"
         >
-          <Clock className="w-5 h-5 text-primary" />
+          <Clock className="w-4 h-4 text-primary" />
         </motion.div>
       </div>
       <div className="flex items-baseline gap-0.5">
         {isLoading ? (
-          <span className={cn("text-2xl font-black font-mono", isDocked ? "text-white" : "text-foreground")}>—</span>
+          <span className={cn("text-xl font-black font-mono", isDocked ? "text-white" : "text-foreground")}>—</span>
         ) : hours > 0 ? (
           <>
-            <span className={cn("text-2xl font-black font-mono", isDocked ? "text-white" : "text-foreground")}>{hours}</span>
-            <span className={cn("text-[10px] uppercase", isDocked ? "text-white/50" : "text-muted-foreground")}>h</span>
-            <span className={cn("text-lg font-black font-mono", isDocked ? "text-white" : "text-foreground")}>{mins}</span>
-            <span className={cn("text-[10px] uppercase", isDocked ? "text-white/50" : "text-muted-foreground")}>m</span>
+            <span className={cn("text-xl font-black font-mono", isDocked ? "text-white" : "text-foreground")}>{hours}</span>
+            <span className={cn("text-[9px] uppercase", isDocked ? "text-white/50" : "text-muted-foreground")}>h</span>
+            <span className={cn("text-base font-black font-mono", isDocked ? "text-white" : "text-foreground")}>{mins}</span>
+            <span className={cn("text-[9px] uppercase", isDocked ? "text-white/50" : "text-muted-foreground")}>m</span>
           </>
         ) : (
           <>
-            <span className={cn("text-2xl font-black font-mono", isDocked ? "text-white" : "text-foreground")}>{mins}</span>
-            <span className={cn("text-[10px] uppercase", isDocked ? "text-white/50" : "text-muted-foreground")}>min</span>
+            <span className={cn("text-xl font-black font-mono", isDocked ? "text-white" : "text-foreground")}>{mins}</span>
+            <span className={cn("text-[9px] uppercase", isDocked ? "text-white/50" : "text-muted-foreground")}>min</span>
           </>
         )}
       </div>
@@ -493,7 +493,7 @@ function ActivityBars({ count, isLoading, isDocked }: { count: number; isLoading
   const filledBars = Math.min(count, maxBars)
 
   return (
-    <div className="flex items-end gap-0.5 h-8">
+    <div className="flex items-end gap-0.5 h-6">
       {Array.from({ length: maxBars }, (_, i) => {
         const isFilled = !isLoading && i < filledBars
         const height = isFilled ? 60 + (i * 5) : 20
@@ -504,7 +504,7 @@ function ActivityBars({ count, isLoading, isDocked }: { count: number; isLoading
             animate={{ height: `${height}%` }}
             transition={{ delay: isLoading ? 0 : 0.2 + i * 0.05, duration: 0.3 }}
             className={cn(
-              "w-1.5 rounded-full",
+              "w-1 rounded-full",
               isFilled
                 ? "bg-gradient-to-t from-primary/60 to-primary"
                 : isDocked ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700"

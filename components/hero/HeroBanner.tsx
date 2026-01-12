@@ -15,8 +15,8 @@ export const DEFAULT_HERO_BANNER = "https://images.unsplash.com/photo-1571019614
 // SINGLE SOURCE OF TRUTH for hero banner height (increased to accommodate dock)
 export const HERO_HEIGHT_CLASS = "h-[320px] md:h-[380px] lg:h-[420px]"
 
-// Height reserved for the docked ribbon at bottom
-export const DOCK_HEIGHT = 120
+// Height reserved for the docked ribbon at bottom (compact version)
+export const DOCK_HEIGHT = 88
 
 interface HeroBannerProps {
   /** Image source URL. Falls back to DEFAULT_HERO_BANNER if empty/null */
