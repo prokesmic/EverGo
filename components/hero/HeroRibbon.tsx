@@ -3,7 +3,7 @@
 /**
  * HeroRibbon - Sport-Aware Unified ribbon with period switcher
  *
- * V7: Dynamic metrics based on user's primary sport.
+ * V8: Fixed height dock that never causes layout shift.
  *
  * Features:
  * - Glassmorphism design that integrates with hero
@@ -11,6 +11,12 @@
  * - Sport-aware metrics that change based on primary sport
  * - Tile #1 is ALWAYS Global Rank
  * - URL-synced range state (?range=week|month|year|all)
+ *
+ * LAYOUT STABILITY:
+ * - Fixed height (h-[100px]) for docked variant
+ * - No entrance animations that affect position
+ * - Header always rendered (no conditional rows)
+ * - Values change but structure stays identical
  */
 
 import { useCallback, useEffect, useState, useTransition } from "react"
@@ -31,7 +37,6 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
 import type { RibbonRange, RibbonMetricKey, MetricFormat } from "@/lib/ribbon/ribbonConfig"
 
@@ -68,6 +73,9 @@ interface HeroRibbonProps {
 // =============================================================================
 // CONSTANTS
 // =============================================================================
+
+// Fixed height for docked ribbon - must match exactly in SSR and client
+const DOCKED_HEIGHT = "h-[100px]"
 
 const RANGE_OPTIONS: { value: RibbonRange; label: string; caption: (createdAt?: Date) => string }[] = [
   { value: "week", label: "Week", caption: () => "Last 7 days" },
@@ -163,6 +171,9 @@ export function HeroRibbon({
     viewModel?.userCreatedAt ? new Date(viewModel.userCreatedAt) : undefined
   ) ?? ""
 
+  // Get sport name with fallback for loading state
+  const sportName = viewModel?.sportName ?? ""
+
   return (
     <div className={cn(
       isDocked
@@ -174,20 +185,21 @@ export function HeroRibbon({
           ? "" // Docked: full width inside hero
           : "mx-auto max-w-5xl" // Floating: centered with max width
       )}>
-        {/* Aurora Glass Ribbon - Premium frosted glass effect */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
+        {/*
+          FIXED HEIGHT RIBBON - NO LAYOUT SHIFT
+          Height is locked to DOCKED_HEIGHT for docked variant.
+          No entrance animations that affect position/size.
+        */}
+        <div
           className={cn(
             "overflow-hidden",
             isDocked
               ? [
-                  // Docked variant: dark glass inside hero - rounded bottom to match hero
+                  // Docked variant: dark glass inside hero
                   "rounded-b-3xl",
                   "border-t border-white/10",
                   "bg-black/30 backdrop-blur-md",
-                  "min-h-[100px]", // Fixed height to prevent layout shift
+                  DOCKED_HEIGHT, // Fixed height - critical for no layout shift
                 ]
               : [
                   // Floating variant: light glass card
@@ -200,12 +212,12 @@ export function HeroRibbon({
                 ]
           )}
         >
-          {/* Range Switcher Header - Compact Aurora style */}
+          {/* Range Switcher Header - ALWAYS rendered, fixed height */}
           <div className={cn(
-            "px-3 md:px-4 pt-2 pb-1.5 border-b",
+            "h-[32px] px-3 md:px-4 flex items-center border-b",
             isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
           )}>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center justify-between w-full">
               {/* Segmented Control - Pill style */}
               <nav
                 className={cn(
@@ -223,7 +235,7 @@ export function HeroRibbon({
                     aria-current={currentRange === option.value ? "true" : undefined}
                     onClick={() => handleRangeChange(option.value)}
                     className={cn(
-                      "px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full transition-all duration-200",
+                      "px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full transition-colors duration-200",
                       "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                       currentRange === option.value
                         ? "bg-primary text-primary-foreground shadow-md"
@@ -237,64 +249,49 @@ export function HeroRibbon({
                 ))}
               </nav>
 
-              {/* Sport Badge + Caption */}
-              <div className="flex items-center gap-2 font-mono text-[10px] tracking-wider min-h-[20px]">
-                {viewModel?.sportName && (
-                  <span className={cn(
-                    "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase",
-                    isDocked ? "bg-white/10 text-white/80" : "bg-primary/10 text-primary"
-                  )}>
-                    {viewModel.sportName}
-                  </span>
-                )}
-                <Calendar className={cn("w-3 h-3", isDocked ? "text-white/50" : "text-muted-foreground/60")} />
-                <span className={cn("uppercase", isDocked ? "text-white/60" : "text-muted-foreground")}>
+              {/* Sport Badge + Caption - fixed height container */}
+              <div className="flex items-center gap-2 font-mono text-[10px] tracking-wider h-[20px]">
+                {/* Sport badge - reserve space even when empty */}
+                <span className={cn(
+                  "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase min-w-[60px] text-center",
+                  isDocked ? "bg-white/10 text-white/80" : "bg-primary/10 text-primary",
+                  !sportName && "opacity-0" // Invisible but takes space
+                )}>
+                  {sportName || "Sport"}
+                </span>
+                <Calendar className={cn("w-3 h-3 shrink-0", isDocked ? "text-white/50" : "text-muted-foreground/60")} />
+                <span className={cn("uppercase whitespace-nowrap", isDocked ? "text-white/60" : "text-muted-foreground")}>
                   {currentCaption}
                 </span>
                 {(isLoading || isPending) && (
-                  <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin shrink-0" />
                 )}
               </div>
             </div>
           </div>
 
-          {/* Dynamic Stats Grid */}
-          <div className="px-3 py-2 md:px-4 md:py-2.5">
-            <AnimatePresence mode="wait">
-              {error ? (
-                <motion.div
-                  key="error"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className={cn("text-center py-4", isDocked ? "text-white/60" : "text-muted-foreground")}
-                >
-                  {error}
-                </motion.div>
-              ) : (
-                <motion.div
-                  key={currentRange}
-                  initial={{ opacity: 0.5 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0.5 }}
-                  transition={{ duration: 0.2 }}
-                  className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-0"
-                >
-                  {(viewModel?.metrics ?? getPlaceholderMetrics()).map((metric, index) => (
-                    <MetricTile
-                      key={metric.key}
-                      metric={metric}
-                      isLoading={isLoading}
-                      isDocked={isDocked}
-                      isFirst={index === 0}
-                      isLast={index === 4}
-                    />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+          {/* Dynamic Stats Grid - fixed height */}
+          <div className="h-[68px] px-3 md:px-4 flex items-center">
+            {error ? (
+              <div className={cn("text-center w-full py-4", isDocked ? "text-white/60" : "text-muted-foreground")}>
+                {error}
+              </div>
+            ) : (
+              <div className="grid grid-cols-5 gap-0 w-full">
+                {(viewModel?.metrics ?? getPlaceholderMetrics()).map((metric, index) => (
+                  <MetricTile
+                    key={metric.key}
+                    metric={metric}
+                    isLoading={isLoading}
+                    isDocked={isDocked}
+                    isFirst={index === 0}
+                    isLast={index === 4}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )
@@ -320,60 +317,34 @@ function MetricTile({ metric, isLoading, isDocked, isFirst, isLast }: MetricTile
 
   return (
     <div className={cn(
-      "flex flex-col items-center relative overflow-hidden",
-      !isLast && "md:border-r md:pr-3",
-      !isFirst && "md:pl-3",
+      "flex flex-col items-center justify-center h-full",
+      !isLast && "border-r",
       isDocked ? "border-white/10" : "border-black/5 dark:border-white/5"
     )}>
-      {/* Label */}
+      {/* Label - fixed height */}
       <span className={cn(
-        "text-[9px] font-bold uppercase tracking-widest mb-1",
+        "text-[9px] font-bold uppercase tracking-widest mb-1 h-[12px]",
         isDocked ? "text-white/50" : "text-muted-foreground/70"
       )}>
         {metric.label}
       </span>
 
-      {/* Icon + Value */}
-      <div className="relative flex items-center gap-1.5">
-        {/* Animated icon for special metrics */}
-        {isStreak && (
-          <motion.div
-            animate={!isLoading && (metric.value as number) > 0 ? {
-              scale: [1, 1.1, 1],
-              opacity: [1, 0.8, 1],
-            } : {}}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Icon className={cn(
-              "w-4 h-4",
-              (metric.value as number) > 0
-                ? "text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]"
-                : isDocked ? "text-white/30" : "text-muted-foreground/40"
-            )} />
-          </motion.div>
-        )}
-
-        {isPower && (
-          <motion.div
-            animate={!isLoading && (metric.value as number) > 0 ? {
-              scale: [1, 1.15, 1],
-            } : {}}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Icon className="w-4 h-4 text-primary drop-shadow-[0_0_4px_rgba(249,115,22,0.4)]" />
-          </motion.div>
-        )}
-
-        {!isStreak && !isPower && !isGlobalRank && (
+      {/* Icon + Value - fixed height */}
+      <div className="relative flex items-center gap-1.5 h-[24px]">
+        {/* Icon */}
+        {!isGlobalRank && (
           <Icon className={cn(
             "w-4 h-4",
-            isDocked ? "text-white/40" : "text-muted-foreground/50"
+            isStreak && (metric.value as number) > 0 && "text-orange-500",
+            isPower && "text-primary",
+            !isStreak && !isPower && (isDocked ? "text-white/40" : "text-muted-foreground/50")
           )} />
         )}
 
         {/* Value */}
         <span className={cn(
-          "text-xl font-black font-mono",
+          "text-xl font-black font-mono transition-opacity duration-200",
+          isLoading && "opacity-50",
           isGlobalRank && "text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500",
           !isGlobalRank && (isDocked ? "text-white" : "text-foreground")
         )}>
@@ -389,20 +360,14 @@ function MetricTile({ metric, isLoading, isDocked, isFirst, isLast }: MetricTile
         )}
       </div>
 
-      {/* Unit label if present */}
-      {metric.unit && !isGlobalRank && (
-        <span className={cn(
-          "text-[9px] uppercase tracking-wider mt-0.5",
-          isDocked ? "text-white/40" : "text-muted-foreground/50"
-        )}>
-          {metric.unit}
-        </span>
-      )}
-
-      {/* Subtle glow for streak */}
-      {isStreak && (metric.value as number) > 0 && (
-        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
-      )}
+      {/* Unit label - fixed height (only shown for metrics with units) */}
+      <span className={cn(
+        "text-[9px] uppercase tracking-wider mt-0.5 h-[12px]",
+        isDocked ? "text-white/40" : "text-muted-foreground/50",
+        (!metric.unit || isGlobalRank) && "opacity-0" // Invisible but takes space
+      )}>
+        {metric.unit || "—"}
+      </span>
     </div>
   )
 }

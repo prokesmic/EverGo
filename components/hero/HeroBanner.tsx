@@ -1,6 +1,9 @@
 // components/hero/HeroBanner.tsx
 // Stunning immersive hero banner with parallax effect
 // SOURCE OF TRUTH for all hero banners in the app
+//
+// LAYOUT: Uses flex column to prevent dock layout shift.
+// The dock is a real flex child at the bottom, not absolute positioned.
 
 "use client"
 
@@ -12,20 +15,18 @@ import { motion, useScroll, useTransform } from "framer-motion"
 // Using the SAME default image as Profile (guaranteed to work on prod)
 export const DEFAULT_HERO_BANNER = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1920&q=80"
 
-// SINGLE SOURCE OF TRUTH for hero banner height (balanced with docked ribbon)
+// SINGLE SOURCE OF TRUTH for hero banner height
+// This is the TOTAL height including the dock
 export const HERO_HEIGHT_CLASS = "h-[280px] md:h-[300px] lg:h-[320px]"
-
-// Height reserved for the docked ribbon at bottom (compact version)
-export const DOCK_HEIGHT = 100
 
 interface HeroBannerProps {
   /** Image source URL. Falls back to DEFAULT_HERO_BANNER if empty/null */
   imageSrc?: string | null
-  /** Content to render inside the hero (absolute positioned) */
+  /** Content to render inside the hero (fills available space above dock) */
   children?: ReactNode
   /** Optional top-right slot (e.g., Edit button) */
   topRight?: ReactNode
-  /** Optional bottom dock slot (e.g., HeroRibbon) - renders inside hero at bottom */
+  /** Optional bottom dock slot (e.g., HeroRibbon) - renders as flex child at bottom */
   bottomDock?: ReactNode
   /** Height class - uses HERO_HEIGHT_CLASS by default (single source of truth) */
   heightClass?: string
@@ -81,10 +82,15 @@ export function HeroBanner({
         className
       )}
     >
-      <div className={cn("relative w-full", heightClass)}>
-        {/* Background image with parallax */}
+      {/*
+        FLEX COLUMN LAYOUT - prevents dock layout shift
+        The dock is a real flex child, not absolute positioned
+      */}
+      <div className={cn("relative w-full flex flex-col", heightClass)}>
+
+        {/* ===== BACKGROUND LAYER (absolute, behind everything) ===== */}
         <motion.div
-          className="absolute inset-0 w-full h-[120%] -top-[10%]"
+          className="absolute inset-0 w-full h-[120%] -top-[10%] z-0"
           style={parallax ? { y, scale } : undefined}
         >
           <Image
@@ -99,32 +105,29 @@ export function HeroBanner({
         </motion.div>
 
         {/* Premium gradient overlay - bottom-up fade for immersion */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 z-[1]" />
 
         {/* Left-side gradient for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent z-[1]" />
 
         {/* Subtle vignette effect */}
-        <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.3)]" />
+        <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.3)] z-[1]" />
 
-        {/* Top-right slot (e.g., Edit Profile button) */}
+        {/* ===== FOREGROUND CONTENT (flex column) ===== */}
+
+        {/* Top-right slot (e.g., Edit Profile button) - absolute within flex container */}
         {topRight && (
           <div className="absolute right-4 top-4 z-20">{topRight}</div>
         )}
 
-        {/* Main content slot - positioned inside the hero, with bottom padding for dock */}
-        {children && (
-          <div
-            className="absolute inset-0 z-10"
-            style={{ paddingBottom: bottomDock ? DOCK_HEIGHT : 0 }}
-          >
-            {children}
-          </div>
-        )}
+        {/* Main content area - flex-1 takes remaining space above dock */}
+        <div className="relative z-10 flex-1 min-h-0">
+          {children}
+        </div>
 
-        {/* Bottom dock slot - pinned to bottom inside hero */}
+        {/* Bottom dock - shrink-0 means it keeps its natural height */}
         {bottomDock && (
-          <div className="absolute inset-x-0 bottom-0 z-20">
+          <div className="relative z-20 shrink-0">
             {bottomDock}
           </div>
         )}

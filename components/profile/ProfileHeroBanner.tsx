@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { HeroBanner } from "@/components/hero/HeroBanner"
 import { resolveHeroImage } from "@/lib/hero/resolveHeroImage"
 import { getSportThumbImage } from "@/lib/sports/media"
-import { motion } from "framer-motion"
 
 type ProfileHeroBannerProps = {
   isOwnProfile: boolean
@@ -103,16 +102,11 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
           ) : undefined
         }
       >
-        {/* Content directly on the hero */}
+        {/* Content directly on the hero - uses flex to fill available space */}
         <div className="h-full w-full flex flex-col justify-end pb-4 px-6 md:px-8">
           {/* Primary Sport Pill */}
           {primarySportLabel && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="mb-3 flex items-center gap-2"
-            >
+            <div className="mb-3 flex items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-md border border-white/20 px-4 py-2 text-sm font-medium text-white shadow-lg">
                 {sportThumb && (
                   <Image
@@ -125,16 +119,11 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
                 )}
                 {primarySportLabel}
               </span>
-            </motion.div>
+            </div>
           )}
 
           {/* Identity Row: Avatar + Name/Username */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="flex items-center gap-4"
-          >
+          <div className="flex items-center gap-4">
             {/* Avatar - Small, inline, inside hero */}
             <div className="shrink-0 relative h-14 w-14 md:h-16 md:w-16 overflow-hidden rounded-full border-2 border-white/30 shadow-xl">
               {avatarUrl ? (
@@ -153,15 +142,10 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
               </h1>
               <span className="text-sm text-white/70 font-light">{handleOrEmail}</span>
             </div>
-          </motion.div>
+          </div>
 
           {/* Location & Joined */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60 font-light"
-          >
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60 font-light">
             {locationLabel && (
               <span className="inline-flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
@@ -174,17 +158,12 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
                 {joinedLabel}
               </span>
             )}
-          </motion.div>
+          </div>
         </div>
       </HeroBanner>
 
       {/* Stats Strip - Outside hero, below banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="mt-4 px-4 md:px-6"
-      >
+      <div className="mt-4 px-4 md:px-6">
         <div className="inline-flex items-center rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm">
           <StatsStripItem value={counts.activities} label="Activities" href={profileHref} />
           <div className="w-px h-6 bg-border mx-4" />
@@ -192,7 +171,7 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
           <div className="w-px h-6 bg-border mx-4" />
           <StatsStripItem value={counts.following} label="Following" href={`${profileHref}?tab=following`} />
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }
