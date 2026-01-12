@@ -141,6 +141,9 @@ async function seedSports() {
 
     // ============ GENERAL ============
     { name: "All Sports", slug: "all-sports", icon: "🏅", category: "GENERAL", hasGpsTracking: false },
+
+    // ============ MULTISPORT (DEFAULT PRIMARY) ============
+    { name: "MultiSport", slug: "multisport", icon: "🎯", category: "GENERAL", hasGpsTracking: false },
   ]
 
   for (const sport of sports) {

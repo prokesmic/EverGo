@@ -38,6 +38,13 @@ export default async function SettingsProfilePage() {
         icon: true,
       },
       orderBy: { name: "asc" },
+    }).then((allSports) => {
+      // Sort MultiSport to the top, then alphabetically
+      return allSports.sort((a, b) => {
+        if (a.slug === "multisport") return -1
+        if (b.slug === "multisport") return 1
+        return a.name.localeCompare(b.name)
+      })
     }),
   ])
 

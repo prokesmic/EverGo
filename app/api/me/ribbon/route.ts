@@ -3,13 +3,16 @@
  *
  * Returns ribbon stats for the current user.
  * Supports range query param: week | month | year | all
+ *
+ * V7: Returns sport-aware metrics based on user's primary sport.
  */
 
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
-import { getRibbonStats, isValidRange, type RibbonRange } from "@/lib/stats/getRibbonStats"
+import { getRibbonViewModel, isValidRange } from "@/lib/ribbon/getRibbonViewModel"
+import type { RibbonRange } from "@/lib/ribbon/ribbonConfig"
 
 export const dynamic = "force-dynamic"
 
@@ -45,10 +48,10 @@ export async function GET(request: NextRequest) {
 
     const range: RibbonRange = rangeParam
 
-    // Fetch stats
-    const stats = await getRibbonStats(user.id, range)
+    // Fetch sport-aware ribbon view model
+    const viewModel = await getRibbonViewModel(user.id, range)
 
-    return NextResponse.json(stats)
+    return NextResponse.json(viewModel)
   } catch (error) {
     console.error("[API] /api/me/ribbon error:", error)
     return NextResponse.json(

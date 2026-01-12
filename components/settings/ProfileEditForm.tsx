@@ -158,7 +158,8 @@ export function ProfileEditForm({ initialData, sports }: ProfileEditFormProps) {
           <h2 className="text-lg font-semibold text-foreground">Primary Sport</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Your primary sport determines your hero banner image and is shown on your profile.
+          Your primary sport determines your hero banner image, ribbon metrics, and global ranking.
+          Choose <strong>MultiSport</strong> if you practice multiple sports regularly.
         </p>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

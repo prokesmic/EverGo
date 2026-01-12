@@ -26,6 +26,12 @@ export function normalizeSportSlug(input?: string | null): string | null {
 
   // Canonical aliases - map variant names to their canonical form
   const alias: Record<string, string> = {
+    // MultiSport variants
+    "multi-sport": "multisport",
+    "all-sports": "multisport",
+    "multi": "multisport",
+    "general": "multisport",
+
     // Cycling variants
     "road-cycling": "cycling",
     "road-bike": "cycling",
