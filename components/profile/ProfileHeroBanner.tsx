@@ -4,7 +4,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { MapPin, CalendarDays, Settings } from "lucide-react"
+import { MapPin, CalendarDays, Settings, UserPlus, UserCheck, Swords } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { HeroBanner } from "@/components/hero/HeroBanner"
 import { resolveHeroImage } from "@/lib/hero/resolveHeroImage"
@@ -36,6 +36,11 @@ type ProfileHeroBannerProps = {
     following: number
   }
 
+  /** For other users: whether current user is following them */
+  isFollowing?: boolean
+  /** Profile user's ID for challenge link */
+  profileUserId?: string
+
   /** Bottom dock slot (e.g., HeroRibbon) - renders inside hero at bottom */
   bottomDock?: React.ReactNode
 }
@@ -55,6 +60,8 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
     avatarUrl,
     bannerUrl,
     counts,
+    isFollowing = false,
+    profileUserId,
     bottomDock,
   } = props
 
@@ -99,7 +106,46 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
                 Edit Profile
               </Button>
             </Link>
-          ) : undefined
+          ) : (
+            <div className="flex items-center gap-2">
+              {/* Challenge Button */}
+              {profileUserId && (
+                <Link href={`/gauntlets/new?opponent=${profileUserId}`}>
+                  <Button
+                    variant="outline"
+                    data-testid="profile-challenge-btn"
+                    className="gap-2 bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm"
+                  >
+                    <Swords className="h-4 w-4" />
+                    <span className="hidden sm:inline">Challenge</span>
+                  </Button>
+                </Link>
+              )}
+              {/* Follow Button */}
+              <Link href={`/api/follow/${profileUserId}`} prefetch={false}>
+                <Button
+                  data-testid="profile-follow-btn"
+                  className={isFollowing
+                    ? "gap-2 bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
+                    : "gap-2 shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-shadow"
+                  }
+                  variant={isFollowing ? "outline" : "default"}
+                >
+                  {isFollowing ? (
+                    <>
+                      <UserCheck className="h-4 w-4" />
+                      Following
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4" />
+                      Follow
+                    </>
+                  )}
+                </Button>
+              </Link>
+            </div>
+          )
         }
       >
         {/* Content directly on the hero - uses flex to fill available space */}

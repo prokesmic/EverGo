@@ -4,12 +4,9 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { ProfileHeroBanner } from "@/components/profile/ProfileHeroBanner"
 import { HeroRibbon } from "@/components/hero/HeroRibbon"
+import { ProfileBody } from "@/components/profile/ProfileBody"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ActivityFeedV2 } from "@/components/profile/ActivityFeedV2"
-import { ProfileSideRail } from "@/components/profile/ProfileSideRail"
-import { ProfileTabs } from "@/components/profile/ProfileTabs"
-import { ProfileRivalries } from "@/components/profile/ProfileRivalries"
 import { getUserRivals } from "@/lib/head-to-head"
 export const dynamic = "force-dynamic"
 
@@ -310,6 +307,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             followers: user._count.followers,
             following: user._count.following,
           }}
+          isFollowing={isFollowing}
+          profileUserId={user.id}
           bottomDock={
             <Suspense fallback={<RibbonSkeleton />}>
               <HeroRibbon defaultRange="all" context="profile" variant="docked" />
@@ -318,40 +317,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         />
       </div>
 
-      {/* Main Content Grid: 12 columns */}
-      <div className="max-w-6xl mx-auto px-4 md:px-6 pt-6 pb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* Main Column: Activity Feed with Tabs (8 cols) */}
-          <div className="lg:col-span-8">
-            <ProfileTabs
-              defaultTab="activities"
-              rivalryCount={rivalries.length}
-              activitiesContent={
-                <ActivityFeedV2 activities={formattedActivities} showUserOnCards={false} />
-              }
-              rivalriesContent={
-                <ProfileRivalries
-                  rivalries={rivalries}
-                  isCurrentUser={isCurrentUser}
-                  userId={user.id}
-                />
-              }
-            />
-          </div>
-
-          {/* Sidebar (4 cols) - Sticky */}
-          <div className="lg:col-span-4">
-            <div className="lg:sticky lg:top-20">
-              <ProfileSideRail
-                personalRecords={formattedPRs}
-                teams={formattedTeams}
-                userId={user.id}
-                username={user.username}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Main Content - Athlete-Centric Profile */}
+      <ProfileBody
+        userId={user.id}
+        username={user.username}
+        isCurrentUser={isCurrentUser}
+        activities={formattedActivities}
+        personalRecords={formattedPRs}
+        teams={formattedTeams}
+        rivalries={rivalries}
+      />
     </main>
   )
 }

@@ -8,13 +8,7 @@ import { startOfWeek, endOfWeek } from "date-fns"
 // V6 Components - Using photo-based hero (same as Profile)
 import { HomeHeroBanner } from "@/components/hero/HomeHeroBanner"
 import { HeroRibbon } from "@/components/hero/HeroRibbon"
-import { FriendsStrip } from "@/components/home/FollowingStrip"
-import { ActiveCompetitions } from "@/components/home/ActiveCompetitions"
-import { RivalriesStrip } from "@/components/home/RivalriesStrip"
-import { CityLadder } from "@/components/home/CityLadder"
-import { QuickActions } from "@/components/home/QuickActions"
-import { HomeFeed } from "@/components/home/HomeFeedV6"
-import { SeasonCard } from "@/components/season/SeasonCard"
+import { HomeDashboardBody } from "@/components/home/HomeDashboardBody"
 
 // Loading skeletons
 import { Skeleton } from "@/components/ui/skeleton"
@@ -25,7 +19,6 @@ import { getUserRivalries } from "@/lib/rivalry"
 import { getCurrentSeason, getUserSeasonRank } from "@/lib/season"
 import { getActiveCrewWar } from "@/lib/crew-wars"
 import { getCityLadder } from "@/lib/rankings/ladders"
-import { isFeatureEnabled } from "@/lib/features"
 
 export const dynamic = "force-dynamic"
 
@@ -254,81 +247,20 @@ export default async function HomePage() {
         />
       </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Main Column (2/3) */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Active Competitions */}
-            {isFeatureEnabled("gauntlet") && (
-              <ActiveCompetitions
-                gauntlets={activeGauntlets}
-                crewWar={crewWar}
-                teamId={teamId}
-                userId={userId}
-              />
-            )}
-
-            {/* Rivalries Strip */}
-            {isFeatureEnabled("rivalry") && rivalries.length > 0 && (
-              <RivalriesStrip rivalries={rivalries.slice(0, 4)} />
-            )}
-
-            {/* Feed */}
-            <Suspense fallback={<FeedSkeleton />}>
-              <HomeFeed userId={userId} />
-            </Suspense>
-          </div>
-
-          {/* Sidebar (1/3) */}
-          <div className="space-y-6">
-            {/* Friends Strip - clickable avatars */}
-            <FriendsStrip friends={friends} />
-
-            {/* Season Card */}
-            {isFeatureEnabled("season") && activeSeason && (
-              <SeasonCard
-                season={activeSeason}
-                userStats={
-                  seasonStats
-                    ? {
-                        totalPower: seasonStats.totalPower,
-                        rank: seasonStats.rank,
-                        total: seasonStats.total,
-                        activityCount: seasonStats.activityCount,
-                      }
-                    : undefined
-                }
-              />
-            )}
-
-            {/* City Ladder */}
-            {user.city && cityLadder.length > 0 && (
-              <CityLadder
-                city={user.city}
-                entries={cityLadder}
-                currentUserId={userId}
-              />
-            )}
-
-            {/* Quick Actions */}
-            <QuickActions />
-          </div>
-        </div>
-      </div>
+      {/* Main Content - Feed-Centric Dashboard */}
+      <HomeDashboardBody
+        userId={userId}
+        userCity={user.city}
+        teamId={teamId}
+        activeGauntlets={activeGauntlets}
+        crewWar={crewWar}
+        rivalries={rivalries}
+        activeSeason={activeSeason}
+        seasonStats={seasonStats}
+        friends={friends}
+        cityLadder={cityLadder}
+      />
     </main>
-  )
-}
-
-function FeedSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-32" />
-      <Skeleton className="h-12 w-full" />
-      <Skeleton className="h-32 w-full" />
-      <Skeleton className="h-32 w-full" />
-    </div>
   )
 }
 
