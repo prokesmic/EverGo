@@ -13,10 +13,10 @@ import { motion, useScroll, useTransform } from "framer-motion"
 export const DEFAULT_HERO_BANNER = "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1920&q=80"
 
 // SINGLE SOURCE OF TRUTH for hero banner height (balanced with docked ribbon)
-export const HERO_HEIGHT_CLASS = "h-[260px] md:h-[280px] lg:h-[300px]"
+export const HERO_HEIGHT_CLASS = "h-[280px] md:h-[300px] lg:h-[320px]"
 
 // Height reserved for the docked ribbon at bottom (compact version)
-export const DOCK_HEIGHT = 88
+export const DOCK_HEIGHT = 100
 
 interface HeroBannerProps {
   /** Image source URL. Falls back to DEFAULT_HERO_BANNER if empty/null */
