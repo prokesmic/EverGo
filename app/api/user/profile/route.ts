@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
+import { revalidatePath } from "next/cache"
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -51,6 +52,82 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+    // If primarySportId is changing, also update UserSport priorities
+    // This syncs User.primarySportId with UserSport.priority system
+    if (primarySportId !== undefined && primarySportId !== currentUser.primarySportId) {
+      const newPrimarySportId = primarySportId === "" ? null : primarySportId
+
+      if (newPrimarySportId) {
+        // Find or create the UserSport record for this sport
+        let userSport = await prisma.userSport.findFirst({
+          where: {
+            userId: currentUser.id,
+            sportId: newPrimarySportId,
+          },
+        })
+
+        if (!userSport) {
+          // User doesn't have this sport - create it as primary
+          // First, shift all existing sports down by 1
+          await prisma.userSport.updateMany({
+            where: {
+              userId: currentUser.id,
+              status: "ACTIVE",
+            },
+            data: { priority: { increment: 1 } },
+          })
+
+          // Create new UserSport with priority 0 (primary)
+          userSport = await prisma.userSport.create({
+            data: {
+              userId: currentUser.id,
+              sportId: newPrimarySportId,
+              status: "ACTIVE",
+              priority: 0,
+            },
+          })
+        } else if (userSport.status !== "ACTIVE") {
+          // Reactivate inactive sport and make primary
+          await prisma.$transaction(async (tx) => {
+            // Shift all active sports down
+            await tx.userSport.updateMany({
+              where: {
+                userId: currentUser.id,
+                status: "ACTIVE",
+              },
+              data: { priority: { increment: 1 } },
+            })
+
+            // Reactivate and set as primary
+            await tx.userSport.update({
+              where: { id: userSport!.id },
+              data: { status: "ACTIVE", priority: 0 },
+            })
+          })
+        } else if (userSport.priority !== 0) {
+          // Sport exists and is active, just need to make it primary
+          await prisma.$transaction(async (tx) => {
+            // Increment priority of all sports that have priority < this sport's priority
+            await tx.userSport.updateMany({
+              where: {
+                userId: currentUser.id,
+                status: "ACTIVE",
+                priority: { lt: userSport!.priority ?? 999, gte: 0 },
+              },
+              data: { priority: { increment: 1 } },
+            })
+
+            // Set this sport as primary (priority = 0)
+            await tx.userSport.update({
+              where: { id: userSport!.id },
+              data: { priority: 0 },
+            })
+          })
+        }
+        // If userSport exists and already has priority 0, no changes needed
+      }
+    }
+
     // Update user profile
     const updatedUser = await prisma.user.update({
       where: { id: currentUser.id },
@@ -90,6 +167,11 @@ export async function PATCH(req: NextRequest) {
         primarySportId: true,
       },
     })
+
+    // Revalidate pages that depend on primary sport
+    revalidatePath("/home")
+    revalidatePath("/profile/[username]", "page")
+    revalidatePath("/settings/profile")
 
     return NextResponse.json({ user: updatedUser })
   } catch (error) {
