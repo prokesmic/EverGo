@@ -314,14 +314,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       </div>
 
       {/* Profile Ribbon - Lifetime stats by default (switchable to weekly/monthly/yearly) */}
-      <div className="mt-8">
+      <div className="mt-4">
         <Suspense fallback={<RibbonSkeleton />}>
           <HeroRibbon defaultRange="all" context="profile" />
         </Suspense>
       </div>
 
-      {/* Main Content Grid: 12 columns - extra top margin for floating elements */}
-      <div className="max-w-6xl mx-auto px-4 md:px-6 pt-8 pb-6">
+      {/* Main Content Grid: 12 columns */}
+      <div className="max-w-6xl mx-auto px-4 md:px-6 pt-6 pb-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Main Column: Activity Feed with Tabs (8 cols) */}
           <div className="lg:col-span-8">
