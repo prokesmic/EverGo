@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useOnboardingStore, type OnboardingStep } from "@/lib/onboarding/store"
 import { completeOnboarding } from "@/lib/onboarding/actions"
+import { Step0Persona } from "./steps/Step0Persona"
 import { Step1Identity } from "./steps/Step1Identity"
 import { Step2Sports } from "./steps/Step2Sports"
 import { Step3Benchmark } from "./steps/Step3Benchmark"
@@ -22,6 +23,7 @@ import {
   Dumbbell,
   Target,
   Link2,
+  Sparkles,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { SportTag } from "@/lib/onboarding/sportsCatalog"
@@ -61,6 +63,7 @@ interface OnboardingWizardProps {
 }
 
 const STEPS = [
+  { id: 0, title: "Persona", icon: Sparkles, description: "Your style" },
   { id: 1, title: "Identity", icon: User, description: "About you" },
   { id: 2, title: "Sports", icon: Dumbbell, description: "Your activities" },
   { id: 3, title: "Benchmark", icon: Target, description: "Get ranked" },
@@ -101,6 +104,9 @@ export function OnboardingWizard({
   // Validation for each step
   const isStepValid = (step: number): boolean => {
     switch (step) {
+      case 0:
+        // V11: Persona selection required
+        return store.persona !== undefined
       case 1:
         return (
           store.displayName.trim().length >= 2 &&
@@ -121,7 +127,7 @@ export function OnboardingWizard({
   }
 
   const handleNext = () => {
-    if (store.currentStep < STEPS.length) {
+    if (store.currentStep < STEPS.length - 1) {
       store.nextStep()
     } else {
       handleComplete()
@@ -181,9 +187,9 @@ export function OnboardingWizard({
     )
   }
 
-  const currentStepData = STEPS[store.currentStep - 1]
+  const currentStepData = STEPS.find(s => s.id === store.currentStep) ?? STEPS[0]
   const canProceed = isStepValid(store.currentStep)
-  const isLastStep = store.currentStep === STEPS.length
+  const isLastStep = store.currentStep === STEPS.length - 1
 
   return (
     <section className="w-full max-w-2xl">
@@ -258,6 +264,7 @@ export function OnboardingWizard({
         <div className="px-6 py-6 sm:px-8 sm:py-8">
           {/* Step content */}
           <div className="min-h-[400px]">
+            {store.currentStep === 0 && <Step0Persona />}
             {store.currentStep === 1 && <Step1Identity />}
             {store.currentStep === 2 && <Step2Sports sports={sports} />}
             {store.currentStep === 3 && (
@@ -272,7 +279,7 @@ export function OnboardingWizard({
           <Button
             variant="ghost"
             onClick={handleBack}
-            disabled={store.currentStep === 1 || isSubmitting}
+            disabled={store.currentStep === 0 || isSubmitting}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />

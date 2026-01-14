@@ -4,11 +4,17 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import type { OnboardingData } from "@/schemas/onboarding"
 
-export type OnboardingStep = 1 | 2 | 3 | 4
+export type OnboardingStep = 0 | 1 | 2 | 3 | 4
+
+// V11: User persona for personalized experience
+export type UserPersona = "COMPETITOR" | "TRACKER" | "SOCIAL"
 
 export interface OnboardingState {
   // Current step
   currentStep: OnboardingStep
+
+  // V11: Persona selection (Step 0)
+  persona: UserPersona | undefined
 
   // Form data matching OnboardingData schema
   displayName: string
@@ -43,7 +49,8 @@ export interface OnboardingState {
 }
 
 const initialState = {
-  currentStep: 1 as OnboardingStep,
+  currentStep: 0 as OnboardingStep,
+  persona: undefined as UserPersona | undefined,
   displayName: "",
   bio: "",
   gender: undefined as string | undefined,
@@ -60,6 +67,11 @@ const initialState = {
 // Helper to sanitize persisted data (in case of corrupted localStorage)
 function sanitizePersistedData(data: Record<string, unknown>): Partial<OnboardingState> {
   const sanitized: Partial<OnboardingState> = {}
+
+  // V11: Validate persona
+  if (data.persona === "COMPETITOR" || data.persona === "TRACKER" || data.persona === "SOCIAL") {
+    sanitized.persona = data.persona
+  }
 
   // Only copy over primitive strings
   if (typeof data.displayName === "string") sanitized.displayName = data.displayName
@@ -119,7 +131,7 @@ export const useOnboardingStore = create<OnboardingState>()(
 
       prevStep: () =>
         set((state) => ({
-          currentStep: Math.max(state.currentStep - 1, 1) as OnboardingStep,
+          currentStep: Math.max(state.currentStep - 1, 0) as OnboardingStep,
         })),
 
       setField: (key, value) => set({ [key]: value }),
@@ -131,6 +143,7 @@ export const useOnboardingStore = create<OnboardingState>()(
       getData: () => {
         const state = get()
         return {
+          persona: state.persona,
           displayName: state.displayName,
           bio: state.bio || undefined,
           gender: state.gender as any,
@@ -149,6 +162,7 @@ export const useOnboardingStore = create<OnboardingState>()(
       name: "evergo-onboarding",
       // Only persist form data, not step (so user resumes from beginning but with data)
       partialize: (state) => ({
+        persona: state.persona,
         displayName: state.displayName,
         bio: state.bio,
         gender: state.gender,

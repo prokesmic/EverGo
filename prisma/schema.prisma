@@ -21,6 +21,7 @@ model User {
   // Onboarding state
   onboardingCompleted Boolean @default(false)
   primarySportId  String?   // User's primary sport for default ranking lens
+  persona         UserPersona? // V11: User's primary usage pattern (COMPETITOR, TRACKER, SOCIAL)
 
   // Location - legacy string fields (for display/backwards compat)
   city            String?
@@ -55,6 +56,7 @@ model User {
   posts           Post[]
   comments        Comment[]
   likes           Like[]
+  moments         Moment[]      // V11: Auto-detected notable events
   hypesGiven      ActivityHype[]  @relation("UserHypes")
   followers       Follow[]  @relation("following")
   following       Follow[]  @relation("follower")
@@ -161,6 +163,9 @@ model UserStats {
   // V11: Trust Score for manual entry weighting
   trustScore           Float     @default(1.0) // 0.75-1.0 based on verification status
 
+  // V11: Verification Ladder tier
+  verificationTier     VerificationTier @default(BRONZE)
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -169,6 +174,7 @@ model UserStats {
   @@index([country, sportIndex(sort: Desc)])
   @@index([city, sportIndex(sort: Desc)])
   @@index([isVerifiedAthlete])
+  @@index([verificationTier])
 }
 
 model UserSportStats {
@@ -476,15 +482,23 @@ model Activity {
   post            Post?
   gearItems       ActivityGear[]
   hypes           ActivityHype[]
+  moments         Moment[]        // V11: Moments linked to this activity
 
   // Rivalry tagging (optional)
   rivalryId       String?
 
   // Trust & Integrity (Anti-cheat)
   verificationTier VerificationTier @default(BRONZE)
+  proofLevel       ProofLevel       @default(MANUAL)  // V11: What evidence exists for this activity
+  proofUrl         String?          // URL to proof (photo, GPX file, etc.)
   anomalyScore     Int?             // 0-100, higher = more suspicious
   isAnomalous      Boolean          @default(false)
   anomalies        ActivityAnomaly[]
+
+  // V11: Team Sports - Match outcome tracking
+  matchOutcome     MatchOutcome?    // WIN/LOSS/DRAW for team sports
+  opponentName     String?          // Name of opponent team/player
+  matchScore       String?          // Score like "3-2", "21-18, 19-21, 21-15"
 
   // Most Active / Power scoring
   powerPoints      Int              @default(0) // Normalized cross-sport power score
@@ -680,13 +694,54 @@ model Comment {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   content   String
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt // Added updatedAt
-  
+
   @@index([postId, createdAt])
+}
+
+// =============================================================================
+// V11: MOMENTS (Auto-detected notable events)
+// =============================================================================
+
+model Moment {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Moment type and metadata
+  type        MomentType
+  title       String      // "New 5K PR!"
+  description String?     // "You beat your previous best by 23 seconds"
+
+  // Related entities (optional)
+  activityId  String?
+  activity    Activity?   @relation(fields: [activityId], references: [id], onDelete: SetNull)
+  rivalryId   String?
+  gauntletId  String?
+  badgeId     String?
+
+  // Moment value (for comparison)
+  value       Float?      // The value achieved
+  previousValue Float?    // Previous value (for PRs)
+  unit        String?     // "seconds", "meters", "days"
+
+  // Auto-post settings
+  autoPosted  Boolean     @default(false)
+  postId      String?     // If turned into a post
+
+  // User interaction
+  dismissed   Boolean     @default(false)
+  celebratedAt DateTime?  // When user acknowledged the moment
+
+  createdAt   DateTime    @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, type])
+  @@index([autoPosted])
 }
 
 model Team {
@@ -982,7 +1037,16 @@ model UserStreak {
   recoveryModeUsesThisSeason Int   @default(0)  // Max 2 per season
   lastRecoveryModeEndedAt DateTime?  // For cooldown calculation
 
+  // V11: Consistency League - tracks consistency score
+  consistencyScore       Int       @default(0)   // 0-1000 composite score
+  consistencyRank        Int?                    // Rank in consistency league
+  consistencyTier        ConsistencyTier @default(STARTER)
+  perfectWeeks           Int       @default(0)   // Weeks meeting goal
+  perfectMonths          Int       @default(0)   // Months with 4+ perfect weeks
+
   updatedAt       DateTime  @updatedAt
+
+  @@index([consistencyScore(sort: Desc)])
 }
 
 model Badge {
@@ -1391,9 +1455,59 @@ enum SportIndexEventType {
 }
 
 enum VerificationTier {
-  BRONZE  // manual no proof
-  SILVER  // manual with proof (photo/gpx) OR trusted device w/o gps
-  GOLD    // device sync w/ gps (Strava/Garmin/Health)
+  BRONZE    // manual no proof
+  SILVER    // manual with proof (photo/gpx) OR trusted device w/o gps
+  GOLD      // device sync w/ gps (Strava/Garmin/Health)
+  PLATINUM  // V11: official race result, API-verified sensor (e.g., WOO), or admin-verified
+}
+
+// V11: User persona for personalized experience
+enum UserPersona {
+  COMPETITOR  // Focused on rankings and competition
+  TRACKER     // Just want to log activities
+  SOCIAL      // Want to connect with friends
+}
+
+// V11: Consistency League tiers
+enum ConsistencyTier {
+  STARTER     // 0-99 consistency score
+  REGULAR     // 100-299
+  DEDICATED   // 300-499
+  COMMITTED   // 500-749
+  ELITE       // 750-899
+  LEGENDARY   // 900+
+}
+
+// V11: Moment types for auto-detection
+enum MomentType {
+  PERSONAL_RECORD   // New PR achieved
+  STREAK_MILESTONE  // Hit streak milestone (7, 14, 30, 100 days)
+  ACTIVITY_MILESTONE // 100th, 500th, 1000th activity
+  RANK_UP           // Moved up in rankings
+  RIVALRY_WIN       // Won a rivalry
+  GAUNTLET_WIN      // Won a gauntlet
+  SEASON_PLACEMENT  // Top 10 season finish
+  BADGE_EARNED      // Earned a new badge
+  FIRST_ACTIVITY    // First activity in a sport
+  BIG_ACTIVITY      // Exceptional activity (distance, duration, etc.)
+}
+
+// V11: Match outcome for team sports
+enum MatchOutcome {
+  WIN
+  LOSS
+  DRAW
+  DNF         // Did not finish
+  PARTICIPATION // Just participated (no result tracked)
+}
+
+// V11: Proof level for individual activities
+enum ProofLevel {
+  MANUAL     // typed in by user, no evidence
+  PHOTO      // has photo attachment
+  GPX        // has GPS track file
+  SENSOR     // derived from connected sensor/device
+  VERIFIED   // admin or official source verified
 }
 
 enum EntityType {

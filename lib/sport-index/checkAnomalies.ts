@@ -285,7 +285,7 @@ export async function checkActivityAnomalies(activityId: string) {
 /**
  * Get verification tier weight multiplier
  */
-export function getVerificationWeight(tier: "BRONZE" | "SILVER" | "GOLD"): number {
+export function getVerificationWeight(tier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM"): number {
   switch (tier) {
     case "BRONZE":
       return 0.6
@@ -293,6 +293,8 @@ export function getVerificationWeight(tier: "BRONZE" | "SILVER" | "GOLD"): numbe
       return 0.8
     case "GOLD":
       return 1.0
+    case "PLATINUM":
+      return 1.0 // Same as Gold but with elite verification
     default:
       return 0.6
   }

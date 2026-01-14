@@ -109,6 +109,9 @@ export async function completeOnboarding(rawInput: unknown) {
           bio: data.bio || null,
           gender: data.gender || null,
 
+          // V11: User persona
+          persona: (data as any).persona || null,
+
           // Normalized location
           countryCode: data.countryCode,
           countryName: data.countryName,
