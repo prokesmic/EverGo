@@ -107,42 +107,43 @@ export function HomeHeroBanner({
       >
         {/* Content directly on the hero - uses flex to fill available space */}
         <div className="h-full w-full flex flex-col justify-end pb-4 px-6 md:px-8">
-          {/* Primary Sport Pill */}
-          {primarySport && (
-            <div className="mb-3 flex items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-md border border-white/20 px-4 py-2 text-sm font-medium text-white shadow-lg">
-                {sportThumb && (
-                  <Image
-                    src={sportThumb}
-                    alt={primarySport.name}
-                    width={20}
-                    height={20}
-                    className="rounded-full object-cover"
-                  />
-                )}
-                {primarySport.name}
-              </span>
-            </div>
-          )}
-
-          {/* Identity Row: Avatar + Name/Username */}
-          <div className="flex items-center gap-4">
-            {/* Avatar - Small, inline, inside hero */}
+          {/* Identity Section: Large Avatar with Name */}
+          <div className="flex items-end gap-5 md:gap-6">
+            {/* Avatar - Large, prominent */}
             <Link
               href="/profile/me"
-              className="shrink-0 relative h-14 w-14 md:h-16 md:w-16 overflow-hidden rounded-full border-2 border-white/30 shadow-xl hover:scale-105 transition-transform"
+              className="shrink-0 relative h-24 w-24 md:h-32 md:w-32 lg:h-36 lg:w-36 overflow-hidden rounded-2xl border-3 border-white/40 shadow-2xl hover:scale-[1.02] transition-transform ring-2 ring-white/20 ring-offset-2 ring-offset-transparent"
             >
               {user.avatarUrl ? (
                 <Image src={user.avatarUrl} alt="Avatar" fill className="object-cover" />
               ) : (
-                <div className="grid h-full w-full place-items-center bg-gradient-to-br from-primary to-primary/80 text-lg md:text-xl font-bold text-primary-foreground">
+                <div className="grid h-full w-full place-items-center bg-gradient-to-br from-primary to-primary/80 text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground">
                   {(user.displayName ?? user.username ?? "U").slice(0, 2).toUpperCase()}
                 </div>
               )}
             </Link>
 
-            {/* Name + Username */}
-            <div className="min-w-0 flex-1">
+            {/* Name, Username, Meta */}
+            <div className="min-w-0 flex-1 pb-1">
+              {/* Primary Sport Pill */}
+              {primarySport && (
+                <div className="mb-2">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-md border border-white/20 px-3 py-1.5 text-xs font-medium text-white shadow-lg">
+                    {sportThumb && (
+                      <Image
+                        src={sportThumb}
+                        alt={primarySport.name}
+                        width={16}
+                        height={16}
+                        className="rounded-full object-cover"
+                      />
+                    )}
+                    {primarySport.name}
+                  </span>
+                </div>
+              )}
+
+              {/* Name + Username */}
               <Link href="/profile/me" className="group">
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-white drop-shadow-2xl group-hover:text-white/90 transition-colors truncate">
                   {user.displayName ?? user.username ?? "Athlete"}
@@ -151,21 +152,21 @@ export function HomeHeroBanner({
               {user.username && (
                 <span className="text-sm text-white/70 font-light">@{user.username}</span>
               )}
-            </div>
-          </div>
 
-          {/* Location & Joined */}
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60 font-light">
-            {locationLabel && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                {locationLabel}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1">
-              <CalendarDays className="h-3 w-3" />
-              Joined {joinMonthYear}
-            </span>
+              {/* Location & Joined */}
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60 font-light">
+                {locationLabel && (
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {locationLabel}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1">
+                  <CalendarDays className="h-3 w-3" />
+                  Joined {joinMonthYear}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </HeroBanner>
