@@ -40,6 +40,31 @@ export const featureFlags = {
   // Chapter 11: Perks & Dynamic Targets
   enablePerks: true,
   enableDynamicTargets: true,
+
+  // ==========================================================================
+  // V12: World-Leading Refinements
+  // ==========================================================================
+
+  // Power V2: Enhanced integrity with sensor validation gates
+  POWER_V2: true,
+
+  // Proof Eligibility: Proof levels unlock specific metric eligibility
+  PROOF_ELIGIBILITY_V1: true,
+
+  // Moments Quality: Impact scoring + weekly curation + persona tuning
+  MOMENTS_QUALITY_V1: true,
+
+  // Hype System: Spectator mechanic for rivalries
+  HYPE_V1: true,
+
+  // Consistency V2: Anti-micro-activity + rest day credit
+  CONSISTENCY_V2: true,
+
+  // Match Entity: Proper team/racket sports match tracking
+  MATCH_ENTITY_V1: true,
+
+  // Redis Leaderboards: Incremental updates via Upstash
+  REDIS_LEADERBOARDS_V1: false, // Off by default until Redis is configured
 } as const
 
 export type FeatureFlag = keyof typeof featureFlags

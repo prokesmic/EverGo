@@ -13,7 +13,7 @@
  * This is the SOURCE OF TRUTH for Power computation.
  */
 
-import { SportCategory, VerificationTier } from "@prisma/client"
+import { SportCategory, VerificationTier, ProofLevel } from "@prisma/client"
 import {
   SATURATION_CONFIGS,
   INTENSITY_CONFIG,
@@ -24,6 +24,8 @@ import {
   POWER_VERSION,
 } from "./constants"
 import { computeConfidence, ConfidenceInput, ConfidenceResult } from "./confidence"
+import { validateIntensityBySensor, SensorSignals, IntensityValidationResult } from "./sensorValidation"
+import { isFlagEnabled } from "@/lib/flags"
 
 // =============================================================================
 // TYPES
@@ -40,6 +42,8 @@ export interface PowerInput {
   source: string
   /** Verification tier */
   verificationTier: VerificationTier
+  /** Proof level for V12 sensor validation */
+  proofLevel?: ProofLevel
   /** Whether GPS data is present */
   hasGPS: boolean
   /** Whether heart rate data is present */
@@ -56,6 +60,12 @@ export interface PowerInput {
   maxHeartRate?: number | null
   /** User's estimated max HR */
   userMaxHR?: number | null
+  /** V12: Time spent in HR zones 4-5 (seconds) */
+  timeInZ4Z5Seconds?: number | null
+  /** V12: Average power in watts (cycling) */
+  avgPowerWatts?: number | null
+  /** V12: Normalized power (cycling) */
+  normalizedPowerWatts?: number | null
 }
 
 export interface PowerResult {
@@ -79,6 +89,8 @@ export interface PowerResult {
   powerVersion: string
   /** Sport category used for computation */
   sportCategory: PowerSportCategory
+  /** V12: Intensity validation result (if POWER_V2 enabled) */
+  intensityValidation?: IntensityValidationResult
 }
 
 // =============================================================================
@@ -95,10 +107,35 @@ export function computePower(input: PowerInput): PowerResult {
   const durationMinutes = input.durationSeconds / 60
   const durationFactor = computeDurationFactor(durationMinutes, satConfig)
 
-  // 3. Get intensity multiplier
+  // V12: Validate intensity against sensor data if POWER_V2 is enabled
+  let effectiveIntensity = input.intensityMode
+  let intensityValidation: IntensityValidationResult | undefined
+
+  if (isFlagEnabled("POWER_V2") && input.proofLevel) {
+    const sensorSignals: SensorSignals = {
+      avgHeartRate: input.avgHeartRate,
+      maxHeartRate: input.maxHeartRate,
+      userMaxHR: input.userMaxHR,
+      timeInZ4Z5Seconds: input.timeInZ4Z5Seconds,
+      durationSeconds: input.durationSeconds,
+      avgPowerWatts: input.avgPowerWatts,
+      normalizedPowerWatts: input.normalizedPowerWatts,
+    }
+
+    intensityValidation = validateIntensityBySensor(
+      input.intensityMode,
+      input.proofLevel,
+      sensorSignals
+    )
+
+    // Use validated intensity for power calculation
+    effectiveIntensity = intensityValidation.validatedIntensity
+  }
+
+  // 3. Get intensity multiplier (using validated intensity)
   const isManual = input.source.toUpperCase() === "MANUAL"
   const intensityFactor = getIntensityMultiplier(
-    input.intensityMode,
+    effectiveIntensity,
     isManual,
     input.verificationTier
   )
@@ -118,15 +155,21 @@ export function computePower(input: PowerInput): PowerResult {
     hasCadence: input.hasCadence,
     hasPower: input.hasPower,
     isAnomalous: input.isAnomalous,
-    intensityMode: input.intensityMode,
+    intensityMode: effectiveIntensity, // Use validated intensity
     avgHeartRate: input.avgHeartRate,
     maxHeartRate: input.maxHeartRate,
     userMaxHR: input.userMaxHR,
   }
   const confidenceDetails = computeConfidence(confidenceInput)
 
+  // V12: Apply additional confidence penalty if intensity was downgraded
+  let adjustedConfidenceWeight = confidenceDetails.weight
+  if (intensityValidation?.wasDowngraded) {
+    adjustedConfidenceWeight *= intensityValidation.confidence
+  }
+
   // 7. Apply confidence weight
-  let powerFinal = powerBase * confidenceDetails.weight
+  let powerFinal = powerBase * adjustedConfidenceWeight
   let clampReason: string | undefined
 
   // 8. Apply power ceilings
@@ -150,11 +193,12 @@ export function computePower(input: PowerInput): PowerResult {
     durationFactor: Math.round(durationFactor * 100) / 100,
     intensityFactor,
     sportMultiplier,
-    confidenceWeight: confidenceDetails.weight,
+    confidenceWeight: adjustedConfidenceWeight,
     confidenceDetails,
     clampReason,
     powerVersion: POWER_VERSION,
     sportCategory,
+    intensityValidation,
   }
 }
 

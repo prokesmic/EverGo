@@ -45,3 +45,13 @@ export {
   type ConfidenceFactors,
   type PowerCeiling,
 } from "./constants"
+
+// V12: Sensor validation for intensity claims
+export {
+  validateIntensityBySensor,
+  estimateMaxHR,
+  getHRZone,
+  canClaimFullIntensity,
+  type SensorSignals,
+  type IntensityValidationResult as SensorValidationResult,
+} from "./sensorValidation"

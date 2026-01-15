@@ -737,11 +737,21 @@ model Moment {
   dismissed   Boolean     @default(false)
   celebratedAt DateTime?  // When user acknowledged the moment
 
+  // V12: Quality filtering
+  impactScore Int         @default(0)  // 0-100, higher = more significant
+  suppressed  Boolean     @default(false) // True if not in top 3 for the week
+  suppressedAt DateTime?  // When suppressed by curation
+
+  // V12: Sharing
+  sharedAt    DateTime?   // When user shared this moment
+
   createdAt   DateTime    @default(now())
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, type])
   @@index([autoPosted])
+  @@index([userId, suppressed, createdAt(sort: Desc)])
+  @@index([impactScore(sort: Desc)])
 }
 
 model Team {
@@ -2608,6 +2618,154 @@ model UserConsistency {
 
   @@unique([userId, periodType, periodKey])
   @@index([periodType, periodKey, daysActive(sort: Desc)])
+}
+
+// =============================================================================
+// V12: HYPE SYSTEM (Rivalry Spectator Mechanic)
+// =============================================================================
+
+model UserWallet {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+
+  // Hype points balance
+  balance         Int       @default(1000)  // Starting balance
+  lifetimeEarned  Int       @default(1000)  // Total earned over time
+  lifetimeSpent   Int       @default(0)     // Total spent on hypes
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  hypes           Hype[]
+
+  @@index([balance])
+}
+
+enum HypeStatus {
+  PENDING     // Rivalry not yet settled
+  WON         // User's pick won
+  LOST        // User's pick lost
+  REFUNDED    // Rivalry cancelled/voided
+}
+
+model Hype {
+  id              String      @id @default(cuid())
+
+  // Who placed the hype
+  walletId        String
+  wallet          UserWallet  @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  bettorUserId    String      // User who placed the hype
+
+  // What they're hyping
+  rivalryId       String?     // Either rivalry or gauntlet
+  gauntletId      String?
+
+  // Who they picked to win
+  pickUserId      String      // The user they're hyping to win
+
+  // Amount
+  amount          Int         // Hype points wagered
+
+  // Settlement
+  status          HypeStatus  @default(PENDING)
+  settledAt       DateTime?
+  payout          Int?        // Amount returned (if won)
+
+  createdAt       DateTime    @default(now())
+
+  @@index([rivalryId, status])
+  @@index([gauntletId, status])
+  @@index([bettorUserId, status])
+  @@index([pickUserId])
+}
+
+// =============================================================================
+// V12: MATCH ENTITY (Team/Racket Sports)
+// =============================================================================
+
+enum MatchResult {
+  HOME_WIN
+  AWAY_WIN
+  DRAW
+  CANCELLED
+  PENDING
+}
+
+model Match {
+  id              String      @id @default(cuid())
+
+  // Sport context
+  sportSlug       String
+
+  // Match details
+  date            DateTime
+  venue           String?
+
+  // Teams/participants
+  homeName        String      // Home team or player 1
+  awayName        String      // Away team or player 2
+
+  // Score
+  scoreHome       Int?
+  scoreAway       Int?
+  result          MatchResult @default(PENDING)
+
+  // Match sets (for racket sports like tennis, volleyball)
+  setScores       String?     // JSON: ["6-4", "3-6", "7-5"]
+
+  // Who created this match record
+  createdByUserId String
+
+  // ELO impact (calculated after match)
+  homeEloChange   Int?
+  awayEloChange   Int?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Participants
+  participants    MatchParticipant[]
+
+  @@index([sportSlug, date])
+  @@index([createdByUserId])
+  @@index([result])
+}
+
+enum TeamSide {
+  HOME
+  AWAY
+}
+
+model MatchParticipant {
+  id              String      @id @default(cuid())
+  matchId         String
+  match           Match       @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  userId          String
+
+  // Which side they played for
+  teamSide        TeamSide
+
+  // Individual stats
+  minutesPlayed   Int?
+  goals           Int?        // For scoring sports
+  assists         Int?
+  points          Int?        // For points-based sports
+
+  // Contribution JSON for sport-specific stats
+  contributionJson String?    // JSON: { rebounds: 5, steals: 2 }
+
+  // ELO before and after (for tracking)
+  eloBefore       Int?
+  eloAfter        Int?
+
+  // Link to activity (optional)
+  activityId      String?
+
+  createdAt       DateTime    @default(now())
+
+  @@unique([matchId, userId])
+  @@index([userId, createdAt])
 }
 
 // =============================================================================
