@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import { Sparkles, Users } from "lucide-react"
 
@@ -22,7 +22,15 @@ export function HomeFeedTabs({
   followingContent,
   className,
 }: HomeFeedTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("highlights")
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    if (typeof window === "undefined") return "highlights"
+    const saved = window.localStorage.getItem("evergo:home-feed-tab")
+    return saved === "following" ? "following" : "highlights"
+  })
+
+  useEffect(() => {
+    window.localStorage.setItem("evergo:home-feed-tab", activeTab)
+  }, [activeTab])
 
   return (
     <div className={cn("", className)} data-testid="home-feed-tabs">

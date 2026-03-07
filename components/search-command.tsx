@@ -4,7 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import {
     Search, User, Users, Trophy, Home, Target, Calendar, PlusCircle,
-    Settings, Bell, Award, TrendingUp, Zap
+    Settings, Bell, Compass
 } from "lucide-react"
 import {
     CommandDialog, CommandEmpty, CommandGroup, CommandInput,
@@ -29,6 +29,7 @@ interface SearchResults {
 const quickActions = [
     { id: 'log-activity', label: 'Log Activity', icon: PlusCircle, path: '/activity/create', shortcut: 'L' },
     { id: 'home', label: 'Go to Home', icon: Home, path: '/home', shortcut: 'H' },
+    { id: 'discover', label: 'Open Discover', icon: Compass, path: '/discover', shortcut: 'D' },
     { id: 'rankings', label: 'View Rankings', icon: Trophy, path: '/rankings', shortcut: 'R' },
     { id: 'challenges', label: 'Browse Challenges', icon: Target, path: '/challenges', shortcut: 'C' },
     { id: 'teams', label: 'Find Teams', icon: Users, path: '/teams', shortcut: 'T' },
@@ -37,7 +38,7 @@ const quickActions = [
 
 const userActions = [
     { id: 'profile', label: 'My Profile', icon: User, path: '/profile/me' },
-    { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
+    { id: 'settings', label: 'Settings', icon: Settings, path: '/settings/profile' },
     { id: 'notifications', label: 'Notifications', icon: Bell, path: '/notifications' },
 ]
 
@@ -46,6 +47,11 @@ export function SearchCommand() {
     const [query, setQuery] = React.useState("")
     const [results, setResults] = React.useState<SearchResultItem[]>([])
     const router = useRouter()
+    const handleSelect = React.useCallback((path: string) => {
+        setOpen(false)
+        setQuery("")
+        router.push(path)
+    }, [router])
 
     React.useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -65,7 +71,7 @@ export function SearchCommand() {
         }
         document.addEventListener("keydown", down)
         return () => document.removeEventListener("keydown", down)
-    }, [open, query])
+    }, [open, query, handleSelect])
 
     React.useEffect(() => {
         if (query.length < 2) {
@@ -85,12 +91,6 @@ export function SearchCommand() {
 
         return () => clearTimeout(timer)
     }, [query])
-
-    const handleSelect = (path: string) => {
-        setOpen(false)
-        setQuery("")
-        router.push(path)
-    }
 
     const hasSearchResults = results.length > 0
     const userResults = results.filter(r => r.type === "user")

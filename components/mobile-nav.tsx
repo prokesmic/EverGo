@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Trophy, Swords, User, Plus } from "lucide-react"
+import { Home, Trophy, Swords, User, Plus, Compass } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
 import { getMyProfileHref } from "@/lib/routes/user"
@@ -20,6 +20,7 @@ export function MobileNav() {
   const profileHref = getMyProfileHref(session?.user)
   const navItems = [
     { href: "/home", label: "Home", icon: Home, testId: "nav-home" },
+    { href: "/discover", label: "Discover", icon: Compass, testId: "nav-discover" },
     { href: "/rankings", label: "Rankings", icon: Trophy, testId: "nav-rankings" },
     { href: "/gauntlets", label: "Gauntlets", icon: Swords, testId: "nav-gauntlets" },
     { href: profileHref, label: "Profile", icon: User, testId: "nav-profile" },
@@ -51,7 +52,7 @@ export function MobileNav() {
         data-testid="mobile-bottom-nav"
         className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border lg:hidden pb-safe"
       >
-        <div className="grid h-16 grid-cols-4 max-w-lg mx-auto">
+        <div className="grid h-16 grid-cols-5 max-w-lg mx-auto">
           {navItems.map((item) => {
             const active = isActive(item.href)
             return (

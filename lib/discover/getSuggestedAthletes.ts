@@ -9,6 +9,7 @@ import {
 
 export interface SuggestedAthlete {
   id: string
+  username: string | null
   displayName: string
   avatarUrl: string | null
   city: string | null
@@ -97,6 +98,7 @@ export async function getSuggestedAthletes(
     take: 300,
     select: {
       id: true,
+      username: true,
       displayName: true,
       avatarUrl: true,
       bio: true,
@@ -269,6 +271,7 @@ export async function getSuggestedAthletes(
     if (result.score >= minScore) {
       results.push({
         id: item.candidate.id,
+        username: item.candidate.username,
         displayName: item.candidate.displayName,
         avatarUrl: item.candidate.avatarUrl,
         city: item.candidate.city,

@@ -1,18 +1,26 @@
-import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import {
+    buildFeedWhereClause,
+    projectFeedPosts,
+    rankFeedPosts,
+    type FeedType,
+    type PostWithRelations,
+} from "@/lib/domains/feed/read-model"
+import { errorWithRequestId, getRequestIdFromRequest, jsonWithRequestId } from "@/lib/architecture/request"
 
 export async function GET(request: Request) {
+    const requestId = getRequestIdFromRequest(request)
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        return errorWithRequestId(requestId, "Unauthorized", 401)
     }
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get("type") || "all"
-    const page = parseInt(searchParams.get("page") || "1")
-    const limit = parseInt(searchParams.get("limit") || "10")
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10))
+    const limit = Math.min(20, Math.max(1, parseInt(searchParams.get("limit") || "10", 10)))
     const skip = (page - 1) * limit
 
     try {
@@ -22,30 +30,27 @@ export async function GET(request: Request) {
         })
 
         if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 })
+            return errorWithRequestId(requestId, "User not found", 404)
         }
 
-        const whereClause: any = {
-            visibility: { in: ["PUBLIC", "FRIENDS"] } // Simplified visibility logic
-        }
+        const normalizedType: FeedType =
+            type === "following" || type === "friends" ? type : "all"
 
-        if (type === "following") {
-            const followingIds = user.following.map(f => f.followingId)
-            whereClause.userId = { in: [...followingIds, user.id] }
-        } else if (type === "friends") {
-            // Social Model: Follow is canonical. "Friends" = mutual follows (derived)
-            // See lib/follow.ts for utilities (getMutualFollows, areMutualFollows)
-            // For feed purposes, friends tab shows same as following
-            const followingIds = user.following.map(f => f.followingId)
-            whereClause.userId = { in: [...followingIds, user.id] }
-        }
-        // 'all' or 'discover' could include public posts from everyone
+        const whereClause = buildFeedWhereClause(
+            normalizedType,
+            user.id,
+            user.following.map((f) => ({ followingId: f.followingId }))
+        )
+
+        const followingIds = user.following.map((f) => f.followingId)
+        const shouldUseSmartRanking = normalizedType === "all"
+        const takeWindow = shouldUseSmartRanking ? limit + 20 : limit + 1
 
         const posts = await prisma.post.findMany({
             where: whereClause,
             orderBy: { createdAt: "desc" },
             skip,
-            take: limit + 1, // Fetch one extra to check for next page
+            take: takeWindow,
             include: {
                 user: {
                     select: {
@@ -73,39 +78,20 @@ export async function GET(request: Request) {
             }
         })
 
-        const hasMore = posts.length > limit
-        const feedPosts = hasMore ? posts.slice(0, limit) : posts
+        const rankedPosts = shouldUseSmartRanking
+            ? rankFeedPosts(posts as PostWithRelations[], {
+                viewerId: user.id,
+                followingIds,
+                type: normalizedType,
+            })
+            : posts
 
-        const formattedPosts = feedPosts.map(post => ({
-            id: post.id,
-            postType: post.postType,
-            content: post.content,
-            photos: post.photos ? JSON.parse(post.photos) : [],
-            mapImageUrl: post.mapImageUrl,
-            createdAt: post.createdAt,
-            visibility: post.visibility,
-            user: post.user,
-            activity: post.activity ? {
-                id: post.activity.id,
-                title: post.activity.title,
-                sportName: post.activity.sport?.name || "Activity",
-                sportIcon: post.activity.sport?.icon || "🏃",
-                durationSeconds: post.activity.durationSeconds,
-                distanceMeters: post.activity.distanceMeters,
-                caloriesBurned: post.activity.caloriesBurned,
-                elevationGain: post.activity.elevationGain,
-                avgPace: post.activity.avgPace,
-                avgHeartRate: post.activity.avgHeartRate,
-                gpsRoute: post.activity.gpsRoute,
-            } : null,
-            engagement: {
-                likesCount: post._count.likes,
-                commentsCount: post._count.comments,
-                isLikedByMe: post.likes.length > 0
-            }
-        }))
+        const windowedPosts = rankedPosts.slice(0, limit + 1)
+        const hasMore = windowedPosts.length > limit
+        const feedPosts = hasMore ? windowedPosts.slice(0, limit) : windowedPosts
+        const formattedPosts = projectFeedPosts(feedPosts as PostWithRelations[], user.id)
 
-        return NextResponse.json({
+        return jsonWithRequestId(requestId, {
             posts: formattedPosts,
             hasMore,
             nextPage: hasMore ? page + 1 : null
@@ -113,6 +99,6 @@ export async function GET(request: Request) {
 
     } catch (error) {
         console.error("Error fetching feed:", error)
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return errorWithRequestId(requestId, "Internal Server Error", 500)
     }
 }

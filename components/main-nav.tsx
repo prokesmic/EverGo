@@ -13,7 +13,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useSession, signOut } from "next-auth/react"
-import { Home, Trophy, Users, Calendar, Swords, Bell, Sparkles, ChevronDown, Settings, PlusCircle, UserCircle, Pencil } from "lucide-react"
+import { Home, Trophy, Users, Calendar, Swords, Bell, Sparkles, ChevronDown, Settings, PlusCircle, UserCircle, Pencil, Compass } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SearchCommand } from "@/components/search-command"
 import { getMyProfileHref, getSettingsHref } from "@/lib/routes/user"
@@ -27,6 +27,7 @@ const primaryLinks = [
 ]
 
 const moreLinks = [
+    { href: "/discover", label: "Discover", icon: Compass, description: "Find athletes and teams" },
     { href: "/teams", label: "Teams", icon: Users, description: "Join or manage teams" },
     { href: "/settings/profile", label: "Settings", icon: Settings, description: "Account preferences" },
 ]

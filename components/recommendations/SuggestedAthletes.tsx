@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { motion } from "framer-motion"
-import { UserPlus, Users, ArrowRight, Loader2, MapPin, Trophy } from "lucide-react"
+import { UserPlus, Users, ArrowRight, Loader2, Trophy } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,6 +28,7 @@ interface SuggestedAthletesProps {
   variant?: "cards" | "list"
   title?: string
   limit?: number
+  mode?: "near" | "sport" | "fof"
   className?: string
 }
 
@@ -41,6 +42,7 @@ export function SuggestedAthletes({
   variant = "cards",
   title = "Suggested Athletes",
   limit = variant === "cards" ? 12 : 6,
+  mode,
   className,
 }: SuggestedAthletesProps) {
   const [suggestions, setSuggestions] = useState<SuggestedAthlete[]>([])
@@ -51,7 +53,13 @@ export function SuggestedAthletes({
   useEffect(() => {
     async function fetchSuggestions() {
       try {
-        const response = await fetch("/api/social/suggestions")
+        const params = new URLSearchParams()
+        params.set("limit", String(limit))
+        if (mode) {
+          params.set("mode", mode)
+        }
+
+        const response = await fetch(`/api/social/suggestions?${params.toString()}`)
         const data = await response.json()
         setSuggestions(data.suggestions || [])
         setFollowing(
@@ -69,7 +77,7 @@ export function SuggestedAthletes({
     }
 
     fetchSuggestions()
-  }, [])
+  }, [limit, mode])
 
   const handleFollow = useCallback(async (userId: string) => {
     setFollowingLoading((prev) => new Set([...prev, userId]))

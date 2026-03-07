@@ -14,6 +14,8 @@ import { CityLadder } from "@/components/home/CityLadder"
 import { QuickActions } from "@/components/home/QuickActions"
 import { HomeFeed } from "@/components/home/HomeFeedV6"
 import { SeasonCard } from "@/components/season/SeasonCard"
+import { StreakAlert } from "@/components/widgets/streak-alert"
+import { SuggestedAthletes } from "@/components/recommendations/SuggestedAthletes"
 import { isFeatureEnabled } from "@/lib/features"
 
 // Extract types from child components for type safety
@@ -40,6 +42,12 @@ export type HomeDashboardBodyProps = {
   // Social data
   friends: FriendsStripProps["friends"]
   cityLadder: CityLadderProps["entries"]
+  streak: {
+    currentStreak: number
+    lastActivityDate: Date | null
+    weeklyGoal: number
+    weeklyProgress: number
+  }
 }
 
 export function HomeDashboardBody({
@@ -53,6 +61,7 @@ export function HomeDashboardBody({
   seasonStats,
   friends,
   cityLadder,
+  streak,
 }: HomeDashboardBodyProps) {
   return (
     <div className="container mx-auto px-4 max-w-7xl">
@@ -83,8 +92,17 @@ export function HomeDashboardBody({
 
         {/* Sidebar (1/3) - Discovery & Quick Actions */}
         <div className="space-y-6">
+          <StreakAlert
+            currentStreak={streak.currentStreak}
+            lastActivityDate={streak.lastActivityDate}
+            weeklyGoal={streak.weeklyGoal}
+            weeklyProgress={streak.weeklyProgress}
+          />
+
           {/* Friends Strip - Who you follow */}
           <FriendsStrip friends={friends} />
+
+          <SuggestedAthletes variant="list" title="Athletes You May Know" limit={5} />
 
           {/* Season Card - Current competition season */}
           {isFeatureEnabled("season") && activeSeason && (

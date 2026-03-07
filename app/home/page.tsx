@@ -3,7 +3,6 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { Suspense } from "react"
-import { startOfWeek, endOfWeek } from "date-fns"
 
 // V6 Components - Using photo-based hero (same as Profile)
 import { HomeHeroBanner } from "@/components/hero/HomeHeroBanner"
@@ -36,9 +35,6 @@ export default async function HomePage() {
   if (!session?.user?.email) {
     redirect("/login")
   }
-
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
-  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 })
 
   // Fetch user with full profile data
   const user = await prisma.user.findUnique({
@@ -92,27 +88,12 @@ export default async function HomePage() {
       where: { userId },
       select: {
         currentStreak: true,
+        lastActivityDate: true,
+        weeklyGoal: true,
+        weeklyProgress: true,
       },
     }),
   ])
-
-  // Fetch this week's activities for metrics
-  const weekActivities = await prisma.activity.findMany({
-    where: {
-      userId,
-      activityDate: { gte: weekStart, lte: weekEnd },
-    },
-    select: {
-      distanceMeters: true,
-      durationSeconds: true,
-    },
-  })
-
-  // Calculate week metrics
-  const thisWeekKm = weekActivities.reduce((sum, a) => sum + (a.distanceMeters ?? 0), 0) / 1000
-  const activeTimeMinutes = Math.round(
-    weekActivities.reduce((sum, a) => sum + (a.durationSeconds ?? 0), 0) / 60
-  )
 
   // Get user's team membership
   const teamMembership = await prisma.teamMember.findFirst({
@@ -198,16 +179,6 @@ export default async function HomePage() {
     }
   }
 
-  // Metrics for ribbon
-  const metrics = {
-    sportIndex: userStats?.sportIndex ?? 0,
-    sportIndexDelta: userStats?.sportIndexDelta7d ?? 0,
-    dayStreak: userStreak?.currentStreak ?? 0,
-    thisWeekKm,
-    activeTimeMinutes,
-    weekActivities: weekActivities.length,
-  }
-
   return (
     <main className="min-h-screen bg-background">
       {/* Home Hero - Full width photo banner with docked ribbon */}
@@ -259,6 +230,12 @@ export default async function HomePage() {
         seasonStats={seasonStats}
         friends={friends}
         cityLadder={cityLadder}
+        streak={{
+          currentStreak: userStreak?.currentStreak ?? 0,
+          lastActivityDate: userStreak?.lastActivityDate ?? null,
+          weeklyGoal: userStreak?.weeklyGoal ?? 3,
+          weeklyProgress: userStreak?.weeklyProgress ?? 0,
+        }}
       />
     </main>
   )

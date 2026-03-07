@@ -41,6 +41,7 @@
     "mike:discover": "npx tsx mike/cli.ts discover",
     "mike:help": "npx tsx mike/cli.ts help",
     "check:nomock": "npx tsx scripts/noMockScan.ts",
+    "check:architecture": "npx tsx scripts/architecture/guardrails.ts",
     "typecheck": "tsc --noEmit",
     "seed:benchmarks": "npx tsx scripts/seedBenchmarks.ts",
     "seed:sportsbench": "npx tsx scripts/seedSportsAndBenchmarks.ts",

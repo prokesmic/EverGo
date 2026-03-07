@@ -26,6 +26,7 @@ export type JobType =
   | "UPDATE_CONSISTENCY_RANKS"
   | "PROCESS_COMMUNITY_GOALS"
   | "FINALIZE_GAUNTLET"
+  | "PROCESS_DOMAIN_EVENT"
   | "CLEANUP_OLD_JOBS"
 
 export interface JobPayload {
@@ -233,6 +234,9 @@ async function executeJob(jobType: JobType, payload: JobPayload): Promise<JobRes
     case "UPDATE_CONSISTENCY_RANKS":
       return await updateConsistencyRanks(payload)
 
+    case "PROCESS_DOMAIN_EVENT":
+      return await processDomainEventJob(payload)
+
     case "CLEANUP_OLD_JOBS":
       return await cleanupOldJobs(payload)
 
@@ -361,6 +365,17 @@ async function updateConsistencyRanks(payload: JobPayload): Promise<JobResult> {
   )
 
   return { success: true, message: `Updated ${count} consistency ranks` }
+}
+
+async function processDomainEventJob(payload: JobPayload): Promise<JobResult> {
+  const { event } = payload as { event?: unknown }
+  if (!event || typeof event !== "object") {
+    return { success: false, message: "event payload is required" }
+  }
+
+  const { processDomainEvent } = await import("@/lib/events/processor")
+  const result = await processDomainEvent(event as never)
+  return { success: true, data: result }
 }
 
 async function cleanupOldJobs(payload: JobPayload): Promise<JobResult> {
