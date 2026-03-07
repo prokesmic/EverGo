@@ -25,7 +25,7 @@ export async function GET(req: Request) {
       return jsonWithRequestId(requestId, { results: [], error: validation.error }, { status: 400 })
     }
 
-    const { q: query, type, limit } = validation.data
+    const { q: query, type, limit, city, sport, sort } = validation.data
     const session = await getServerSession(authOptions)
     const userId = (session?.user as { id?: string } | undefined)?.id
 
@@ -33,6 +33,9 @@ export async function GET(req: Request) {
       query,
       type: type || "all",
       limit,
+      city,
+      sport,
+      sort,
       userId,
     })
 

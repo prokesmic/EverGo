@@ -23,76 +23,75 @@ export async function POST(request: Request) {
     const {
       selectedSports,
       weeklyGoal,
-      distanceGoal,
       city,
       country,
       followedUsers,
       joinedCommunities,
     } = data
 
-    // Update user profile with location
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        city: city || user.city,
-        country: country || user.country,
-      },
-    })
+    const normalizedSports: string[] = Array.isArray(selectedSports)
+      ? [...new Set(selectedSports.filter((sportId: unknown): sportId is string => typeof sportId === "string" && sportId.length > 0))]
+      : []
 
-    // Add selected sports
-    if (selectedSports && selectedSports.length > 0) {
-      // Delete existing sports first
-      await prisma.userSport.deleteMany({
+    const normalizedFollowedUsers: string[] = Array.isArray(followedUsers)
+      ? [...new Set(followedUsers.filter((id: unknown): id is string => typeof id === "string" && id.length > 0 && id !== user.id))]
+      : []
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          city: city || user.city,
+          country: country || user.country,
+          onboardingCompleted: true,
+          primarySportId: normalizedSports[0] ?? user.primarySportId,
+        },
+      })
+
+      if (normalizedSports.length > 0) {
+        await tx.userSport.deleteMany({
+          where: { userId: user.id },
+        })
+
+        await tx.userSport.createMany({
+          data: normalizedSports.map((sportId, index) => ({
+            userId: user.id,
+            sportId,
+            priority: index,
+            status: "ACTIVE",
+          })),
+          skipDuplicates: true,
+        })
+      }
+
+      await tx.userStreak.upsert({
         where: { userId: user.id },
-      })
-
-      // Add new sports
-      await prisma.userSport.createMany({
-        data: selectedSports.map((sportId: string, index: number) => ({
+        update: {
+          weeklyGoal: weeklyGoal || 3,
+        },
+        create: {
           userId: user.id,
-          sportId,
-          isPrimary: index === 0, // First sport is primary
-        })),
-        skipDuplicates: true,
+          weeklyGoal: weeklyGoal || 3,
+          currentStreak: 0,
+          longestStreak: 0,
+          weeklyStreak: 0,
+          weeklyProgress: 0,
+        },
       })
-    }
 
-    // Initialize or update streak settings
-    await prisma.userStreak.upsert({
-      where: { userId: user.id },
-      update: {
-        weeklyGoal: weeklyGoal || 3,
-      },
-      create: {
-        userId: user.id,
-        weeklyGoal: weeklyGoal || 3,
-        currentStreak: 0,
-        longestStreak: 0,
-        weeklyStreak: 0,
-        weeklyProgress: 0,
-      },
+      if (normalizedFollowedUsers.length > 0) {
+        await tx.follow.createMany({
+          data: normalizedFollowedUsers.map((followingId) => ({
+            followerId: user.id,
+            followingId,
+          })),
+          skipDuplicates: true,
+        })
+      }
     })
-
-    // Follow suggested users
-    if (followedUsers && followedUsers.length > 0) {
-      await prisma.follow.createMany({
-        data: followedUsers.map((followingId: string) => ({
-          followerId: user.id,
-          followingId,
-        })),
-        skipDuplicates: true,
-      })
-    }
 
     // Communities removed in V6
     void joinedCommunities
-
-    // TODO: Mark onboarding as completed
-    // Add onboardingCompleted: true field to User model
-    // await prisma.user.update({
-    //   where: { id: user.id },
-    //   data: { onboardingCompleted: true },
-    // })
 
     return NextResponse.json({
       success: true,

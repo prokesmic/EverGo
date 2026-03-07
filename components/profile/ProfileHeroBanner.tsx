@@ -4,6 +4,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { useState } from "react"
 import { MapPin, CalendarDays, Settings, UserPlus, UserCheck, Swords } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { HeroBanner } from "@/components/hero/HeroBanner"
@@ -64,6 +65,8 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
     profileUserId,
     bottomDock,
   } = props
+  const [isFollowingState, setIsFollowingState] = useState(isFollowing)
+  const [isFollowPending, setIsFollowPending] = useState(false)
 
   // Resolve hero image using single source of truth (handles placeholder detection)
   const heroImageSrc = resolveHeroImage({
@@ -85,6 +88,28 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
     : sportIndex >= 500 ? "silver"
     : sportIndex >= 100 ? "bronze"
     : null
+
+  const toggleFollow = async () => {
+    if (!profileUserId || isFollowPending) return
+    setIsFollowPending(true)
+
+    try {
+      const method = isFollowingState ? "DELETE" : "POST"
+      const response = await fetch("/api/social/follow", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: profileUserId }),
+      })
+
+      if (response.ok) {
+        setIsFollowingState((prev) => !prev)
+      }
+    } catch (error) {
+      console.error("Follow toggle failed:", error)
+    } finally {
+      setIsFollowPending(false)
+    }
+  }
 
   return (
     <div className="relative">
@@ -122,28 +147,28 @@ export function ProfileHeroBanner(props: ProfileHeroBannerProps) {
                 </Link>
               )}
               {/* Follow Button */}
-              <Link href={`/api/follow/${profileUserId}`} prefetch={false}>
-                <Button
-                  data-testid="profile-follow-btn"
-                  className={isFollowing
-                    ? "gap-2 bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
-                    : "gap-2 shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-shadow"
-                  }
-                  variant={isFollowing ? "outline" : "default"}
-                >
-                  {isFollowing ? (
-                    <>
-                      <UserCheck className="h-4 w-4" />
-                      Following
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-4 w-4" />
-                      Follow
-                    </>
-                  )}
-                </Button>
-              </Link>
+              <Button
+                data-testid="profile-follow-btn"
+                onClick={toggleFollow}
+                disabled={!profileUserId || isFollowPending}
+                className={isFollowingState
+                  ? "gap-2 bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
+                  : "gap-2 shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-shadow"
+                }
+                variant={isFollowingState ? "outline" : "default"}
+              >
+                {isFollowingState ? (
+                  <>
+                    <UserCheck className="h-4 w-4" />
+                    Following
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="h-4 w-4" />
+                    Follow
+                  </>
+                )}
+              </Button>
             </div>
           )
         }

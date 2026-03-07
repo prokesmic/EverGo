@@ -2,12 +2,40 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
-import { differenceInDays } from "date-fns"
+import { differenceInDays, startOfDay, subDays } from "date-fns"
+
+function toDayKey(date: Date): string {
+  return date.toISOString().slice(0, 10)
+}
+
+async function getTeamDailyStreak(teamId: string): Promise<number> {
+  const lookbackStart = subDays(startOfDay(new Date()), 30)
+  const activities = await prisma.activity.findMany({
+    where: {
+      activityDate: { gte: lookbackStart },
+      user: {
+        teamMemberships: {
+          some: { teamId },
+        },
+      },
+    },
+    select: { activityDate: true },
+    orderBy: { activityDate: "desc" },
+  })
+
+  const daySet = new Set(activities.map((item) => toDayKey(item.activityDate)))
+  let streak = 0
+  for (let i = 0; i < 31; i += 1) {
+    const day = toDayKey(subDays(startOfDay(new Date()), i))
+    if (!daySet.has(day)) break
+    streak += 1
+  }
+  return streak
+}
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
-
     if (!session?.user?.email) {
       return NextResponse.json({ battle: null })
     }
@@ -21,9 +49,8 @@ export async function GET() {
       return NextResponse.json({ battle: null })
     }
 
-    // Find user's teams
     const userTeams = await prisma.teamMember.findMany({
-      where: { userId: user.id },
+      where: { userId: user.id, role: { not: "BANNED" } },
       select: { teamId: true },
     })
 
@@ -31,90 +58,101 @@ export async function GET() {
       return NextResponse.json({ battle: null })
     }
 
-    const teamIds = userTeams.map((t) => t.teamId)
+    const teamIds = userTeams.map((item) => item.teamId)
 
-    // Try to find an active team challenge
-    // This is a placeholder - implement based on your TeamChallenge model
-    try {
-      // @ts-ignore - TeamChallenge model may not exist yet
-      const activeChallenge = await prisma.teamChallenge?.findFirst({
-        where: {
-          OR: [{ teamAId: { in: teamIds } }, { teamBId: { in: teamIds } }],
-          endDate: { gte: new Date() },
-          startDate: { lte: new Date() },
-        },
-        include: {
-          teamA: {
-            include: {
-              sport: true,
-              _count: { select: { members: true } },
-            },
+    const activeBattle = await prisma.crewWar.findFirst({
+      where: {
+        status: "ACTIVE",
+        AND: [
+          {
+            OR: [
+              { challengerTeamId: { in: teamIds } },
+              { opponentTeamId: { in: teamIds } },
+            ],
           },
-          teamB: {
-            include: {
-              sport: true,
-              _count: { select: { members: true } },
-            },
+          {
+            OR: [
+              { endsAt: null },
+              { endsAt: { gte: new Date() } },
+            ],
           },
-        },
-        orderBy: { endDate: "asc" },
-      })
-
-      if (!activeChallenge) {
-        return NextResponse.json({ battle: null })
-      }
-
-      // Calculate scores based on activities during the challenge period
-      const teamAActivities = await prisma.activity.count({
-        where: {
-          user: { teamMemberships: { some: { teamId: activeChallenge.teamAId } } },
-          activityDate: {
-            gte: activeChallenge.startDate,
-            lte: activeChallenge.endDate,
+        ],
+      },
+      include: {
+        challengerTeam: {
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            logoUrl: true,
+            sport: { select: { icon: true } },
           },
         },
-      })
-
-      const teamBActivities = await prisma.activity.count({
-        where: {
-          user: { teamMemberships: { some: { teamId: activeChallenge.teamBId } } },
-          activityDate: {
-            gte: activeChallenge.startDate,
-            lte: activeChallenge.endDate,
+        opponentTeam: {
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            logoUrl: true,
+            sport: { select: { icon: true } },
           },
         },
-      })
+      },
+      orderBy: { endsAt: "asc" },
+    })
 
-      const daysLeft = differenceInDays(new Date(activeChallenge.endDate), new Date())
-
-      return NextResponse.json({
-        battle: {
-          teamA: {
-            id: activeChallenge.teamA.id,
-            name: activeChallenge.teamA.name,
-            logoUrl: activeChallenge.teamA.logoUrl,
-            color: "bg-orange-500",
-            score: activeChallenge.teamAScore || teamAActivities * 100,
-            weeklyActivities: teamAActivities,
-            streak: 0, // TODO: Calculate team streak
-          },
-          teamB: {
-            id: activeChallenge.teamB.id,
-            name: activeChallenge.teamB.name,
-            logoUrl: activeChallenge.teamB.logoUrl,
-            color: "bg-indigo-500",
-            score: activeChallenge.teamBScore || teamBActivities * 100,
-            weeklyActivities: teamBActivities,
-            streak: 0,
-          },
-          challengeName: activeChallenge.name || "Weekly Showdown",
-          endsIn: daysLeft <= 0 ? "Today" : `${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
-        },
-      })
-    } catch {
-      // TeamChallenge model doesn't exist yet
+    if (!activeBattle) {
       return NextResponse.json({ battle: null })
     }
+
+    const weekStart = subDays(new Date(), 7)
+
+    const [teamAWeeklyActivities, teamBWeeklyActivities, teamAStreak, teamBStreak] =
+      await Promise.all([
+        prisma.activity.count({
+          where: {
+            activityDate: { gte: weekStart },
+            user: { teamMemberships: { some: { teamId: activeBattle.challengerTeamId } } },
+          },
+        }),
+        prisma.activity.count({
+          where: {
+            activityDate: { gte: weekStart },
+            user: { teamMemberships: { some: { teamId: activeBattle.opponentTeamId } } },
+          },
+        }),
+        getTeamDailyStreak(activeBattle.challengerTeamId),
+        getTeamDailyStreak(activeBattle.opponentTeamId),
+      ])
+
+    const daysLeft = activeBattle.endsAt
+      ? Math.max(0, differenceInDays(new Date(activeBattle.endsAt), new Date()))
+      : null
+
+    return NextResponse.json({
+      battle: {
+        teamA: {
+          id: activeBattle.challengerTeam.slug,
+          name: `${activeBattle.challengerTeam.sport.icon} ${activeBattle.challengerTeam.name}`,
+          logoUrl: activeBattle.challengerTeam.logoUrl,
+          color: "bg-orange-500",
+          score: Math.round(activeBattle.challengerPower),
+          weeklyActivities: teamAWeeklyActivities,
+          streak: teamAStreak,
+        },
+        teamB: {
+          id: activeBattle.opponentTeam.slug,
+          name: `${activeBattle.opponentTeam.sport.icon} ${activeBattle.opponentTeam.name}`,
+          logoUrl: activeBattle.opponentTeam.logoUrl,
+          color: "bg-indigo-500",
+          score: Math.round(activeBattle.opponentPower),
+          weeklyActivities: teamBWeeklyActivities,
+          streak: teamBStreak,
+        },
+        challengeName: activeBattle.message || "Crew War",
+        endsIn: daysLeft === null ? "No end date" : daysLeft === 0 ? "Today" : `${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
+      },
+    })
   } catch (error) {
     console.error("Error fetching active battle:", error)
     return NextResponse.json({ battle: null })

@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 
 type SearchType = "all" | "users" | "teams" | "challenges"
+type SearchSort = "relevance" | "recent" | "popular"
 
 interface SearchResult {
   type: "user" | "team" | "challenge"
@@ -33,15 +34,26 @@ export default function SearchPage() {
 
   const initialQuery = searchParams.get("q") ?? ""
   const initialType = (searchParams.get("type") as SearchType) ?? "all"
+  const initialCity = searchParams.get("city") ?? ""
+  const initialSport = searchParams.get("sport") ?? ""
+  const initialSort = (searchParams.get("sort") as SearchSort) ?? "relevance"
 
   const [query, setQuery] = useState(initialQuery)
   const [type, setType] = useState<SearchType>(FILTERS.some((f) => f.value === initialType) ? initialType : "all")
+  const [city, setCity] = useState(initialCity)
+  const [sport, setSport] = useState(initialSport)
+  const [sort, setSort] = useState<SearchSort>(
+    initialSort === "recent" || initialSort === "popular" ? initialSort : "relevance"
+  )
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<SearchResult[]>([])
 
   useEffect(() => {
     setQuery(initialQuery)
-  }, [initialQuery])
+    setCity(initialCity)
+    setSport(initialSport)
+    setSort(initialSort === "recent" || initialSort === "popular" ? initialSort : "relevance")
+  }, [initialQuery, initialCity, initialSport, initialSort])
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -56,8 +68,11 @@ export default function SearchPage() {
         const params = new URLSearchParams({
           q: query.trim(),
           type,
+          sort,
           limit: "24",
         })
+        if (city.trim()) params.set("city", city.trim())
+        if (sport.trim()) params.set("sport", sport.trim())
         const res = await fetch(`/api/search?${params.toString()}`)
         const data = await res.json()
         setResults(Array.isArray(data.results) ? data.results : [])
@@ -70,7 +85,7 @@ export default function SearchPage() {
     }, 250)
 
     return () => clearTimeout(timer)
-  }, [query, type])
+  }, [query, type, city, sport, sort])
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams.toString())
@@ -78,6 +93,12 @@ export default function SearchPage() {
     else next.delete("q")
     if (type !== "all") next.set("type", type)
     else next.delete("type")
+    if (city.trim()) next.set("city", city.trim())
+    else next.delete("city")
+    if (sport.trim()) next.set("sport", sport.trim())
+    else next.delete("sport")
+    if (sort !== "relevance") next.set("sort", sort)
+    else next.delete("sort")
 
     const nextQuery = next.toString()
     const targetUrl = nextQuery ? `/search?${nextQuery}` : "/search"
@@ -85,7 +106,7 @@ export default function SearchPage() {
     if (targetUrl !== currentUrl) {
       router.replace(targetUrl, { scroll: false })
     }
-  }, [query, type, router, searchParams])
+  }, [query, type, city, sport, sort, router, searchParams])
 
   const groupedResults = useMemo(() => {
     return {
@@ -152,6 +173,37 @@ export default function SearchPage() {
                 >
                   <filter.icon className="mr-1.5 h-4 w-4" />
                   {filter.label}
+                </Button>
+              ))}
+            </div>
+
+            <div className="grid gap-2 md:grid-cols-2">
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="City filter (optional)"
+              />
+              <Input
+                value={sport}
+                onChange={(e) => setSport(e.target.value)}
+                placeholder="Sport filter (optional, e.g. running)"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {[
+                { id: "relevance", label: "Best Match" },
+                { id: "recent", label: "Most Recent" },
+                { id: "popular", label: "Most Popular" },
+              ].map((item) => (
+                <Button
+                  key={item.id}
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSort(item.id as SearchSort)}
+                  className={cn(sort === item.id && "border-primary bg-primary/10 text-primary")}
+                >
+                  {item.label}
                 </Button>
               ))}
             </div>

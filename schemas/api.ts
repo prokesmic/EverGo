@@ -38,6 +38,9 @@ export type UserPreview = z.infer<typeof userPreviewSchema>
 export const searchQuerySchema = z.object({
   q: z.string().min(2, "Query must be at least 2 characters"),
   type: z.enum(["all", "users", "teams", "challenges"]).optional(),
+  city: z.string().trim().min(1).max(100).optional(),
+  sport: z.string().trim().min(1).max(100).optional(),
+  sort: z.enum(["relevance", "recent", "popular"]).default("relevance"),
   limit: z.coerce.number().int().min(1).max(50).default(10),
 })
 
