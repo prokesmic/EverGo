@@ -96,6 +96,7 @@ export async function GET(request: Request) {
                 elevationGain: post.activity.elevationGain,
                 avgPace: post.activity.avgPace,
                 avgHeartRate: post.activity.avgHeartRate,
+                gpsRoute: post.activity.gpsRoute,
             } : null,
             engagement: {
                 likesCount: post._count.likes,

@@ -26,11 +26,11 @@ export const authOptions: NextAuthOptions = {
         CredentialsProvider({
             name: "Credentials",
             credentials: {
-                email: { label: "Email", type: "email" },
+                email: { label: "Email or username", type: "text" },
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                console.log("[Auth] Authorize called with email:", credentials?.email)
+                console.log("[Auth] Authorize called with identifier:", credentials?.email)
                 console.log("[Auth] Password length:", credentials?.password?.length)
 
                 if (!credentials?.email || !credentials?.password) {
@@ -39,10 +39,25 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 try {
+                    const identifier = credentials.email.trim()
+                    const normalizedIdentifier = identifier.toLowerCase()
                     console.log("[Auth] Looking up user in database...")
-                    const user = await prisma.user.findUnique({
+                    const user = await prisma.user.findFirst({
                         where: {
-                            email: credentials.email.toLowerCase().trim()
+                            OR: [
+                                {
+                                    email: {
+                                        equals: normalizedIdentifier,
+                                        mode: "insensitive"
+                                    }
+                                },
+                                {
+                                    username: {
+                                        equals: identifier,
+                                        mode: "insensitive"
+                                    }
+                                }
+                            ]
                         }
                     })
 

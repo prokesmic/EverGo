@@ -8,6 +8,14 @@ import { PageGrid } from "@/components/layout/page-grid"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
 import { Metadata } from "next"
+import {
+    buildElevationProfile,
+    buildEstimatedSplits,
+    getMapCenter,
+    parseGpsRoute,
+    parseStartLocation,
+    toLeafletPath,
+} from "@/lib/activity/route"
 
 export const dynamic = 'force-dynamic'
 
@@ -88,6 +96,34 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
         return `${m}:${s.toString().padStart(2, '0')}`
     }
 
+    const routePoints = parseGpsRoute(activity.gpsRoute)
+    const startLocation = parseStartLocation(activity.startLocation)
+    const mapPath = toLeafletPath(routePoints)
+    const mapCenter = getMapCenter(mapPath, startLocation)
+    const elevationProfile = buildElevationProfile(routePoints)
+    const splits = buildEstimatedSplits(activity.distanceMeters, activity.durationSeconds)
+
+    const hasMapData = mapPath.length > 1 || !!startLocation
+    const mapMarkers =
+        mapPath.length > 1
+            ? [
+                { position: mapPath[0], title: "Start" },
+                { position: mapPath[mapPath.length - 1], title: "Finish" },
+            ]
+            : startLocation
+                ? [{ position: [startLocation.lat, startLocation.lng] as [number, number], title: "Start" }]
+                : undefined
+    const elevationMin = elevationProfile.length > 0 ? Math.min(...elevationProfile) : 0
+    const elevationMax = elevationProfile.length > 0 ? Math.max(...elevationProfile) : 0
+    const elevationRange = Math.max(1, elevationMax - elevationMin)
+    const elevationPolyline = elevationProfile
+        .map((value, index) => {
+            const x = (index / Math.max(1, elevationProfile.length - 1)) * 100
+            const y = 92 - ((value - elevationMin) / elevationRange) * 84
+            return `${x},${y}`
+        })
+        .join(" ")
+
     return (
         <div className="min-h-screen bg-bg-page">
             <PageGrid
@@ -131,21 +167,92 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
                             </div>
                         </div>
 
-                        <div className="h-[400px] w-full bg-muted rounded-xl overflow-hidden relative z-0">
-                            <ActivityMap
-                                center={[50.0755, 14.4378]}
-                                zoom={13}
-                                path={[
-                                    [50.0755, 14.4378],
-                                    [50.0765, 14.4388],
-                                    [50.0775, 14.4398],
-                                    [50.0785, 14.4408],
-                                    [50.0795, 14.4418]
-                                ]}
-                            />
-                        </div>
+                        {hasMapData ? (
+                            <div className="h-[400px] w-full bg-muted rounded-xl overflow-hidden relative z-0">
+                                <ActivityMap
+                                    center={mapCenter}
+                                    zoom={13}
+                                    path={mapPath.length > 1 ? mapPath : undefined}
+                                    markers={mapMarkers}
+                                />
+                            </div>
+                        ) : (
+                            <div className="h-[220px] w-full bg-muted rounded-xl flex items-center justify-center text-sm text-muted-foreground">
+                                Route data unavailable for this activity.
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Elevation Profile</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {elevationProfile.length > 1 ? (
+                                <>
+                                    <div className="h-44 w-full rounded-lg border border-border-light bg-gradient-to-b from-emerald-100/60 to-transparent p-3">
+                                        <svg viewBox="0 0 100 100" className="h-full w-full" preserveAspectRatio="none">
+                                            <polyline
+                                                fill="none"
+                                                stroke="hsl(var(--primary))"
+                                                strokeWidth="2.5"
+                                                strokeLinejoin="round"
+                                                strokeLinecap="round"
+                                                points={elevationPolyline}
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+                                        <span>Min: {Math.round(elevationMin)} m</span>
+                                        <span>Max: {Math.round(elevationMax)} m</span>
+                                        <span>Range: {Math.round(elevationMax - elevationMin)} m</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-sm text-muted-foreground">
+                                    No detailed elevation points found in GPS data.
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Estimated Splits</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {splits.length > 0 ? (
+                                <div className="space-y-2">
+                                    {splits.map((split) => (
+                                        <div
+                                            key={split.label}
+                                            className="grid grid-cols-3 items-center rounded-lg border border-border-light px-3 py-2 text-sm"
+                                        >
+                                            <span className="font-medium text-foreground">{split.label}</span>
+                                            <span className="text-center text-muted-foreground">
+                                                {formatDuration(Math.round(split.splitSeconds))}
+                                            </span>
+                                            <span className="text-right text-muted-foreground">
+                                                {formatDuration(Math.round(split.cumulativeSeconds))}
+                                            </span>
+                                        </div>
+                                    ))}
+                                    <div className="grid grid-cols-3 px-1 text-xs text-muted-foreground">
+                                        <span>Segment</span>
+                                        <span className="text-center">Split</span>
+                                        <span className="text-right">Cumulative</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-sm text-muted-foreground">
+                                    Splits need both distance and duration values.
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             </PageGrid>
         </div>
     )

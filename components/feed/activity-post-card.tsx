@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useMemo } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Heart, MessageCircle, Share2, MapPin, Clock, Activity, Flame, TrendingUp, MoreHorizontal, Bookmark, Flag, Eye } from "lucide-react"
+import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark, Flag, Eye, Clock } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import ActivityMap from "@/components/ui/map"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { getMapCenter, parseGpsRoute, toLeafletPath } from "@/lib/activity/route"
 
 interface ActivityPostCardProps {
     post: {
@@ -35,6 +35,7 @@ interface ActivityPostCardProps {
             elevationGain: number | null
             avgPace: number | null
             avgHeartRate: number | null
+            gpsRoute: string | null
         } | null
         engagement: {
             likesCount: number
@@ -60,16 +61,6 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
 
     // Double-tap to like
     const lastTap = useRef(0)
-    const handleDoubleTap = useCallback(() => {
-        const now = Date.now()
-        const DOUBLE_TAP_DELAY = 300
-        if (now - lastTap.current < DOUBLE_TAP_DELAY) {
-            if (!isLiked) {
-                handleLikeWithHaptic()
-            }
-        }
-        lastTap.current = now
-    }, [isLiked])
 
     // Haptic feedback helper
     const triggerHaptic = (intensity: 'light' | 'medium' | 'heavy' = 'light') => {
@@ -77,11 +68,6 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
             const durations = { light: 10, medium: 25, heavy: 50 }
             navigator.vibrate(durations[intensity])
         }
-    }
-
-    const handleLikeWithHaptic = async () => {
-        triggerHaptic('medium')
-        handleLike()
     }
 
     const handleLike = async () => {
@@ -97,6 +83,22 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
             setIsLiked(!isLiked)
             setLikesCount(prev => isLiked ? prev + 1 : prev - 1)
         }
+    }
+
+    const handleLikeWithHaptic = async () => {
+        triggerHaptic('medium')
+        handleLike()
+    }
+
+    const handleDoubleTap = () => {
+        const now = Date.now()
+        const DOUBLE_TAP_DELAY = 300
+        if (now - lastTap.current < DOUBLE_TAP_DELAY) {
+            if (!isLiked) {
+                handleLikeWithHaptic()
+            }
+        }
+        lastTap.current = now
     }
 
     const handleShare = async () => {
@@ -143,6 +145,14 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
         const s = Math.round(secondsPerKm % 60)
         return `${m}:${s.toString().padStart(2, '0')}`
     }
+
+    const gpsRoute = activity?.gpsRoute ?? null
+    const mapPath = useMemo(() => {
+        if (!gpsRoute) return []
+        return toLeafletPath(parseGpsRoute(gpsRoute)).slice(0, 1000)
+    }, [gpsRoute])
+    const hasRouteMap = mapPath.length > 1
+    const mapCenter = getMapCenter(mapPath)
 
     // Handle swipe gestures
     const handleTouchStart = (e: React.TouchEvent) => {
@@ -343,20 +353,19 @@ export function ActivityPostCard({ post }: ActivityPostCardProps) {
             )}
 
             {/* Map & Photos */}
-            {/* Map & Photos */}
-            {/* For demo purposes, we show the map if it's an activity type, even without specific route data yet */}
-            {activity && (
+            {activity && hasRouteMap && (
                 <div className="w-full h-64 bg-gray-100 relative mb-3 z-0">
-                    <ActivityMap
-                        center={[50.0755, 14.4378]} // Prague
-                        zoom={13}
-                        path={[
-                            [50.0755, 14.4378],
-                            [50.0765, 14.4388],
-                            [50.0775, 14.4398],
-                            [50.0785, 14.4408],
-                            [50.0795, 14.4418]
-                        ]}
+                    <ActivityMap center={mapCenter} zoom={13} path={mapPath} />
+                </div>
+            )}
+
+            {activity && !hasRouteMap && post.mapImageUrl && (
+                <div className="w-full h-64 bg-gray-100 relative mb-3 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={post.mapImageUrl}
+                        alt={`${activity.title} route preview`}
+                        className="w-full h-full object-cover"
                     />
                 </div>
             )}

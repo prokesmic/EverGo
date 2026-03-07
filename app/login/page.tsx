@@ -2,17 +2,14 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { Activity, ChevronRight, Mail, Lock, Eye, EyeOff } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 export default function LoginPage() {
-    const router = useRouter()
-    const [email, setEmail] = useState("")
+    const [identifier, setIdentifier] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -22,9 +19,9 @@ export default function LoginPage() {
         setIsLoading(true)
 
         try {
-            console.log("[Login] Attempting sign in for:", email)
+            console.log("[Login] Attempting sign in for:", identifier)
             const result = await signIn("credentials", {
-                email,
+                email: identifier,
                 password,
                 redirect: false,
             })
@@ -74,14 +71,17 @@ export default function LoginPage() {
                 <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300 uppercase tracking-wide">Email</label>
+                            <label className="text-sm font-medium text-slate-300 uppercase tracking-wide">Email or Username</label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <Input
-                                    type="email"
-                                    placeholder="you@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    name="email"
+                                    id="email"
+                                    type="text"
+                                    autoComplete="username"
+                                    placeholder="you@example.com or sirmisa"
+                                    value={identifier}
+                                    onChange={(e) => setIdentifier(e.target.value)}
                                     required
                                     className="pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-indigo-500 focus:ring-indigo-500"
                                 />

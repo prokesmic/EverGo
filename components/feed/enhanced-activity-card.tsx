@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -8,7 +8,6 @@ import {
   Heart,
   MessageCircle,
   Share2,
-  MapPin,
   Clock,
   Activity as ActivityIcon,
   Flame,
@@ -18,7 +17,6 @@ import {
   Target,
   Mountain,
   Wind,
-  Droplets,
 } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
@@ -26,6 +24,7 @@ import ActivityMap from "@/components/ui/map"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { CommentsSection } from "@/components/comments/comments-section"
+import { getMapCenter, parseGpsRoute, toLeafletPath } from "@/lib/activity/route"
 
 interface EnhancedActivityCardProps {
   post: {
@@ -55,6 +54,7 @@ interface EnhancedActivityCardProps {
       maxHeartRate?: number | null
       avgSpeed?: number | null
       maxSpeed?: number | null
+      gpsRoute?: string | null
     } | null
     engagement: {
       likesCount: number
@@ -132,10 +132,17 @@ export function EnhancedActivityCard({ post }: EnhancedActivityCardProps) {
     return `${m}:${s.toString().padStart(2, "0")}`
   }
 
-  if (!activity && post.postType === "ACTIVITY") return null
-
   const distanceKm = activity?.distanceMeters ? (activity.distanceMeters / 1000).toFixed(2) : "0"
   const duration = activity?.durationSeconds || 0
+  const gpsRoute = activity?.gpsRoute ?? null
+  const mapPath = useMemo(() => {
+    if (!gpsRoute) return []
+    return toLeafletPath(parseGpsRoute(gpsRoute)).slice(0, 1000)
+  }, [gpsRoute])
+  const hasRouteMap = mapPath.length > 1
+  const mapCenter = getMapCenter(mapPath)
+
+  if (!activity && post.postType === "ACTIVITY") return null
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-border-light overflow-hidden mb-6 hover:shadow-xl transition-shadow">
@@ -293,25 +300,22 @@ export function EnhancedActivityCard({ post }: EnhancedActivityCardProps) {
       )}
 
       {/* Map - Larger and more prominent */}
-      {activity && (
+      {activity && hasRouteMap && (
         <div
           className={cn("w-full relative cursor-pointer overflow-hidden transition-all", imageExpanded ? "h-[600px]" : "h-[400px]")}
           onClick={() => setImageExpanded(!imageExpanded)}
         >
-          <ActivityMap
-            center={[50.0755, 14.4378]}
-            zoom={13}
-            path={[
-              [50.0755, 14.4378],
-              [50.0765, 14.4388],
-              [50.0775, 14.4398],
-              [50.0785, 14.4408],
-              [50.0795, 14.4418],
-            ]}
-          />
+          <ActivityMap center={mapCenter} zoom={13} path={mapPath} />
           <div className="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm">
             {imageExpanded ? "Click to shrink" : "Click to expand"}
           </div>
+        </div>
+      )}
+
+      {activity && !hasRouteMap && post.mapImageUrl && (
+        <div className="w-full h-80 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={post.mapImageUrl} alt={`${activity.title} route preview`} className="h-full w-full object-cover" />
         </div>
       )}
 
