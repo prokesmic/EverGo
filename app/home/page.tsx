@@ -49,6 +49,7 @@ export default async function HomePage() {
       city: true,
       country: true,
       bio: true,
+      persona: true,
       createdAt: true,
       _count: {
         select: {
@@ -222,6 +223,13 @@ export default async function HomePage() {
       <HomeDashboardBody
         userId={userId}
         userCity={user.city}
+        homeMode={
+          user.persona === "TRACKER"
+            ? "recovery"
+            : user.persona === "SOCIAL"
+              ? "social"
+              : "competition"
+        }
         teamId={teamId}
         activeGauntlets={activeGauntlets}
         crewWar={crewWar}

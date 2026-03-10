@@ -18,11 +18,12 @@ export type PostWithRelations = {
     username: string
     displayName: string
     avatarUrl: string | null
+    city?: string | null
   }
   activity: {
     id: string
     title: string
-    sport?: { name?: string | null; icon?: string | null } | null
+    sport?: { name?: string | null; icon?: string | null; slug?: string | null } | null
     durationSeconds: number | null
     distanceMeters: number | null
     caloriesBurned: number | null
@@ -116,12 +117,15 @@ export function rankFeedPosts(
     viewerId: string
     followingIds: string[]
     type: FeedType
+    viewerCity?: string | null
+    viewerSportSlugs?: string[]
   }
 ) {
   const now = Date.now()
   const followingSet = new Set(options.followingIds)
+  const viewerSports = new Set((options.viewerSportSlugs ?? []).map((item) => item.toLowerCase()))
 
-  return [...posts]
+  const ranked = [...posts]
     .map((post) => {
       const ageHours = Math.max(0, (now - post.createdAt.getTime()) / 3_600_000)
       const recencyScore = Math.max(0, 100 - ageHours * 4)
@@ -136,6 +140,15 @@ export function rankFeedPosts(
 
       const routeBoost = post.activity?.gpsRoute ? 6 : 0
       const activityBoost = post.postType === "ACTIVITY" ? 5 : 0
+      const sportSlug = post.activity?.sport?.slug?.toLowerCase() ?? null
+      const sameSportBoost = sportSlug && viewerSports.has(sportSlug) ? 10 : 0
+      const sameCityBoost =
+        options.viewerCity &&
+        post.user.city &&
+        post.user.city.trim().toLowerCase() === options.viewerCity.trim().toLowerCase()
+          ? 7
+          : 0
+      const milestoneBoost = post.postType === "MILESTONE" ? 8 : 0
 
       const score =
         recencyScore * 0.45 +
@@ -143,7 +156,10 @@ export function rankFeedPosts(
         relationshipBoost +
         typeBoost +
         routeBoost +
-        activityBoost
+        activityBoost +
+        sameSportBoost +
+        sameCityBoost +
+        milestoneBoost
 
       return { post, score }
     })
@@ -153,7 +169,8 @@ export function rankFeedPosts(
       }
       return b.post.createdAt.getTime() - a.post.createdAt.getTime()
     })
-    .map((item) => item.post)
+
+  return diversifyByAuthor(ranked).map((item) => item.post)
 }
 
 function safeParsePhotos(rawPhotos: string) {
@@ -178,4 +195,20 @@ function projectGpsRoute(gpsRoute: string | null, isOwner: boolean): string | nu
     sampled.push(points[Math.floor(i * step)])
   }
   return JSON.stringify(sampled)
+}
+
+function diversifyByAuthor(items: Array<{ post: PostWithRelations; score: number }>) {
+  const remaining = [...items]
+  const result: Array<{ post: PostWithRelations; score: number }> = []
+
+  while (remaining.length > 0) {
+    const lastAuthorId = result[result.length - 1]?.post.userId
+    const candidateIndex =
+      remaining.findIndex((item) => item.post.userId !== lastAuthorId) === -1
+        ? 0
+        : remaining.findIndex((item) => item.post.userId !== lastAuthorId)
+    result.push(remaining.splice(candidateIndex, 1)[0])
+  }
+
+  return result
 }

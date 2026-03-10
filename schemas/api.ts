@@ -37,7 +37,7 @@ export type UserPreview = z.infer<typeof userPreviewSchema>
 // Search schemas
 export const searchQuerySchema = z.object({
   q: z.string().min(2, "Query must be at least 2 characters"),
-  type: z.enum(["all", "users", "teams", "challenges"]).optional(),
+  type: z.enum(["all", "users", "teams", "challenges", "activities"]).optional(),
   city: z.string().trim().min(1).max(100).optional(),
   sport: z.string().trim().min(1).max(100).optional(),
   sort: z.enum(["relevance", "recent", "popular"]).default("relevance"),
@@ -45,7 +45,7 @@ export const searchQuerySchema = z.object({
 })
 
 export const searchResultItemSchema = z.object({
-  type: z.enum(["user", "team", "challenge"]),
+  type: z.enum(["user", "team", "challenge", "activity"]),
   id: z.string(),
   title: z.string(),
   subtitle: z.string().optional(),

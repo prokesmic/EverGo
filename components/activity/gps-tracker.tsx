@@ -32,11 +32,17 @@ export function GPSTracker({ onComplete }: GPSTrackerProps) {
   const [duration, setDuration] = useState(0)
   const [currentSpeed, setCurrentSpeed] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [autoPaused, setAutoPaused] = useState(false)
 
   const watchIdRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(0)
-  const pausedTimeRef = useRef<number>(0)
+  const pausedAccumulatedMsRef = useRef<number>(0)
+  const pauseStartedAtRef = useRef<number | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const pausedRef = useRef(false)
+  const autoPausedRef = useRef(false)
+  const lowSpeedSinceRef = useRef<number | null>(null)
+  const nextCueKmRef = useRef(1)
 
   // Request location permission
   useEffect(() => {
@@ -80,13 +86,19 @@ export function GPSTracker({ onComplete }: GPSTrackerProps) {
 
     setIsTracking(true)
     setIsPaused(false)
+    setAutoPaused(false)
+    pausedRef.current = false
+    autoPausedRef.current = false
     startTimeRef.current = Date.now()
-    pausedTimeRef.current = 0
+    pausedAccumulatedMsRef.current = 0
+    pauseStartedAtRef.current = null
+    lowSpeedSinceRef.current = null
+    nextCueKmRef.current = 1
 
     // Start duration timer
     intervalRef.current = setInterval(() => {
-      if (!isPaused) {
-        setDuration(Math.floor((Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000))
+      if (!pausedRef.current) {
+        setDuration(Math.floor((Date.now() - startTimeRef.current - pausedAccumulatedMsRef.current) / 1000))
       }
     }, 1000)
 
@@ -102,17 +114,44 @@ export function GPSTracker({ onComplete }: GPSTrackerProps) {
         }
 
         setRoute((prev) => {
+          if (pausedRef.current) {
+            return prev
+          }
+
           // Calculate distance if we have a previous point
           if (prev.length > 0) {
             const lastPoint = prev[prev.length - 1]
             const newDistance = calculateDistance(lastPoint, newPoint)
-            setDistance((d) => d + newDistance)
+            setDistance((d) => {
+              const updatedDistance = d + newDistance
+              const km = updatedDistance / 1000
+              if (km >= nextCueKmRef.current) {
+                emitDistanceCue(nextCueKmRef.current)
+                nextCueKmRef.current += 1
+              }
+              return updatedDistance
+            })
 
             // Calculate current speed (m/s to km/h)
             const timeDiff = (newPoint.timestamp - lastPoint.timestamp) / 1000
             if (timeDiff > 0) {
               const speed = (newDistance / timeDiff) * 3.6 // Convert to km/h
               setCurrentSpeed(speed)
+
+              if (speed < 1.0) {
+                if (!lowSpeedSinceRef.current) {
+                  lowSpeedSinceRef.current = Date.now()
+                } else if (Date.now() - lowSpeedSinceRef.current > 40_000 && !pausedRef.current) {
+                  pauseTracking(true)
+                  toast.info("Auto-pause enabled (inactivity detected)")
+                }
+              } else {
+                lowSpeedSinceRef.current = null
+                if (pausedRef.current && autoPausedRef.current) {
+                  resumeTracking(true)
+                  toast.success("Auto-resumed")
+                }
+              }
             }
           }
 
@@ -138,13 +177,12 @@ export function GPSTracker({ onComplete }: GPSTrackerProps) {
 
   // Pause tracking
   const handlePause = () => {
-    setIsPaused(!isPaused)
-    if (!isPaused) {
-      pausedTimeRef.current += Date.now() - startTimeRef.current
-      toast.success("Tracking paused")
-    } else {
-      startTimeRef.current = Date.now()
+    if (pausedRef.current) {
+      resumeTracking(false)
       toast.success("Tracking resumed")
+    } else {
+      pauseTracking(false)
+      toast.success("Tracking paused")
     }
   }
 
@@ -162,6 +200,9 @@ export function GPSTracker({ onComplete }: GPSTrackerProps) {
 
     setIsTracking(false)
     setIsPaused(false)
+    pausedRef.current = false
+    setAutoPaused(false)
+    autoPausedRef.current = false
 
     // Calculate average pace (min/km)
     const avgPace = distance > 0 ? (duration / 60) / (distance / 1000) : 0
@@ -333,9 +374,51 @@ export function GPSTracker({ onComplete }: GPSTrackerProps) {
           <p className="text-sm text-text-muted text-center">
             💡 Make sure location services are enabled on your device for accurate tracking.
             {route.length > 0 && ` Recorded ${route.length} GPS points.`}
+            {autoPaused && " Auto-pause is currently active."}
           </p>
         </CardContent>
       </Card>
     </div>
   )
+
+  function pauseTracking(triggeredByAutoPause: boolean) {
+    if (pausedRef.current) return
+    pausedRef.current = true
+    setIsPaused(true)
+    setAutoPaused(triggeredByAutoPause)
+    autoPausedRef.current = triggeredByAutoPause
+    pauseStartedAtRef.current = Date.now()
+    if (navigator.vibrate) {
+      navigator.vibrate([120, 60, 120])
+    }
+  }
+
+  function resumeTracking(triggeredByAutoPause: boolean) {
+    if (!pausedRef.current) return
+    if (pauseStartedAtRef.current) {
+      pausedAccumulatedMsRef.current += Date.now() - pauseStartedAtRef.current
+    }
+    pauseStartedAtRef.current = null
+    pausedRef.current = false
+    setIsPaused(false)
+    if (triggeredByAutoPause) {
+      setAutoPaused(false)
+      autoPausedRef.current = false
+    }
+    if (navigator.vibrate) {
+      navigator.vibrate(80)
+    }
+  }
+
+  function emitDistanceCue(km: number) {
+    const cueText = `${km} kilometer${km === 1 ? "" : "s"} completed`
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(cueText)
+      utterance.rate = 1
+      window.speechSynthesis.speak(utterance)
+    }
+    if (navigator.vibrate) {
+      navigator.vibrate(70)
+    }
+  }
 }

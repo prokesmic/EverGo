@@ -7,6 +7,7 @@ import ActivityMap from "@/components/ui/map"
 import { PageGrid } from "@/components/layout/page-grid"
 import { CalendarWidget } from "@/components/widgets/calendar-widget"
 import { BrandsWidget } from "@/components/widgets/brands-widget"
+import { ActivityIntegrityPanel } from "@/components/activity/ActivityIntegrityPanel"
 import { Metadata } from "next"
 import {
     buildElevationProfile,
@@ -252,6 +253,10 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
                             )}
                         </CardContent>
                     </Card>
+                </div>
+
+                <div className="mt-6">
+                  <ActivityIntegrityPanel activityId={activity.id} />
                 </div>
             </PageGrid>
         </div>

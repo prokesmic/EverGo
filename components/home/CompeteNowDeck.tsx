@@ -119,7 +119,7 @@ export function CompeteNowDeck({
             return (
               <Link
                 key={`t-${item.id}`}
-                href={`/teams/battles/${item.id}`}
+                href={`/teams/${item.id}`}
                 className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all group"
                 data-testid="home-teambattle-card"
               >

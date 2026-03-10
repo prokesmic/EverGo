@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db"
 import type { SearchResultItem } from "@/schemas/api"
 import { buildDomainEvent, enqueueDomainEvent } from "@/lib/events/publisher"
+import { Prisma } from "@prisma/client"
 
-export type SearchType = "all" | "users" | "teams" | "challenges"
+export type SearchType = "all" | "users" | "teams" | "challenges" | "activities"
 export type SearchSort = "relevance" | "recent" | "popular"
 
 interface SearchOptions {
@@ -55,8 +56,10 @@ async function searchWithDatabase({
   city,
   sport,
   sort,
+  userId,
 }: SearchOptions): Promise<SearchResultItem[]> {
   const results: SearchResultItem[] = []
+  const insensitive = Prisma.QueryMode.insensitive
 
   if (type === "all" || type === "users") {
     const users = await prisma.user.findMany({
@@ -174,6 +177,116 @@ async function searchWithDatabase({
     )
   }
 
+  if (type === "all" || type === "activities") {
+    const visibilityFilter = userId
+      ? {
+          OR: [{ visibility: "PUBLIC" }, { userId }],
+        }
+      : {
+          visibility: "PUBLIC",
+        }
+
+    const activities = await prisma.activity.findMany({
+      where: {
+        AND: [
+          visibilityFilter,
+          {
+            OR: [
+              { title: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } },
+            ],
+          },
+          ...(city
+            ? [{ user: { city: { contains: city, mode: insensitive } } }]
+            : []),
+          ...(sport
+            ? [
+                {
+                  OR: [
+                    { sport: { slug: { contains: sport, mode: insensitive } } },
+                    { discipline: { sport: { slug: { contains: sport, mode: insensitive } } } },
+                  ],
+                },
+              ]
+            : []),
+        ],
+      },
+      include: {
+        user: {
+          select: {
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            city: true,
+          },
+        },
+        sport: {
+          select: {
+            name: true,
+            slug: true,
+            icon: true,
+          },
+        },
+        discipline: {
+          include: {
+            sport: {
+              select: {
+                name: true,
+                slug: true,
+                icon: true,
+              },
+            },
+          },
+        },
+        post: {
+          select: {
+            likesCount: true,
+            commentsCount: true,
+          },
+        },
+      },
+      take: type === "activities" ? Math.max(limit * 3, 30) : 12,
+    })
+
+    const sortedActivities = sortActivities(activities, sort, query).slice(
+      0,
+      type === "activities" ? limit : 5
+    )
+
+    results.push(
+      ...sortedActivities.map((activity) => {
+        const ownerHandle = activity.user.username
+          ? `@${activity.user.username}`
+          : (activity.user.displayName ?? "Athlete")
+
+        const resolvedSport =
+          activity.sport ?? activity.discipline?.sport ?? null
+        const distanceKm =
+          typeof activity.distanceMeters === "number"
+            ? activity.distanceMeters / 1000
+            : null
+        const durationMinutes =
+          typeof activity.durationSeconds === "number"
+            ? Math.round(activity.durationSeconds / 60)
+            : null
+
+        const pieces = [ownerHandle]
+        if (resolvedSport?.name) pieces.push(resolvedSport.name)
+        if (distanceKm !== null) pieces.push(`${distanceKm.toFixed(1)} km`)
+        if (durationMinutes !== null) pieces.push(`${durationMinutes} min`)
+
+        return {
+          type: "activity" as const,
+          id: activity.id,
+          title: activity.title || "Activity",
+          subtitle: pieces.join(" • "),
+          image: activity.mapImageUrl ?? firstPhotoFromRaw(activity.photos),
+          icon: resolvedSport?.icon ?? "🏃",
+        }
+      })
+    )
+  }
+
   return results
 }
 
@@ -264,4 +377,76 @@ function sortChallenges<
       textRelevanceScore(query, a.title, a.description)
     )
   })
+}
+
+function sortActivities<
+  T extends {
+    id: string
+    title: string
+    description: string | null
+    createdAt: Date
+    activityDate: Date
+    distanceMeters: number | null
+    durationSeconds: number | null
+    mapImageUrl: string | null
+    photos: string
+    post: { likesCount: number; commentsCount: number } | null
+    user: { displayName: string | null; username: string | null; city: string | null }
+    sport?: { name?: string | null; slug?: string | null; icon?: string | null } | null
+    discipline?: { sport?: { name?: string | null; slug?: string | null; icon?: string | null } | null } | null
+  },
+>(activities: T[], sort: SearchSort, query: string): T[] {
+  return [...activities].sort((a, b) => {
+    if (sort === "recent") {
+      return b.activityDate.getTime() - a.activityDate.getTime()
+    }
+    if (sort === "popular") {
+      const aScore =
+        (a.post?.likesCount ?? 0) * 2 +
+        (a.post?.commentsCount ?? 0) * 3 +
+        Math.round((a.distanceMeters ?? 0) / 1000) +
+        Math.round((a.durationSeconds ?? 0) / 600)
+      const bScore =
+        (b.post?.likesCount ?? 0) * 2 +
+        (b.post?.commentsCount ?? 0) * 3 +
+        Math.round((b.distanceMeters ?? 0) / 1000) +
+        Math.round((b.durationSeconds ?? 0) / 600)
+      return bScore - aScore
+    }
+
+    const aSportName = a.sport?.name ?? a.discipline?.sport?.name ?? null
+    const bSportName = b.sport?.name ?? b.discipline?.sport?.name ?? null
+
+    const aScore = textRelevanceScore(
+      query,
+      a.title,
+      a.description,
+      aSportName,
+      a.user.displayName,
+      a.user.username,
+      a.user.city
+    )
+    const bScore = textRelevanceScore(
+      query,
+      b.title,
+      b.description,
+      bSportName,
+      b.user.displayName,
+      b.user.username,
+      b.user.city
+    )
+    return bScore - aScore
+  })
+}
+
+function firstPhotoFromRaw(rawPhotos: string): string | null {
+  try {
+    const parsed = JSON.parse(rawPhotos)
+    if (Array.isArray(parsed) && typeof parsed[0] === "string") {
+      return parsed[0]
+    }
+  } catch {
+    // no-op
+  }
+  return null
 }

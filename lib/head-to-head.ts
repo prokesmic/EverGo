@@ -235,7 +235,7 @@ export async function getUserRivalryStats(userId: string) {
   let totalMatches = 0
   let longestWinStreak = 0
   let currentWinStreak = 0
-  let rivalCount = records.length
+  const rivalCount = records.length
 
   for (const record of records) {
     const isUserFirst = record.user1Id === userId

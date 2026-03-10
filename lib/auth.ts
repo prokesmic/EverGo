@@ -30,18 +30,13 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                console.log("[Auth] Authorize called with identifier:", credentials?.email)
-                console.log("[Auth] Password length:", credentials?.password?.length)
-
                 if (!credentials?.email || !credentials?.password) {
-                    console.log("[Auth] Missing credentials - email:", !!credentials?.email, "password:", !!credentials?.password)
                     return null
                 }
 
                 try {
                     const identifier = credentials.email.trim()
                     const normalizedIdentifier = identifier.toLowerCase()
-                    console.log("[Auth] Looking up user in database...")
                     const user = await prisma.user.findFirst({
                         where: {
                             OR: [
@@ -62,31 +57,22 @@ export const authOptions: NextAuthOptions = {
                     })
 
                     if (!user) {
-                        console.log("[Auth] User not found for email:", credentials.email)
                         return null
                     }
-
-                    console.log("[Auth] User found:", user.id, "has password:", !!user.password)
 
                     if (!user.password) {
-                        console.log("[Auth] User has no password (OAuth account?)")
                         return null
                     }
 
-                    console.log("[Auth] Password hash prefix:", user.password.substring(0, 20))
-                    console.log("[Auth] Comparing passwords...")
                     const isPasswordValid = await bcrypt.compare(
                         credentials.password,
                         user.password
                     )
-                    console.log("[Auth] Password valid:", isPasswordValid)
 
                     if (!isPasswordValid) {
-                        console.log("[Auth] Invalid password for user:", user.id)
                         return null
                     }
 
-                    console.log("[Auth] Login successful for user:", user.id)
                     return {
                         id: user.id,
                         email: user.email,
@@ -96,7 +82,7 @@ export const authOptions: NextAuthOptions = {
                         onboardingCompleted: user.onboardingCompleted,
                     }
                 } catch (error) {
-                    console.error("[Auth] Error:", error)
+                    console.error("[Auth] Credentials authorize error:", error)
                     return null
                 }
             }
@@ -110,7 +96,6 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async jwt({ token, user, trigger }) {
-            console.log("[Auth JWT] Called with user:", user?.id, "token.sub:", token.sub, "trigger:", trigger)
             if (user) {
                 token.id = user.id
                 token.email = user.email ?? token.email // Explicitly preserve email
@@ -132,11 +117,9 @@ export const authOptions: NextAuthOptions = {
                     console.error("[Auth JWT] Error refreshing user:", e)
                 }
             }
-            console.log("[Auth JWT] Returning token with email:", token.email, "onboardingCompleted:", token.onboardingCompleted)
             return token
         },
         async session({ session, token }) {
-            console.log("[Auth Session] Called with token.id:", token.id, "token.email:", token.email)
             if (session.user && token) {
                 session.user.id = token.id as string
                 session.user.email = token.email as string // Ensure email is in session
@@ -144,7 +127,6 @@ export const authOptions: NextAuthOptions = {
                 session.user.image = token.picture as string
                 session.user.onboardingCompleted = token.onboardingCompleted as boolean
             }
-            console.log("[Auth Session] Returning session with email:", session.user?.email, "onboardingCompleted:", session.user?.onboardingCompleted)
             return session
         }
     }

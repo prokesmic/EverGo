@@ -2,18 +2,18 @@
 
 import { useEffect, useMemo, useState, type ComponentType } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Search, Users, Trophy, Target, Loader2 } from "lucide-react"
+import { Search, Users, Trophy, Target, Loader2, Activity } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 
-type SearchType = "all" | "users" | "teams" | "challenges"
+type SearchType = "all" | "users" | "teams" | "challenges" | "activities"
 type SearchSort = "relevance" | "recent" | "popular"
 
 interface SearchResult {
-  type: "user" | "team" | "challenge"
+  type: "user" | "team" | "challenge" | "activity"
   id: string
   title: string
   subtitle?: string
@@ -26,6 +26,7 @@ const FILTERS: Array<{ value: SearchType; label: string; icon: ComponentType<{ c
   { value: "users", label: "Athletes", icon: Users },
   { value: "teams", label: "Teams", icon: Trophy },
   { value: "challenges", label: "Challenges", icon: Target },
+  { value: "activities", label: "Activities", icon: Activity },
 ]
 
 export default function SearchPage() {
@@ -113,12 +114,14 @@ export default function SearchPage() {
       users: results.filter((result) => result.type === "user"),
       teams: results.filter((result) => result.type === "team"),
       challenges: results.filter((result) => result.type === "challenge"),
+      activities: results.filter((result) => result.type === "activity"),
     }
   }, [results])
 
   const resolvePath = (result: SearchResult): string => {
     if (result.type === "user") return `/profile/${result.id}`
     if (result.type === "team") return `/teams/${result.id}`
+    if (result.type === "activity") return `/activity/${result.id}`
     return `/challenges/${result.id}`
   }
 
@@ -156,7 +159,7 @@ export default function SearchPage() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search athletes, teams, and challenges..."
+                placeholder="Search athletes, teams, challenges, and activities..."
                 className="pl-9"
                 autoFocus
               />
@@ -247,6 +250,13 @@ export default function SearchPage() {
           <section className="space-y-2">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Challenges</h2>
             <div className="grid gap-2">{groupedResults.challenges.map(renderResult)}</div>
+          </section>
+        )}
+
+        {!loading && groupedResults.activities.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Activities</h2>
+            <div className="grid gap-2">{groupedResults.activities.map(renderResult)}</div>
           </section>
         )}
       </div>

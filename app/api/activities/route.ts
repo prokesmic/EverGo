@@ -74,6 +74,7 @@ export async function POST(request: Request) {
             photos,
             visibility = "PUBLIC",
             gpsRoute,
+            route,
             startLocation,
             rpe,
         } = body
@@ -85,6 +86,20 @@ export async function POST(request: Request) {
         if (!user) {
             return errorWithRequestId(requestId, "User not found", 404)
         }
+
+        const serializedRoute =
+            typeof gpsRoute === "string"
+                ? gpsRoute
+                : Array.isArray(route)
+                    ? JSON.stringify(route)
+                    : null
+
+        const derivedStartLocation =
+            typeof startLocation === "string"
+                ? startLocation
+                : Array.isArray(route) && route.length > 0
+                    ? JSON.stringify({ lat: route[0].lat, lng: route[0].lng })
+                    : null
 
         const idempotencyKey = request.headers.get("idempotency-key")
         return await withIdempotency(
@@ -104,8 +119,8 @@ export async function POST(request: Request) {
                     avgHeartRate,
                     visibility,
                     photos: Array.isArray(photos) ? photos : [],
-                    gpsRoute: typeof gpsRoute === "string" ? gpsRoute : null,
-                    startLocation: typeof startLocation === "string" ? startLocation : null,
+                    gpsRoute: serializedRoute,
+                    startLocation: derivedStartLocation,
                     rpe: typeof rpe === "number" ? rpe : null,
                     createPost: true,
                 })

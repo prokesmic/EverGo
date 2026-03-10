@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Sport, Discipline } from "@prisma/client"
 import { GPSTracker } from "./gps-tracker"
@@ -31,6 +31,8 @@ interface GPSTrackerPageProps {
   sports: (Sport & { disciplines: Discipline[] })[]
 }
 
+const OFFLINE_QUEUE_KEY = "evergo:gps-offline-queue:v1"
+
 export function GPSTrackerPage({ sports }: GPSTrackerPageProps) {
   const router = useRouter()
   const [step, setStep] = useState<"setup" | "tracking" | "complete">("setup")
@@ -49,6 +51,48 @@ export function GPSTrackerPage({ sports }: GPSTrackerPageProps) {
   } | null>(null)
 
   const selectedSport = sports.find((s) => s.id === selectedSportId)
+
+  useEffect(() => {
+    const flushQueue = async () => {
+      if (typeof window === "undefined" || !navigator.onLine) return
+      const raw = localStorage.getItem(OFFLINE_QUEUE_KEY)
+      if (!raw) return
+
+      const queue = safeParseQueue(raw)
+      if (queue.length === 0) {
+        localStorage.removeItem(OFFLINE_QUEUE_KEY)
+        return
+      }
+
+      const remaining: unknown[] = []
+      for (const payload of queue) {
+        try {
+          const response = await fetch("/api/activities", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+          if (!response.ok) {
+            remaining.push(payload)
+          }
+        } catch {
+          remaining.push(payload)
+        }
+      }
+
+      if (remaining.length > 0) {
+        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(remaining))
+      } else {
+        localStorage.removeItem(OFFLINE_QUEUE_KEY)
+        toast.success("Offline activities synced")
+      }
+    }
+
+    flushQueue()
+    const onOnline = () => void flushQueue()
+    window.addEventListener("online", onOnline)
+    return () => window.removeEventListener("online", onOnline)
+  }, [])
 
   const handleSetup = () => {
     if (!selectedSportId || !selectedDisciplineId || !title) {
@@ -75,25 +119,36 @@ export function GPSTrackerPage({ sports }: GPSTrackerPageProps) {
     setIsSubmitting(true)
 
     try {
+      const payload = {
+        title,
+        description,
+        sportId: selectedSportId,
+        disciplineId: selectedDisciplineId,
+        activityDate: new Date().toISOString(),
+        durationSeconds: activityData.duration,
+        distanceMeters: activityData.distance,
+        avgPace: activityData.avgPace,
+        route: activityData.route,
+        visibility: "PUBLIC",
+      }
+
       // Save activity with GPS data
       const response = await fetch("/api/activities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          sportId: selectedSportId,
-          disciplineId: selectedDisciplineId,
-          activityDate: new Date().toISOString(),
-          durationSeconds: activityData.duration,
-          distanceMeters: activityData.distance,
-          avgPace: activityData.avgPace,
-          route: activityData.route,
-          visibility: "PUBLIC",
-        }),
+        body: JSON.stringify(payload),
       })
 
-      if (!response.ok) throw new Error("Failed to save activity")
+      if (!response.ok) {
+        if (!navigator.onLine || response.status >= 500) {
+          queueOfflinePayload(payload)
+          toast.info("No connection. Activity saved offline and will sync automatically.")
+          setStep("setup")
+          setActivityData(null)
+          return
+        }
+        throw new Error("Failed to save activity")
+      }
 
       const { activity } = await response.json()
 
@@ -283,4 +338,20 @@ export function GPSTrackerPage({ sports }: GPSTrackerPageProps) {
   }
 
   return null
+}
+
+function safeParseQueue(raw: string): unknown[] {
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function queueOfflinePayload(payload: unknown) {
+  if (typeof window === "undefined") return
+  const existing = safeParseQueue(localStorage.getItem(OFFLINE_QUEUE_KEY) ?? "[]")
+  existing.push(payload)
+  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(existing))
 }

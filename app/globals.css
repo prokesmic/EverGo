@@ -1244,3 +1244,71 @@
 .eg-live-dot {
   @apply h-2 w-2 rounded-full bg-emerald-500 animate-pulse;
 }
+
+/* Elite Mode System */
+.eg-mode-shell {
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.eg-mode-competition {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(251, 146, 60, 0.2), transparent 40%),
+    radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.14), transparent 35%),
+    rgba(255, 255, 255, 0.88);
+  border-color: rgba(249, 115, 22, 0.25);
+}
+
+.eg-mode-recovery {
+  background:
+    radial-gradient(circle at 0% 100%, rgba(56, 189, 248, 0.18), transparent 40%),
+    radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.14), transparent 35%),
+    rgba(255, 255, 255, 0.9);
+  border-color: rgba(14, 165, 233, 0.25);
+}
+
+.eg-mode-social {
+  background:
+    radial-gradient(circle at 100% 100%, rgba(167, 139, 250, 0.16), transparent 40%),
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1), transparent 35%),
+    rgba(255, 255, 255, 0.92);
+  border-color: rgba(79, 70, 229, 0.22);
+}
+
+/* KPI hierarchy */
+.eg-kpi-value {
+  font-size: clamp(1.875rem, 2.8vw, 2.9rem);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.eg-kpi-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* Signature motion */
+@keyframes eg-float-up {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eg-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.eg-enter {
+  animation: eg-float-up 0.45s ease-out both;
+}
+
+.eg-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.4) 25%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.4) 75%);
+  background-size: 200% 100%;
+  animation: eg-shimmer 1.6s linear infinite;
+}

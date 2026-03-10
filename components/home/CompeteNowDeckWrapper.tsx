@@ -11,6 +11,15 @@ interface CompeteNowDeckWrapperProps {
   className?: string
 }
 
+type ActiveChallenge = {
+  id: string
+  title: string
+  targetValue: number | null
+  endDate: string | null
+  sport?: { slug?: string | null } | null
+  participation?: { currentValue?: number | null } | null
+}
+
 /**
  * Client-side wrapper that fetches compete items from the API
  * and renders the CompeteNowDeck component.
@@ -73,9 +82,70 @@ export function CompeteNowDeckWrapper({ className }: CompeteNowDeckWrapperProps)
           }
         }
 
-        // TODO: Also fetch challenges and team battles when those APIs exist
-        // const challengesRes = await fetch("/api/challenges/active")
-        // const teamBattlesRes = await fetch("/api/teams/battles/active")
+        // Fetch active challenges and map participation progress.
+        const challengesRes = await fetch("/api/challenges?status=active")
+        if (challengesRes.ok) {
+          const data = await challengesRes.json()
+          const challenges: ActiveChallenge[] = Array.isArray(data?.challenges) ? data.challenges : []
+
+          challenges.slice(0, 2).forEach((challenge) => {
+            const targetValue =
+              typeof challenge?.targetValue === "number" && challenge.targetValue > 0
+                ? challenge.targetValue
+                : null
+            const currentValue =
+              typeof challenge?.participation?.currentValue === "number"
+                ? challenge.participation.currentValue
+                : null
+            const progress =
+              targetValue !== null && currentValue !== null
+                ? Math.min(1, Math.max(0, currentValue / targetValue))
+                : null
+
+            competeItems.push({
+              kind: "challenge",
+              id: challenge.id,
+              title: challenge.title || "Challenge",
+              sportSlug: challenge?.sport?.slug ?? null,
+              endsAt: challenge?.endDate ?? null,
+              progress,
+            })
+          })
+        }
+
+        // Fetch active crew battle for the user's team.
+        const teamBattleRes = await fetch("/api/teams/active-battle")
+        if (teamBattleRes.ok) {
+          const data = await teamBattleRes.json()
+          if (data?.battle) {
+            const myScore =
+              typeof data.battle?.teamA?.score === "number" && data.battle?.myTeamId === data.battle?.teamA?.id
+                ? data.battle.teamA.score
+                : typeof data.battle?.teamB?.score === "number" && data.battle?.myTeamId === data.battle?.teamB?.id
+                  ? data.battle.teamB.score
+                  : null
+            const opponentScore =
+              typeof data.battle?.teamA?.score === "number" && data.battle?.myTeamId !== data.battle?.teamA?.id
+                ? data.battle.teamA.score
+                : typeof data.battle?.teamB?.score === "number" && data.battle?.myTeamId !== data.battle?.teamB?.id
+                  ? data.battle.teamB.score
+                  : null
+
+            const progress =
+              typeof myScore === "number" && typeof opponentScore === "number" && myScore + opponentScore > 0
+                ? myScore / (myScore + opponentScore)
+                : null
+
+            competeItems.push({
+              kind: "teamBattle",
+              id: data.battle.myTeamId || data.battle.teamA?.id,
+              title: data.battle.challengeName || "Crew War",
+              teamName: data.battle.myTeamName || null,
+              endsAt: data.battle.endsAt || null,
+              progress,
+            })
+          }
+        }
 
         // If no items, add teaser
         if (competeItems.length === 0) {

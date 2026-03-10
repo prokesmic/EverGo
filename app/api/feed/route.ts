@@ -26,7 +26,17 @@ export async function GET(request: Request) {
     try {
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
-            include: { following: true }
+            include: {
+                following: true,
+                sports: {
+                    where: { status: "ACTIVE" },
+                    include: {
+                        sport: {
+                            select: { slug: true }
+                        }
+                    }
+                }
+            }
         })
 
         if (!user) {
@@ -57,12 +67,19 @@ export async function GET(request: Request) {
                         id: true,
                         username: true,
                         displayName: true,
-                        avatarUrl: true
+                        avatarUrl: true,
+                        city: true,
                     }
                 },
                 activity: {
                     include: {
-                        sport: true
+                        sport: {
+                            select: {
+                                name: true,
+                                icon: true,
+                                slug: true,
+                            }
+                        }
                     }
                 },
                 likes: {
@@ -83,6 +100,8 @@ export async function GET(request: Request) {
                 viewerId: user.id,
                 followingIds,
                 type: normalizedType,
+                viewerCity: user.city,
+                viewerSportSlugs: user.sports.map((item) => item.sport.slug),
             })
             : posts
 

@@ -16,6 +16,7 @@ import { HomeFeed } from "@/components/home/HomeFeedV6"
 import { SeasonCard } from "@/components/season/SeasonCard"
 import { StreakAlert } from "@/components/widgets/streak-alert"
 import { SuggestedAthletes } from "@/components/recommendations/SuggestedAthletes"
+import { EliteCommandCenter } from "@/components/home/EliteCommandCenter"
 import { isFeatureEnabled } from "@/lib/features"
 
 // Extract types from child components for type safety
@@ -28,6 +29,7 @@ type FriendsStripProps = ComponentProps<typeof FriendsStrip>
 export type HomeDashboardBodyProps = {
   userId: string
   userCity: string | null
+  homeMode?: "competition" | "recovery" | "social"
   teamId?: string | null
 
   // Competition data - use actual component prop types
@@ -53,6 +55,7 @@ export type HomeDashboardBodyProps = {
 export function HomeDashboardBody({
   userId,
   userCity,
+  homeMode = "competition",
   teamId,
   activeGauntlets,
   crewWar,
@@ -69,6 +72,8 @@ export function HomeDashboardBody({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         {/* Main Column (2/3) - Feed-centric content */}
         <div className="lg:col-span-2 space-y-6">
+          <EliteCommandCenter mode={homeMode} />
+
           {/* Active Competitions */}
           {isFeatureEnabled("gauntlet") && activeGauntlets.length > 0 && (
             <ActiveCompetitions

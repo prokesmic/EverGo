@@ -64,7 +64,7 @@ export interface ConfidenceResult {
 
 export function computeConfidence(input: ConfidenceInput): ConfidenceResult {
   const config = CONFIDENCE_CONFIG
-  let breakdown: string[] = []
+  const breakdown: string[] = []
 
   // 1. Base weight from source
   const sourceKey = mapSourceToKey(input.source)

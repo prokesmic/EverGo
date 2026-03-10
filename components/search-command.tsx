@@ -4,7 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import {
     Search, User, Users, Trophy, Home, Target, Calendar, PlusCircle,
-    Settings, Bell, Compass
+    Settings, Bell, Compass, Activity as ActivityIcon, Sparkles
 } from "lucide-react"
 import {
     CommandDialog, CommandEmpty, CommandGroup, CommandInput,
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface SearchResultItem {
-    type: "user" | "team" | "challenge"
+    type: "user" | "team" | "challenge" | "activity"
     id: string
     title: string
     subtitle?: string
@@ -28,6 +28,9 @@ interface SearchResults {
 
 const quickActions = [
     { id: 'log-activity', label: 'Log Activity', icon: PlusCircle, path: '/activity/create', shortcut: 'L' },
+    { id: 'coach', label: 'Open Coach', icon: Sparkles, path: '/coach', shortcut: 'J' },
+    { id: 'goals', label: 'Goal OS', icon: Target, path: '/goals', shortcut: 'G' },
+    { id: 'routes', label: 'Route Intelligence', icon: Compass, path: '/routes', shortcut: 'U' },
     { id: 'home', label: 'Go to Home', icon: Home, path: '/home', shortcut: 'H' },
     { id: 'discover', label: 'Open Discover', icon: Compass, path: '/discover', shortcut: 'D' },
     { id: 'rankings', label: 'View Rankings', icon: Trophy, path: '/rankings', shortcut: 'R' },
@@ -96,6 +99,7 @@ export function SearchCommand() {
     const userResults = results.filter(r => r.type === "user")
     const teamResults = results.filter(r => r.type === "team")
     const challengeResults = results.filter(r => r.type === "challenge")
+    const activityResults = results.filter(r => r.type === "activity")
 
     return (
         <>
@@ -155,7 +159,7 @@ export function SearchCommand() {
                             <div className="flex flex-col items-center gap-2 py-6">
                                 <Search className="h-8 w-8 text-muted-foreground/50" />
                                 <p className="text-muted-foreground">No results found for "{query}"</p>
-                                <p className="text-xs text-muted-foreground/70">Try searching for users, teams, or challenges</p>
+                                <p className="text-xs text-muted-foreground/70">Try searching for users, teams, challenges, or activities</p>
                             </div>
                         </CommandEmpty>
                     )}
@@ -217,6 +221,28 @@ export function SearchCommand() {
                                         <Trophy className="h-4 w-4 text-amber-600" />
                                     </div>
                                     <span className="font-medium">{challenge.title}</span>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    )}
+
+                    {activityResults.length > 0 && (
+                        <CommandGroup heading="Activities">
+                            {activityResults.map((activity) => (
+                                <CommandItem
+                                    key={activity.id}
+                                    onSelect={() => handleSelect(`/activity/${activity.id}`)}
+                                    className="flex items-center gap-3"
+                                >
+                                    <div className="h-7 w-7 rounded-lg bg-indigo-100 dark:bg-indigo-950/30 flex items-center justify-center">
+                                        <ActivityIcon className="h-4 w-4 text-indigo-600" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">{activity.title}</span>
+                                        {activity.subtitle && (
+                                            <span className="text-xs text-muted-foreground">{activity.subtitle}</span>
+                                        )}
+                                    </div>
                                 </CommandItem>
                             ))}
                         </CommandGroup>

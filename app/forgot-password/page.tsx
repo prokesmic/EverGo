@@ -11,18 +11,36 @@ export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [submitted, setSubmitted] = useState(false)
+    const [resetUrl, setResetUrl] = useState<string | null>(null)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+        setResetUrl(null)
 
-        // TODO: Implement actual password reset logic
-        // For now, just show a success message
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        try {
+            const response = await fetch("/api/auth/forgot-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            })
 
-        setSubmitted(true)
-        toast.success("If an account exists, you'll receive a reset link")
-        setIsLoading(false)
+            const data = await response.json()
+            if (!response.ok) {
+                throw new Error(data?.error || "Unable to send reset link")
+            }
+
+            if (typeof data?.resetUrl === "string" && data.resetUrl.length > 0) {
+                setResetUrl(data.resetUrl)
+            }
+
+            setSubmitted(true)
+            toast.success("If an account exists, you'll receive a reset link")
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Unable to send reset link")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -90,6 +108,17 @@ export default function ForgotPasswordPage() {
                             <p className="text-sm text-slate-500">
                                 Didn't receive it? Check your spam folder or try again.
                             </p>
+                            {resetUrl && (
+                                <div className="mt-4 rounded-xl border border-indigo-400/30 bg-indigo-500/10 p-3 text-left">
+                                    <div className="text-xs uppercase tracking-wide text-indigo-300">Development reset link</div>
+                                    <a
+                                        href={resetUrl}
+                                        className="mt-1 block text-sm break-all text-indigo-200 hover:text-indigo-100 underline underline-offset-2"
+                                    >
+                                        {resetUrl}
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

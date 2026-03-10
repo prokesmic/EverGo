@@ -6,6 +6,7 @@ import { TeamHeader } from "@/components/teams/team-header"
 import { TeamPostComposer } from "@/components/teams/team-post-composer"
 import { TeamPostCard } from "@/components/teams/team-post-card"
 import { TeamCrewWars } from "@/components/teams/TeamCrewWars"
+import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Users, Calendar, Trophy, Swords } from "lucide-react"
 import { format } from "date-fns"
@@ -170,9 +171,19 @@ export default async function TeamPage({ params }: { params: { slug: string } })
 
                         {/* Crew Wars Section */}
                         <div className="bg-white rounded-xl shadow-sm border border-border-light p-4">
-                            <div className="flex items-center gap-2 mb-4">
-                                <Swords className="w-5 h-5 text-violet-600" />
-                                <h3 className="font-semibold text-text-primary">Crew Wars</h3>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                  <Swords className="w-5 h-5 text-violet-600" />
+                                  <h3 className="font-semibold text-text-primary">Crew Wars</h3>
+                                </div>
+                                {isAdmin && (
+                                  <Link
+                                    href={`/teams/${team.slug}/coach`}
+                                    className="text-xs font-semibold text-violet-700 hover:text-violet-800"
+                                  >
+                                    Coach mode
+                                  </Link>
+                                )}
                             </div>
                             <TeamCrewWars
                                 teamId={team.id}

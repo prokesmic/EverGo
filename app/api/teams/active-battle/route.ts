@@ -128,6 +128,9 @@ export async function GET() {
     const daysLeft = activeBattle.endsAt
       ? Math.max(0, differenceInDays(new Date(activeBattle.endsAt), new Date()))
       : null
+    const isViewerChallenger = teamIds.includes(activeBattle.challengerTeamId)
+    const myTeam = isViewerChallenger ? activeBattle.challengerTeam : activeBattle.opponentTeam
+    const opponentTeam = isViewerChallenger ? activeBattle.opponentTeam : activeBattle.challengerTeam
 
     return NextResponse.json({
       battle: {
@@ -151,6 +154,11 @@ export async function GET() {
         },
         challengeName: activeBattle.message || "Crew War",
         endsIn: daysLeft === null ? "No end date" : daysLeft === 0 ? "Today" : `${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
+        endsAt: activeBattle.endsAt?.toISOString() ?? null,
+        myTeamId: myTeam.slug,
+        myTeamName: myTeam.name,
+        opponentTeamId: opponentTeam.slug,
+        opponentTeamName: opponentTeam.name,
       },
     })
   } catch (error) {
