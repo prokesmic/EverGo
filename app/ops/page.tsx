@@ -7,7 +7,8 @@ import {
   getOpsSLOSnapshot,
   getRetentionCohortSnapshot,
 } from "@/lib/elite/ops"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { Activity, ShieldCheck, Target } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -38,18 +39,19 @@ export default async function OpsPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Product OS
           </p>
-          <h1 className="mt-1 text-3xl font-black text-foreground">Experiments, cohorts, and reliability</h1>
+          <h1 className="eg-display mt-1 text-3xl font-black text-foreground">Experiments, cohorts, and reliability</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Operational controls for elite product iteration and platform quality.
           </p>
         </section>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Experiment Assignments</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
+          <Card className="eg-surface border-0">
+            <CardContent className="space-y-2 p-4">
+              <div className="flex items-center justify-between text-sm font-semibold">
+                Active Experiment Assignments
+                <Target className="h-4 w-4 text-primary" />
+              </div>
               {assignments.map((assignment) => (
                 <div key={assignment.experiment} className="rounded-lg border border-border-light px-3 py-2">
                   <div className="font-semibold">{assignment.experiment}</div>
@@ -61,11 +63,12 @@ export default async function OpsPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>SLO Snapshot</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
+          <Card className="eg-surface border-0">
+            <CardContent className="space-y-2 p-4">
+              <div className="flex items-center justify-between text-sm font-semibold">
+                SLO Snapshot
+                <ShieldCheck className="h-4 w-4 text-primary" />
+              </div>
               {slo.checks.map((check) => (
                 <div key={check.name} className="rounded-lg border border-border-light px-3 py-2">
                   <div className="flex items-center justify-between">
@@ -79,11 +82,12 @@ export default async function OpsPage() {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Retention Cohorts</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <Card className="eg-surface border-0">
+          <CardContent className="space-y-2 p-4">
+            <div className="flex items-center justify-between text-sm font-semibold">
+              Retention Cohorts
+              <Activity className="h-4 w-4 text-primary" />
+            </div>
             {cohorts.slice(0, 8).map((cohort) => (
               <div key={cohort.cohort} className="rounded-lg border border-border-light px-3 py-2">
                 <div className="font-semibold">{cohort.cohort}</div>

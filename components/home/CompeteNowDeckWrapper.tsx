@@ -29,6 +29,9 @@ export function CompeteNowDeckWrapper({ className }: CompeteNowDeckWrapperProps)
   const router = useRouter()
   const [items, setItems] = useState<CompeteItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [broadcast, setBroadcast] = useState<{
+    items: Array<{ id: string; headline: string; detail: string; severity: "INFO" | "IMPORTANT" | "CRITICAL" }>
+  } | null>(null)
 
   useEffect(() => {
     const fetchCompeteItems = async () => {
@@ -153,6 +156,11 @@ export function CompeteNowDeckWrapper({ className }: CompeteNowDeckWrapperProps)
         }
 
         setItems(competeItems)
+        const broadcastRes = await fetch("/api/competition/broadcast")
+        if (broadcastRes.ok) {
+          const data = await broadcastRes.json()
+          setBroadcast(data.broadcast ?? null)
+        }
       } catch (error) {
         console.error("Error fetching compete items:", error)
         // Show teaser on error
@@ -163,6 +171,8 @@ export function CompeteNowDeckWrapper({ className }: CompeteNowDeckWrapperProps)
     }
 
     fetchCompeteItems()
+    const poll = setInterval(fetchCompeteItems, 45_000)
+    return () => clearInterval(poll)
   }, [session])
 
   const handleLogForRivalry = (rivalryId: string) => {
@@ -194,6 +204,7 @@ export function CompeteNowDeckWrapper({ className }: CompeteNowDeckWrapperProps)
       items={items}
       onLogForRivalry={handleLogForRivalry}
       className={className}
+      broadcast={broadcast}
     />
   )
 }

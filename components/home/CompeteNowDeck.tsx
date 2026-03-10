@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowUpRight, Swords, Trophy, Users } from "lucide-react"
+import { ArrowUpRight, Swords, Trophy, Users, Radio, Zap } from "lucide-react"
 import { prioritizeCompeteItems, CompeteItem } from "@/lib/home/prioritizeCompeteItems"
 import { ActiveRivalryCard } from "@/components/home/ActiveRivalryCard"
 import { cn } from "@/lib/utils"
@@ -11,12 +11,21 @@ interface CompeteNowDeckProps {
   items: CompeteItem[]
   onLogForRivalry?: (rivalryId: string) => void
   className?: string
+  broadcast?: {
+    items: Array<{
+      id: string
+      headline: string
+      detail: string
+      severity: "INFO" | "IMPORTANT" | "CRITICAL"
+    }>
+  } | null
 }
 
 export function CompeteNowDeck({
   items,
   onLogForRivalry,
   className,
+  broadcast,
 }: CompeteNowDeckProps) {
   const sorted = prioritizeCompeteItems(items)
   const top3 = sorted.slice(0, 3)
@@ -39,9 +48,38 @@ export function CompeteNowDeck({
       </div>
 
       <div className="grid grid-cols-1 gap-3">
+        {!!broadcast?.items?.length && (
+          <div className="eg-surface rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <Radio className="h-4 w-4 text-primary" />
+                Live Broadcast
+              </div>
+              <span className="eg-live-dot" />
+            </div>
+            <div className="mt-3 space-y-2">
+              {broadcast.items.slice(0, 3).map((item) => (
+                <div
+                  key={item.id}
+                  className={cn(
+                    "rounded-xl border border-border-light px-3 py-2 text-sm",
+                    item.severity === "CRITICAL" && "bg-rose-50",
+                    item.severity === "IMPORTANT" && "bg-amber-50"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-semibold text-foreground">{item.headline}</div>
+                    <Zap className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="text-xs text-muted-foreground">{item.detail}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {/* Show teaser if no real content */}
         {!hasRealContent && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="eg-surface rounded-2xl p-4">
             <div className="flex items-start gap-3">
               <div className="h-10 w-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
                 <Swords className="h-5 w-5 text-orange-500" />
@@ -91,7 +129,7 @@ export function CompeteNowDeck({
               <Link
                 key={`c-${item.id}`}
                 href={`/challenges/${item.id}`}
-                className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all group"
+                className="eg-surface rounded-2xl p-3.5 hover:-translate-y-0.5 transition-all group"
                 data-testid="home-challenge-card"
               >
                 <div className="flex items-start gap-3">
@@ -120,7 +158,7 @@ export function CompeteNowDeck({
               <Link
                 key={`t-${item.id}`}
                 href={`/teams/${item.id}`}
-                className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all group"
+                className="eg-surface rounded-2xl p-3.5 hover:-translate-y-0.5 transition-all group"
                 data-testid="home-teambattle-card"
               >
                 <div className="flex items-start gap-3">

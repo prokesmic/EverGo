@@ -3,7 +3,8 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { getGoalOSSummary } from "@/lib/elite/goals-os"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { Gauge, ShieldCheck, Timer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
@@ -32,7 +33,7 @@ export default async function GoalsPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Goal OS
           </p>
-          <h1 className="mt-1 text-3xl font-black text-foreground">Turn goals into daily execution</h1>
+          <h1 className="eg-display mt-1 text-3xl font-black text-foreground">Turn goals into daily execution</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Forecasting, weekly targets, and recommended sessions based on live progress.
           </p>
@@ -47,14 +48,52 @@ export default async function GoalsPage() {
           <MetricCard label="Weekly Target" value={`${summary.weeklyTargetActivities}`} suffix="sessions" />
           <MetricCard label="Completed" value={`${summary.currentActivities}`} suffix="sessions" />
           <MetricCard label="Completion" value={`${summary.completionPct}`} suffix="%" />
-          <MetricCard label="Forecast Confidence" value={`${summary.forecastConfidence}`} suffix="%" />
+          <MetricCard label="Momentum" value={`${summary.momentumScore}`} suffix="score" />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Recommended Session Plan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="eg-surface border-0">
+            <CardContent className="space-y-2 p-4">
+              <div className="flex items-center justify-between text-sm font-semibold">
+                Forecast & Risk
+                <Gauge className="h-4 w-4 text-primary" />
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="text-xs text-muted-foreground">Forecasted sessions</div>
+                  <div className="font-semibold">{summary.forecastEndOfWeekActivities}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Confidence</div>
+                  <div className="font-semibold">{summary.forecastConfidence}%</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Risk level</div>
+                  <div className="font-semibold">{summary.riskLevel}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Sessions/day</div>
+                  <div className="font-semibold">{summary.requiredSessionsPerRemainingDay}</div>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="eg-pill">Slack {summary.slackDays} days</span>
+                <span className="eg-pill eg-pill-good">Momentum {summary.momentumScore}</span>
+              </div>
+              <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+                {summary.rationale.map((item) => (
+                  <div key={item}>{item}</div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="eg-surface border-0">
+            <CardContent className="space-y-2 p-4">
+              <div className="flex items-center justify-between text-sm font-semibold">
+                Recommended Session Plan
+                <Timer className="h-4 w-4 text-primary" />
+              </div>
             {summary.recommendedSessions.map((session) => (
               <div key={`${session.day}-${session.focus}`} className="rounded-lg border border-border-light px-3 py-2">
                 <div className="flex items-center justify-between">
@@ -65,8 +104,9 @@ export default async function GoalsPage() {
                 <div className="text-xs uppercase tracking-wide mt-1 font-semibold">{session.intensity}</div>
               </div>
             ))}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
@@ -74,12 +114,10 @@ export default async function GoalsPage() {
 
 function MetricCard({ label, value, suffix }: { label: string; value: string; suffix: string }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm text-muted-foreground">{label}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-black">
+    <Card className="eg-surface border-0">
+      <CardContent className="p-4">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+        <div className="eg-kpi-value mt-2">
           {value}
           <span className="ml-1 text-base font-medium text-muted-foreground">{suffix}</span>
         </div>

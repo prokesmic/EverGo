@@ -28,6 +28,7 @@ type ReadinessPayload = {
     band: string
     recovery: { suggestedIntensity: string }
     drivers: string[]
+    signals: Array<{ label: string; detail: string; impact: "POSITIVE" | "NEGATIVE" | "NEUTRAL" }>
   }
 }
 
@@ -35,8 +36,11 @@ type AdaptivePlanPayload = {
   plan: {
     objective: string
     estimatedLoadPoints: number
+    volumeMinutes: number
     primaryAction: { label: string; href: string }
     blocks: Array<{ label: string; minutes: number }>
+    rationale: Array<{ label: string; detail: string }>
+    coachNotes: string[]
   }
 }
 
@@ -57,6 +61,9 @@ type GoalPayload = {
     currentActivities: number
     completionPct: number
     forecastConfidence: number
+    riskLevel: "LOW" | "MEDIUM" | "HIGH"
+    momentumScore: number
+    requiredSessionsPerRemainingDay: number
   }
 }
 
@@ -132,7 +139,7 @@ export function EliteCommandCenter({ mode = "competition" }: EliteCommandCenterP
           <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Elite Command Center
           </div>
-          <h2 className="mt-1 text-2xl font-black leading-tight text-foreground">
+          <h2 className="eg-display mt-1 text-2xl font-black leading-tight text-foreground">
             Adaptive coaching, readiness, and live competition
           </h2>
         </div>
@@ -141,20 +148,30 @@ export function EliteCommandCenter({ mode = "competition" }: EliteCommandCenterP
         </Button>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.08 } },
+        }}
+        className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"
+      >
+        <KpiCard
           icon={<Gauge className="h-4 w-4" />}
           label="Readiness"
           value={loading ? "..." : `${readiness?.score ?? 0}%`}
           sub={readiness?.band ?? "Baseline"}
+          accent={readiness?.score && readiness.score > 75 ? "eg-kpi-good" : "eg-kpi-warn"}
         />
-        <StatCard
+        <KpiCard
           icon={<Brain className="h-4 w-4" />}
-          label="Adaptive Plan"
-          value={plan ? `${plan.estimatedLoadPoints} load` : "..."}
+          label="Plan Load"
+          value={plan ? `${plan.estimatedLoadPoints}` : "..."}
           sub={plan?.objective ?? "Generating plan"}
+          suffix="pts"
         />
-        <StatCard
+        <KpiCard
           icon={<Target className="h-4 w-4" />}
           label="Goal OS"
           value={goal ? `${goal.completionPct}%` : "..."}
@@ -164,16 +181,16 @@ export function EliteCommandCenter({ mode = "competition" }: EliteCommandCenterP
               : "Forecasting"
           }
         />
-        <StatCard
+        <KpiCard
           icon={<Radar className="h-4 w-4" />}
           label="Live Competition"
           value={topBattle ? `${topBattle.finishProbability}%` : "No battle"}
           sub={topBattle ? topBattle.title : "Join challenge or rivalry"}
         />
-      </div>
+      </motion.div>
 
       <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
-        <div className="rounded-xl border border-border/60 bg-background/80 p-4">
+        <div className="eg-surface rounded-xl p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Sparkles className="h-4 w-4 text-primary" />
             Today&apos;s Intent
@@ -181,12 +198,22 @@ export function EliteCommandCenter({ mode = "competition" }: EliteCommandCenterP
           <p className="mt-2 text-sm text-muted-foreground">
             {readiness?.drivers?.[0] ?? "Balancing performance and recovery."}
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(readiness?.signals ?? []).slice(0, 2).map((signal) => (
+              <span key={signal.label} className={cn("eg-pill", signal.impact === "NEGATIVE" && "eg-pill-warn", signal.impact === "POSITIVE" && "eg-pill-good")}>
+                {signal.label}
+              </span>
+            ))}
+          </div>
           <div className="mt-3 text-xs text-muted-foreground">
-            Suggested intensity: <span className="font-semibold text-foreground">{readiness?.recovery.suggestedIntensity ?? "EASY"}</span>
+            Suggested intensity:{" "}
+            <span className="font-semibold text-foreground">
+              {readiness?.recovery.suggestedIntensity ?? "EASY"}
+            </span>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border/60 bg-background/80 p-4">
+        <div className="eg-surface rounded-xl p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Timer className="h-4 w-4 text-primary" />
             Session Blocks
@@ -200,9 +227,15 @@ export function EliteCommandCenter({ mode = "competition" }: EliteCommandCenterP
             ))}
             {!plan?.blocks?.length && <li>Preparing your session structure...</li>}
           </ul>
+          {plan?.rationale?.length ? (
+            <div className="mt-3 rounded-lg border border-border-light bg-white/70 px-3 py-2 text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">{plan.rationale[0].label}.</span>{" "}
+              {plan.rationale[0].detail}
+            </div>
+          ) : null}
         </div>
 
-        <div className="rounded-xl border border-border/60 bg-background/80 p-4">
+        <div className="eg-surface rounded-xl p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Compass className="h-4 w-4 text-primary" />
             Next Actions
@@ -224,31 +257,51 @@ export function EliteCommandCenter({ mode = "competition" }: EliteCommandCenterP
               </Link>
             </Button>
           </div>
+          {goal && (
+            <div className="mt-3 text-xs text-muted-foreground">
+              Risk:{" "}
+              <span className="font-semibold text-foreground">{goal.riskLevel}</span> • Momentum{" "}
+              <span className="font-semibold text-foreground">{goal.momentumScore}</span>
+            </div>
+          )}
         </div>
       </div>
     </motion.section>
   )
 }
 
-function StatCard({
+function KpiCard({
   icon,
   label,
   value,
   sub,
+  suffix,
+  accent,
 }: {
   icon: React.ReactNode
   label: string
   value: string
   sub: string
+  suffix?: string
+  accent?: string
 }) {
   return (
-    <div className="rounded-xl border border-border/60 bg-background/85 p-4">
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 8 },
+        show: { opacity: 1, y: 0 },
+      }}
+      className={cn("eg-surface rounded-xl p-4", accent)}
+    >
       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {icon}
         {label}
       </div>
-      <div className="mt-2 text-3xl font-black leading-none text-foreground">{value}</div>
+      <div className="mt-2 flex items-baseline gap-1">
+        <div className="eg-kpi-value">{value}</div>
+        {suffix ? <div className="text-xs font-semibold text-muted-foreground">{suffix}</div> : null}
+      </div>
       <div className="mt-1 text-xs text-muted-foreground">{sub}</div>
-    </div>
+    </motion.div>
   )
 }

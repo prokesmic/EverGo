@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db"
+import { getPersonalizationProfile } from "@/lib/personalization/profile"
 
 export type ReadinessBand = "LOW" | "MODERATE" | "HIGH" | "PEAK"
 
@@ -20,6 +21,11 @@ export interface ReadinessSnapshot {
     completionPct: number
   }
   drivers: string[]
+  signals: Array<{
+    label: string
+    detail: string
+    impact: "POSITIVE" | "NEGATIVE" | "NEUTRAL"
+  }>
 }
 
 export async function getReadinessSnapshot(userId: string): Promise<ReadinessSnapshot> {
@@ -29,7 +35,7 @@ export async function getReadinessSnapshot(userId: string): Promise<ReadinessSna
   const twentyEightDaysAgo = new Date(now)
   twentyEightDaysAgo.setDate(now.getDate() - 28)
 
-  const [activities, userStreak] = await Promise.all([
+  const [activities, userStreak, profile] = await Promise.all([
     prisma.activity.findMany({
       where: {
         userId,
@@ -51,13 +57,15 @@ export async function getReadinessSnapshot(userId: string): Promise<ReadinessSna
         lastActivityDate: true,
       },
     }),
+    getPersonalizationProfile(userId),
   ])
 
   const acuteMinutes = sumMinutes(
     activities.filter((item) => item.activityDate >= sevenDaysAgo)
   )
   const chronicMinutes = sumMinutes(activities)
-  const chronicWeeklyMinutes = chronicMinutes / 4
+  const baselineWeeklyMinutes = Math.max(1, profile.baselineWeeklyMinutes || Math.round(chronicMinutes / 4))
+  const chronicWeeklyMinutes = baselineWeeklyMinutes
   const acuteChronicRatio =
     chronicWeeklyMinutes > 0 ? acuteMinutes / chronicWeeklyMinutes : null
 
@@ -71,53 +79,114 @@ export async function getReadinessSnapshot(userId: string): Promise<ReadinessSna
 
   let score = 68
   const drivers: string[] = []
+  const signals: ReadinessSnapshot["signals"] = []
 
   if (acuteChronicRatio != null) {
     if (acuteChronicRatio > 1.35) {
       score -= 18
       drivers.push("Acute load is significantly above your baseline")
+      signals.push({
+        label: "Load spike",
+        detail: "This week is >35% above your baseline volume.",
+        impact: "NEGATIVE",
+      })
     } else if (acuteChronicRatio > 1.15) {
       score -= 8
       drivers.push("Training load is elevated this week")
+      signals.push({
+        label: "Elevated load",
+        detail: "Volume sits 15-35% above baseline.",
+        impact: "NEGATIVE",
+      })
     } else if (acuteChronicRatio >= 0.85 && acuteChronicRatio <= 1.1) {
       score += 10
       drivers.push("Load is in the optimal adaptation zone")
+      signals.push({
+        label: "Adaptation zone",
+        detail: "Load is aligned with your rolling baseline.",
+        impact: "POSITIVE",
+      })
     } else if (acuteChronicRatio < 0.7) {
       score -= 6
       drivers.push("Load is below baseline; a progressive session can help")
+      signals.push({
+        label: "Under-load",
+        detail: "Volume is below baseline; progressive stimulus recommended.",
+        impact: "NEUTRAL",
+      })
     }
   } else {
     drivers.push("Limited recent training data; recommendations are conservative")
+    signals.push({
+      label: "Limited data",
+      detail: "Not enough training history to compute a stable baseline.",
+      impact: "NEUTRAL",
+    })
   }
 
   if (hoursSinceLastActivity != null) {
     if (hoursSinceLastActivity < 10) {
       score -= 12
       drivers.push("Very short recovery window since last session")
+      signals.push({
+        label: "Short recovery",
+        detail: "Less than 10 hours since last session.",
+        impact: "NEGATIVE",
+      })
     } else if (hoursSinceLastActivity >= 18 && hoursSinceLastActivity <= 40) {
       score += 8
       drivers.push("Recovery window supports quality work today")
+      signals.push({
+        label: "Good recovery",
+        detail: "Recovery window supports quality work.",
+        impact: "POSITIVE",
+      })
     } else if (hoursSinceLastActivity > 72) {
       score -= 4
       drivers.push("Long inactivity window; start with controlled intensity")
+      signals.push({
+        label: "Long gap",
+        detail: "More than 72 hours since last session.",
+        impact: "NEUTRAL",
+      })
     }
   }
 
   if (completionPct >= 100) {
     score += 6
     drivers.push("Weekly consistency target achieved")
+    signals.push({
+      label: "Consistency achieved",
+      detail: "Weekly target completed.",
+      impact: "POSITIVE",
+    })
   } else if (completionPct < 35) {
     score -= 4
     drivers.push("Weekly consistency target is behind plan")
+    signals.push({
+      label: "Consistency behind",
+      detail: "Weekly goal progress is below 35%.",
+      impact: "NEGATIVE",
+    })
   }
 
   const recentStress = rollingStress(activities.slice(0, 6))
   if (recentStress > 120) {
     score -= 8
     drivers.push("Recent intensity and heart-rate stress are high")
+    signals.push({
+      label: "Stress spike",
+      detail: "Recent RPE and HR stress are elevated.",
+      impact: "NEGATIVE",
+    })
   } else if (recentStress > 60 && recentStress < 95) {
     score += 3
     drivers.push("Recent stress profile is balanced")
+    signals.push({
+      label: "Balanced stress",
+      detail: "Intensity and duration are stable.",
+      impact: "POSITIVE",
+    })
   }
 
   score = clamp(Math.round(score), 20, 96)
@@ -149,6 +218,7 @@ export async function getReadinessSnapshot(userId: string): Promise<ReadinessSna
       completionPct,
     },
     drivers,
+    signals,
   }
 }
 

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db"
+import { buildActivityProvenance } from "@/lib/integrity/provenance"
 
 export type ConfidenceBand = "LOW" | "MEDIUM" | "HIGH" | "VERIFIED"
 
@@ -32,6 +33,34 @@ export async function getActivityConfidence(activityId: string): Promise<Activit
 
   if (!activity) return null
   return computeActivityConfidence(activity)
+}
+
+export async function getActivityIntegrity(activityId: string) {
+  const activity = await prisma.activity.findUnique({
+    where: { id: activityId },
+    select: {
+      id: true,
+      activityDate: true,
+      createdAt: true,
+      updatedAt: true,
+      source: true,
+      proofLevel: true,
+      verificationTier: true,
+      anomalyScore: true,
+      isAnomalous: true,
+      gpsRoute: true,
+      avgHeartRate: true,
+      durationSeconds: true,
+      distanceMeters: true,
+      userId: true,
+    },
+  })
+
+  if (!activity) return null
+  return {
+    confidence: computeActivityConfidence(activity),
+    provenance: buildActivityProvenance(activity),
+  }
 }
 
 export function computeActivityConfidence(activity: {

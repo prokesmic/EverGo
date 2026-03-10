@@ -7,7 +7,8 @@ import { buildAdaptivePlan } from "@/lib/elite/adaptive-plan"
 import { getExperimentAssignments } from "@/lib/elite/ops"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { Sparkles, Shield, Timer, Zap } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -38,7 +39,7 @@ export default async function CoachPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Adaptive Coach
           </p>
-          <h1 className="mt-1 text-3xl font-black text-foreground">Train with readiness-aware guidance</h1>
+          <h1 className="eg-display mt-1 text-3xl font-black text-foreground">Train with readiness-aware guidance</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Your daily plan adapts to fatigue, consistency, and competition schedule.
           </p>
@@ -56,40 +57,44 @@ export default async function CoachPage() {
         </section>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Readiness</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-black">{readiness.score}%</div>
+          <Card className="eg-surface border-0">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Readiness
+                <Shield className="h-4 w-4 text-primary" />
+              </div>
+              <div className="eg-kpi-value mt-2">{readiness.score}%</div>
               <div className="mt-1 text-sm text-muted-foreground">{readiness.band}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Objective</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-semibold">{plan.objective}</div>
+          <Card className="eg-surface border-0">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Objective
+                <Sparkles className="h-4 w-4 text-primary" />
+              </div>
+              <div className="mt-2 text-lg font-semibold">{plan.objective}</div>
               <div className="mt-1 text-sm text-muted-foreground">RPE {plan.recommendedRpe}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Planned Load</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-black">{plan.estimatedLoadPoints}</div>
-              <div className="mt-1 text-sm text-muted-foreground">load points</div>
+          <Card className="eg-surface border-0">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Planned Load
+                <Zap className="h-4 w-4 text-primary" />
+              </div>
+              <div className="eg-kpi-value mt-2">{plan.estimatedLoadPoints}</div>
+              <div className="mt-1 text-sm text-muted-foreground">{plan.volumeMinutes} min</div>
             </CardContent>
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Session Blocks</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <Card className="eg-surface border-0">
+          <CardContent className="space-y-3 p-4">
+            <div className="flex items-center justify-between text-sm font-semibold">
+              <span>Session Blocks</span>
+              <Timer className="h-4 w-4 text-primary" />
+            </div>
             {plan.blocks.map((block) => (
               <div
                 key={block.label}
@@ -102,11 +107,33 @@ export default async function CoachPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Product OS Signals</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="eg-surface border-0">
+            <CardContent className="p-4 space-y-2">
+              <div className="text-sm font-semibold">Why this plan</div>
+              {(plan.rationale ?? []).slice(0, 3).map((item) => (
+                <div key={item.label} className="rounded-lg border border-border-light px-3 py-2 text-sm">
+                  <div className="font-semibold">{item.label}</div>
+                  <div className="text-xs text-muted-foreground">{item.detail}</div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          <Card className="eg-surface border-0">
+            <CardContent className="p-4 space-y-2">
+              <div className="text-sm font-semibold">Coach Notes</div>
+              {(plan.coachNotes ?? []).map((note) => (
+                <div key={note} className="rounded-lg border border-border-light px-3 py-2 text-sm text-muted-foreground">
+                  {note}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="eg-surface border-0">
+          <CardContent className="space-y-2 p-4">
+            <div className="text-sm font-semibold">Product OS Signals</div>
             {assignments.map((item) => (
               <div key={item.experiment} className="rounded-lg border border-border-light px-3 py-2">
                 <div className="text-sm font-semibold">{item.experiment}</div>

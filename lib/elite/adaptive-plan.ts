@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db"
 import { getReadinessSnapshot } from "@/lib/elite/readiness"
+import { getPersonalizationProfile } from "@/lib/personalization/profile"
 
 export interface AdaptiveWorkoutBlock {
   label: string
@@ -19,6 +20,9 @@ export interface AdaptivePlan {
   readinessScore: number
   recommendedRpe: number
   estimatedLoadPoints: number
+  volumeMinutes: number
+  rationale: Array<{ label: string; detail: string }>
+  coachNotes: string[]
   blocks: AdaptiveWorkoutBlock[]
   fallbackPlan: string[]
   primaryAction: {
@@ -28,7 +32,7 @@ export interface AdaptivePlan {
 }
 
 export async function buildAdaptivePlan(userId: string, availableMinutes = 45): Promise<AdaptivePlan> {
-  const [readiness, primarySport] = await Promise.all([
+  const [readiness, primarySport, profile] = await Promise.all([
     getReadinessSnapshot(userId),
     prisma.userSport.findFirst({
       where: { userId, status: "ACTIVE" },
@@ -39,23 +43,43 @@ export async function buildAdaptivePlan(userId: string, availableMinutes = 45): 
         },
       },
     }),
+    getPersonalizationProfile(userId),
   ])
 
-  const budget = clamp(Math.round(availableMinutes), 20, 120)
+  const baselineMinutes = profile.typicalSessionMinutes || availableMinutes
+  const budget = clamp(Math.round((availableMinutes + baselineMinutes) / 2), 20, 120)
   const sport = primarySport?.sport ?? { id: null, slug: null, name: "Training" }
 
   let objective = "Recovery + movement quality"
   let recommendedRpe = 4
   let split = { warmup: 8, main: 14, recovery: 0, cooldown: 8 }
+  const rationale: AdaptivePlan["rationale"] = []
+  const coachNotes: string[] = []
 
   if (readiness.recovery.suggestedIntensity === "QUALITY") {
     objective = "Quality day: threshold and race-specific control"
     recommendedRpe = 7
     split = { warmup: 12, main: 22, recovery: 4, cooldown: 7 }
+    rationale.push({
+      label: "Readiness supports quality work",
+      detail: `Readiness ${readiness.score}% suggests a high-intensity window.`,
+    })
+    coachNotes.push("Keep intervals controlled; stop 1 rep early if HR lags.")
   } else if (readiness.recovery.suggestedIntensity === "EASY") {
     objective = "Aerobic base with light neuromuscular touches"
     recommendedRpe = 5
     split = { warmup: 10, main: 20, recovery: 3, cooldown: 7 }
+    rationale.push({
+      label: "Aerobic consistency priority",
+      detail: "Maintain base volume without excess fatigue.",
+    })
+    coachNotes.push("Add 4 x 20s relaxed strides if legs feel light.")
+  } else {
+    rationale.push({
+      label: "Recovery emphasis",
+      detail: "Fatigue indicators suggest low intensity.",
+    })
+    coachNotes.push("Stay conversational throughout; prioritize mobility after.")
   }
 
   const scale = budget / (split.warmup + split.main + split.recovery + split.cooldown)
@@ -69,6 +93,7 @@ export async function buildAdaptivePlan(userId: string, availableMinutes = 45): 
   const estimatedLoadPoints = Math.round(
     blocks.reduce((sum, block) => sum + block.minutes, 0) * (recommendedRpe / 2)
   )
+  const volumeMinutes = blocks.reduce((sum, block) => sum + block.minutes, 0)
 
   const fallbackPlan =
     readiness.score < 46
@@ -99,6 +124,9 @@ export async function buildAdaptivePlan(userId: string, availableMinutes = 45): 
     readinessScore: readiness.score,
     recommendedRpe,
     estimatedLoadPoints,
+    volumeMinutes,
+    rationale,
+    coachNotes,
     blocks,
     fallbackPlan,
     primaryAction,

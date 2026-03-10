@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/db"
 import { parseGpsRoute } from "@/lib/activity/route"
+import type { TimeWindow } from "@/lib/personalization/profile"
 
-type TimeWindow = "early" | "morning" | "midday" | "evening" | "night"
 type Terrain = "flat" | "rolling" | "hilly" | "mixed"
+type Surface = "road" | "trail" | "mixed"
+type RouteIntent = "speed" | "endurance" | "recovery"
 
 export interface RouteSuggestion {
   id: string
@@ -11,10 +13,14 @@ export interface RouteSuggestion {
   distanceKm: number
   elevationGain: number
   terrain: Terrain
+  surface: Surface
+  intent: RouteIntent
   crowdHeat: number
   safetyScore: number
   popularityScore: number
   recommendedWindows: TimeWindow[]
+  conditions: string[]
+  previewPath: string | null
   center: { lat: number; lng: number } | null
 }
 
@@ -72,7 +78,10 @@ export async function getRouteSuggestions(options: RouteOptions): Promise<RouteS
     const elevation = Math.max(0, Math.round(activity.elevationGain ?? 0))
     const distanceKm = (activity.distanceMeters ?? 0) / 1000
     const inferredTerrain = inferTerrain(distanceKm, elevation)
+    const surface = inferSurface(inferredTerrain)
+    const intent = inferIntent(distanceKm, inferredTerrain)
     const hour = activity.activityDate.getHours()
+    const previewPath = buildPreviewPath(points)
 
     const existing = grouped.get(key)
     if (!existing) {
@@ -83,10 +92,14 @@ export async function getRouteSuggestions(options: RouteOptions): Promise<RouteS
         distanceKm: round(distanceKm, 1),
         elevationGain: elevation,
         terrain: inferredTerrain,
+        surface,
+        intent,
         crowdHeat: 1,
         safetyScore: inferSafety(hour),
         popularityScore: 10,
         recommendedWindows: [],
+        conditions: [],
+        previewPath,
         center: { lat: round(first.lat, 4), lng: round(first.lng, 4) },
         sampleHours: [hour],
         sampleCount: 1,
@@ -113,6 +126,7 @@ export async function getRouteSuggestions(options: RouteOptions): Promise<RouteS
     recommendedWindows: inferWindows(item.sampleHours),
     crowdHeat: clamp(item.crowdHeat, 1, 100),
     popularityScore: clamp(item.popularityScore, 10, 99),
+    conditions: inferConditions(item.sampleHours),
   }))
 
   return all
@@ -129,6 +143,19 @@ function inferTerrain(distanceKm: number, elevationGain: number): Terrain {
   if (gainPerKm < 40) return "rolling"
   if (gainPerKm > 65) return "hilly"
   return "mixed"
+}
+
+function inferSurface(terrain: Terrain): Surface {
+  if (terrain === "hilly") return "trail"
+  if (terrain === "rolling") return "mixed"
+  return "road"
+}
+
+function inferIntent(distanceKm: number, terrain: Terrain): RouteIntent {
+  if (distanceKm < 5) return "speed"
+  if (terrain === "hilly") return "endurance"
+  if (distanceKm > 15) return "endurance"
+  return "recovery"
 }
 
 function inferSafety(hour: number) {
@@ -154,6 +181,45 @@ function inferWindows(hours: number[]): TimeWindow[] {
     .filter(([, count]) => count > 0)
     .slice(0, 2)
     .map(([window]) => window)
+}
+
+function inferConditions(hours: number[]): string[] {
+  const windows = inferWindows(hours)
+  const conditions: string[] = []
+  if (windows.includes("early") || windows.includes("morning")) {
+    conditions.push("Cooler temps")
+    conditions.push("Low traffic")
+  }
+  if (windows.includes("evening")) {
+    conditions.push("Golden-hour visibility")
+  }
+  if (windows.includes("night")) {
+    conditions.push("High-visibility gear recommended")
+  }
+  return conditions.slice(0, 3)
+}
+
+function buildPreviewPath(points: Array<{ lat: number; lng: number }>) {
+  if (points.length < 4) return null
+  const sample = points.slice(0, 60)
+  const lats = sample.map((p) => p.lat)
+  const lngs = sample.map((p) => p.lng)
+  const minLat = Math.min(...lats)
+  const maxLat = Math.max(...lats)
+  const minLng = Math.min(...lngs)
+  const maxLng = Math.max(...lngs)
+  const width = 120
+  const height = 70
+  const latSpan = Math.max(0.0001, maxLat - minLat)
+  const lngSpan = Math.max(0.0001, maxLng - minLng)
+
+  return sample
+    .map((point, index) => {
+      const x = ((point.lng - minLng) / lngSpan) * width
+      const y = height - ((point.lat - minLat) / latSpan) * height
+      return `${index === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`
+    })
+    .join(" ")
 }
 
 function toWindow(hour: number): TimeWindow {

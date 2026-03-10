@@ -3,7 +3,8 @@ import { authOptions } from "@/lib/auth"
 import { redirect, notFound } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { canAccessCoachDashboard, getTeamCoachDashboard } from "@/lib/elite/team-coach"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { ShieldCheck, Users } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -44,7 +45,7 @@ export default async function TeamCoachPage({ params }: TeamCoachPageProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Team Coach Mode
           </p>
-          <h1 className="mt-1 text-3xl font-black text-foreground">{dashboard.team.name} Performance Command</h1>
+          <h1 className="eg-display mt-1 text-3xl font-black text-foreground">{dashboard.team.name} Performance Command</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Monitor compliance, schedule sessions, and drive team objectives.
           </p>
@@ -58,11 +59,12 @@ export default async function TeamCoachPage({ params }: TeamCoachPageProps) {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Member Compliance</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
+          <Card className="eg-surface border-0">
+            <CardContent className="space-y-2 p-4">
+              <div className="flex items-center justify-between text-sm font-semibold">
+                Member Compliance
+                <Users className="h-4 w-4 text-primary" />
+              </div>
               {dashboard.memberRows.map((row) => (
                 <div key={row.userId} className="rounded-lg border border-border-light px-3 py-2">
                   <div className="flex items-center justify-between">
@@ -77,11 +79,12 @@ export default async function TeamCoachPage({ params }: TeamCoachPageProps) {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Calendar</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
+          <Card className="eg-surface border-0">
+            <CardContent className="space-y-2 p-4">
+              <div className="flex items-center justify-between text-sm font-semibold">
+                Team Calendar
+                <ShieldCheck className="h-4 w-4 text-primary" />
+              </div>
               {dashboard.calendar.map((event) => (
                 <div key={event.id} className="rounded-lg border border-border-light px-3 py-2">
                   <div className="font-semibold">{event.title}</div>
@@ -94,11 +97,9 @@ export default async function TeamCoachPage({ params }: TeamCoachPageProps) {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Active Team Objectives</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <Card className="eg-surface border-0">
+          <CardContent className="space-y-2 p-4">
+            <div className="text-sm font-semibold">Active Team Objectives</div>
             {dashboard.objectives.length === 0 && (
               <div className="text-sm text-muted-foreground">
                 No active objectives. Create a team challenge to set one.
@@ -125,12 +126,10 @@ export default async function TeamCoachPage({ params }: TeamCoachPageProps) {
 
 function CoachKpi({ label, value }: { label: string; value: string }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm text-muted-foreground">{label}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-black">{value}</div>
+    <Card className="eg-surface border-0">
+      <CardContent className="p-4">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</div>
+        <div className="eg-kpi-value mt-2">{value}</div>
       </CardContent>
     </Card>
   )

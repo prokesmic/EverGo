@@ -17,6 +17,13 @@ type Confidence = {
   checks: Array<{ label: string; status: "PASS" | "WARN" | "FAIL" }>
 }
 
+type Provenance = Array<{
+  label: string
+  detail: string
+  status: "OK" | "WARN" | "FLAG"
+  timestamp: string
+}>
+
 type Story = {
   headline: string
   summary: string
@@ -27,6 +34,7 @@ type Story = {
 
 export function ActivityIntegrityPanel({ activityId }: ActivityIntegrityPanelProps) {
   const [confidence, setConfidence] = useState<Confidence | null>(null)
+  const [provenance, setProvenance] = useState<Provenance>([])
   const [story, setStory] = useState<Story | null>(null)
   const [reason, setReason] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -42,6 +50,7 @@ export function ActivityIntegrityPanel({ activityId }: ActivityIntegrityPanelPro
       if (confidenceRes.ok) {
         const data = await confidenceRes.json()
         setConfidence(data.confidence)
+        setProvenance(data.provenance ?? [])
       }
       if (storyRes.ok) {
         const data = await storyRes.json()
@@ -84,7 +93,7 @@ export function ActivityIntegrityPanel({ activityId }: ActivityIntegrityPanelPro
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <Card>
+      <Card className="eg-surface border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-emerald-600" />
@@ -101,6 +110,28 @@ export function ActivityIntegrityPanel({ activityId }: ActivityIntegrityPanelPro
               </div>
             ))}
           </div>
+          {provenance.length > 0 && (
+            <div className="mt-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Audit Trail
+              </div>
+              <div className="mt-2 space-y-2 text-sm">
+                {provenance.slice(0, 5).map((item) => (
+                  <div
+                    key={`${item.label}-${item.timestamp}`}
+                    className="rounded-lg border border-border-light px-3 py-2"
+                  >
+                    <div className="flex items-center justify-between text-xs uppercase tracking-wide">
+                      <span className="font-semibold">{item.label}</span>
+                      <span className="text-muted-foreground">{new Date(item.timestamp).toLocaleDateString()}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">{item.detail}</div>
+                    <div className="mt-1 text-xs font-semibold text-foreground">{item.status}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3">
             <div className="text-xs font-semibold uppercase tracking-wide text-amber-700">Dispute Flow</div>
             <Textarea
@@ -123,7 +154,7 @@ export function ActivityIntegrityPanel({ activityId }: ActivityIntegrityPanelPro
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="eg-surface border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-indigo-600" />

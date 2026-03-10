@@ -6,8 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -202,6 +202,18 @@
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--border-light);
   --sidebar-ring: var(--primary);
+}
+
+body {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(249, 115, 22, 0.12), transparent 45%),
+    radial-gradient(circle at 90% 20%, rgba(79, 70, 229, 0.12), transparent 45%),
+    var(--bg-page);
+}
+
+.eg-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 /* --- Design System: Typography Scale --- */
@@ -1248,31 +1260,81 @@
 /* Elite Mode System */
 .eg-mode-shell {
   backdrop-filter: blur(12px);
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
 }
 
 .eg-mode-competition {
   background:
-    radial-gradient(circle at 0% 0%, rgba(251, 146, 60, 0.2), transparent 40%),
-    radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.14), transparent 35%),
-    rgba(255, 255, 255, 0.88);
+    radial-gradient(circle at 0% 0%, rgba(251, 146, 60, 0.24), transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.18), transparent 40%),
+    rgba(255, 255, 255, 0.92);
   border-color: rgba(249, 115, 22, 0.25);
 }
 
 .eg-mode-recovery {
   background:
-    radial-gradient(circle at 0% 100%, rgba(56, 189, 248, 0.18), transparent 40%),
-    radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.14), transparent 35%),
-    rgba(255, 255, 255, 0.9);
+    radial-gradient(circle at 0% 100%, rgba(56, 189, 248, 0.2), transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.16), transparent 40%),
+    rgba(255, 255, 255, 0.92);
   border-color: rgba(14, 165, 233, 0.25);
 }
 
 .eg-mode-social {
   background:
-    radial-gradient(circle at 100% 100%, rgba(167, 139, 250, 0.16), transparent 40%),
-    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1), transparent 35%),
-    rgba(255, 255, 255, 0.92);
+    radial-gradient(circle at 100% 100%, rgba(167, 139, 250, 0.2), transparent 45%),
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.12), transparent 40%),
+    rgba(255, 255, 255, 0.94);
   border-color: rgba(79, 70, 229, 0.22);
+}
+
+.eg-surface {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow:
+    0 18px 30px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+.eg-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(248, 250, 252, 0.9);
+  color: #475569;
+}
+
+.eg-pill-good {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #047857;
+}
+
+.eg-pill-warn {
+  background: rgba(249, 115, 22, 0.12);
+  border-color: rgba(249, 115, 22, 0.3);
+  color: #9a3412;
+}
+
+.eg-pill-soft {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.24);
+  color: #4338ca;
+}
+
+.eg-kpi-good {
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.eg-kpi-warn {
+  border-color: rgba(249, 115, 22, 0.35);
 }
 
 /* KPI hierarchy */
